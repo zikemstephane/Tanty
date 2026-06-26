@@ -1,0 +1,84 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Broyage</h1>
+      <p class="page-header__subtitle">Gestion des journées de broyage et classements des machinistes</p>
+    </div>
+    @if (auth.hasAnyRole('CHEF_MACHINISTE','CHEF_PRODUCTION','DIRECTEUR_GENERAL')) {
+      <div class="page-header__actions">
+        <a routerLink="/broyage/journees/nouveau" class="btn btn-primary">
+          <span class="material-icons">add</span> Ouvrir journée
+        </a>
+      </div>
+    }
+  </div>
+
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading()) {
+    <div class="grid grid--3" style="margin-bottom:1.5rem;">
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--green"><span class="material-icons">precision_manufacturing</span></div>
+        <span class="stat-card__label">Journées enregistrées</span>
+        <span class="stat-card__value">{{ journees().length }}</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--yellow"><span class="material-icons">scale</span></div>
+        <span class="stat-card__label">Poudre nette totale</span>
+        <span class="stat-card__value">{{ totalPoudre | number:'1.0-0' }} kg</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--orange"><span class="material-icons">trending_down</span></div>
+        <span class="stat-card__label">Taux perte moyen</span>
+        <span class="stat-card__value">{{ tauxMoyen }}%</span>
+      </div>
+    </div>
+
+    <!-- Module nav -->
+    <div class="module-cards" style="margin-bottom: 1.5rem;">
+      <a routerLink="/broyage/journees" class="module-card">
+        <span class="material-icons" style="font-size:32px;color:#2E7D32;">calendar_today</span>
+        <div>
+          <div class="font-semibold">Journées de production</div>
+          <div class="text-sm text-muted">Ouvrir, saisir résultats, clôturer</div>
+        </div>
+        <span class="material-icons" style="margin-left:auto;color:#9E9E9E;">chevron_right</span>
+      </a>
+      <a routerLink="/broyage/classements" class="module-card">
+        <span class="material-icons" style="font-size:32px;color:#F57F17;">emoji_events</span>
+        <div>
+          <div class="font-semibold">Classements Machinistes</div>
+          <div class="text-sm text-muted">Hebdomadaire et mensuel</div>
+        </div>
+        <span class="material-icons" style="margin-left:auto;color:#9E9E9E;">chevron_right</span>
+      </a>
+    </div>
+
+    <!-- Journées récentes -->
+    @if (journees().length > 0) {
+      <div class="tanty-card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 1.5rem 1.5rem 1rem;">
+          <h3 class="tanty-card__title">Journées récentes</h3>
+        </div>
+        <table class="tanty-table">
+          <thead><tr><th>Date</th><th>PPH</th><th>Chef Machiniste</th><th>Machinistes</th><th>Poudre nette</th><th>Taux perte</th><th>Statut</th><th></th></tr></thead>
+          <tbody>
+            @for (j of journees(); track j.id) {
+              <tr>
+                <td class="font-medium">{{ j.date }}</td>
+                <td class="text-sm text-muted">{{ j.referencePPH }}</td>
+                <td class="text-sm">{{ j.chefMachinisteNom }}</td>
+                <td>{{ j.machinistes.length }}</td>
+                <td class="font-semibold">{{ j.totalPoudreNetteKg ? (j.totalPoudreNetteKg | number:'1.1-1') + ' kg' : '—' }}</td>
+                <td>{{ j.tauxPerteGlobalPourcentage !== null ? (j.tauxPerteGlobalPourcentage | number:'1.1-1') + '%' : '—' }}</td>
+                <td><span class="badge {{ statutClass(j.statut) }}">{{ j.statutLibelle }}</span></td>
+                <td><a [routerLink]="['/broyage/journees', j.id]" class="btn btn-ghost btn-sm"><span class="material-icons">visibility</span></a></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

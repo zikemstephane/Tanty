@@ -1,0 +1,9 @@
+@use '../../../../../styles/variables' as *;
+.module-cards { display: flex; flex-direction: column; gap: $spacing-3; }
+.module-card {
+  display: flex; align-items: center; gap: $spacing-4;
+  background: $color-surface; border: 1px solid $color-border;
+  border-radius: $border-radius-lg; padding: $spacing-4;
+  text-decoration: none; color: inherit; transition: all $transition-fast;
+  &:hover { border-color: $tanty-green; box-shadow: $shadow-sm; text-decoration: none; }
+}

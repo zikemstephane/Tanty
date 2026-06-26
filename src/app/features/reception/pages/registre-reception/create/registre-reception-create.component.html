@@ -1,0 +1,443 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+
+  <!-- Progress stepper -->
+  <div class="stepper">
+    <div class="stepper__step" [class.stepper__step--active]="step() === 'select-fiche'" [class.stepper__step--done]="step() === 'saisie' || step() === 'recap'">
+      <div class="stepper__circle">
+        @if (step() === 'saisie' || step() === 'recap') { <span class="material-icons">check</span> } @else { 1 }
+      </div>
+      <span class="stepper__label">Choisir la fiche</span>
+    </div>
+    <div class="stepper__line" [class.stepper__line--done]="step() === 'saisie' || step() === 'recap'"></div>
+    <div class="stepper__step" [class.stepper__step--active]="step() === 'saisie'" [class.stepper__step--done]="step() === 'recap'">
+      <div class="stepper__circle">
+        @if (step() === 'recap') { <span class="material-icons">check</span> } @else { 2 }
+      </div>
+      <span class="stepper__label">Saisir les quantités reçues</span>
+    </div>
+    <div class="stepper__line" [class.stepper__line--done]="step() === 'recap'"></div>
+    <div class="stepper__step" [class.stepper__step--active]="step() === 'recap'">
+      <div class="stepper__circle">3</div>
+      <span class="stepper__label">Récapitulatif & enregistrement</span>
+    </div>
+  </div>
+
+  <!-- ─── ÉTAPE 1 : Sélection de la fiche ─────────────────────────────── -->
+  @if (step() === 'select-fiche') {
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Sélectionner une fiche de production</h1>
+        <p class="page-header__subtitle">Choisissez la fiche journalière à réceptionner</p>
+      </div>
+    </div>
+
+    <app-page-loader [loading]="loading()" />
+
+    @if (!loading()) {
+      <div class="search-bar tanty-card" style="padding:1rem 1.5rem; margin-bottom:1rem;">
+        <div class="search-inner">
+          <span class="material-icons">search</span>
+          <input
+  class="form-control"
+  placeholder="Rechercher par PPH, date, agent…"
+  [value]="searchFiche()"
+  (input)="onSearch($event)"
+/>
+        </div>
+        <span class="text-sm text-muted">{{ fichesFiltrees().length }} fiche(s) disponible(s)</span>
+      </div>
+
+      @if (fichesFiltrees().length === 0) {
+        <div class="tanty-card empty-fiches">
+          <span class="material-icons">inventory_2</span>
+          <p>Aucune fiche de production disponible à réceptionner.</p>
+          <span class="text-sm text-muted">Toutes les fiches ont déjà été réceptionnées, ou aucune fiche n'a encore été saisie.</span>
+        </div>
+      } @else {
+        <div class="fiches-grid">
+          @for (fiche of fichesFiltrees(); track fiche.id) {
+            <div class="fiche-card" (click)="selectionnerFiche(fiche)">
+              <div class="fiche-card__header">
+                <div>
+                  <div class="fiche-card__pph">{{ fiche.referencePPH }}</div>
+                  <div class="fiche-card__date">
+                    <span class="material-icons">event</span>
+                    {{ fiche.date }}
+                  </div>
+                </div>
+                <div class="fiche-card__total">
+                  <div class="text-xs text-muted">Total déclaré</div>
+                  <div class="fiche-card__total-val">{{ fiche.totalProduit | number }}</div>
+                  <div class="text-xs text-muted">unités</div>
+                </div>
+              </div>
+
+              <div class="fiche-card__agent">
+                <span class="material-icons">person</span>
+                <div>
+                  <div class="text-sm font-medium">{{ fiche.agentNom }}</div>
+                  <div class="text-xs text-muted">{{ fiche.agentMatricule }}</div>
+                </div>
+              </div>
+
+              <div class="fiche-card__lignes">
+                @for (l of fiche.lignes; track l.produitId) {
+                  <div class="fiche-ligne">
+                    <span class="text-xs truncate">{{ l.produitNom }}</span>
+                    <span class="text-xs font-semibold">{{ l.quantiteUnites }} u · {{ l.quantiteCartons }} crt.</span>
+                  </div>
+                }
+              </div>
+
+              <div class="fiche-card__action">
+                <span class="material-icons">add_task</span>
+                Réceptionner cette fiche
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  }
+
+  <!-- ─── ÉTAPE 2 : Saisie des quantités reçues ────────────────────────── -->
+  @if (step() === 'saisie' && ficheSel()) {
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Saisie des quantités reçues</h1>
+        <p class="page-header__subtitle">
+          Fiche : {{ ficheSel()!.referencePPH }} · {{ ficheSel()!.date }} ·
+          Agent : {{ ficheSel()!.agentNom }}
+        </p>
+      </div>
+      <button class="btn btn-ghost" (click)="retourSelection()">
+        <span class="material-icons">arrow_back</span> Retour
+      </button>
+    </div>
+
+    <!-- Info agent -->
+    <div class="agent-banner">
+      <div class="agent-banner__left">
+        <span class="material-icons">inventory_2</span>
+        <div>
+          <div class="font-semibold text-sm">Déclaration de l'Agent de Production</div>
+          <div class="text-xs text-muted">{{ ficheSel()!.agentNom }} · {{ ficheSel()!.date }}</div>
+        </div>
+      </div>
+      <div class="agent-banner__total">
+        <span class="text-xs text-muted">Total déclaré</span>
+        <span class="font-bold text-lg">{{ ficheSel()!.totalProduit | number }} unités</span>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="validerEtPasser()">
+      <div class="saisie-layout">
+        <div>
+          <!-- Date & Heure -->
+          <div class="tanty-card" style="margin-bottom:1rem;">
+            <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+              <span class="material-icons">schedule</span> Informations de réception
+            </h3>
+            <div class="grid grid--2">
+              <div class="form-group">
+                <label class="form-label">Date de réception *</label>
+                <input type="date" class="form-control" formControlName="dateReception" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Heure de réception</label>
+                <input type="time" class="form-control" formControlName="heureReception" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Lignes de réception -->
+          <div class="tanty-card" style="padding:0; overflow:hidden;">
+            <div style="padding:1.5rem 1.5rem 0.5rem;">
+              <h3 class="tanty-card__title">
+                <span class="material-icons">compare_arrows</span>
+                Comparaison Déclaré / Reçu
+              </h3>
+              <p class="text-xs text-muted" style="margin-top:0.25rem;">
+                Saisissez ce que vous avez <strong>physiquement reçu</strong>. Les écarts seront calculés automatiquement.
+              </p>
+            </div>
+
+            <div formArrayName="lignes">
+              @for (ligne of lignes.controls; track $index) {
+                @let ecart = calculerEcart($index);
+                <div class="ligne-reception" [formGroupName]="$index" [class.ligne-reception--ecart]="ecart.unites !== 0">
+
+                  <!-- Produit header -->
+                  <div class="ligne-reception__produit">
+                    <div class="produit-info">
+                      <span class="font-semibold text-sm">{{ ligne.get('produitNom')?.value }}</span>
+                      <span class="text-xs text-muted font-mono">{{ ligne.get('produitCode')?.value }}</span>
+                    </div>
+                    @if (ecart.unites !== 0) {
+                      <div class="ecart-badge {{ ecartClass(ecart) }}">
+                        <span class="material-icons">{{ ecart.unites > 0 ? 'trending_up' : 'trending_down' }}</span>
+                        {{ ecart.unites > 0 ? '+' : '' }}{{ ecart.unites }} u
+                        ({{ ecart.pct > 0 ? '+' : '' }}{{ ecart.pct }}%)
+                      </div>
+                    } @else {
+                      <div class="ecart-badge ecart--ok">
+                        <span class="material-icons">check_circle</span> Conforme
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Tableau de comparaison -->
+                  <div class="comparaison-table">
+                    <div class="comp-col comp-col--declare">
+                      <div class="comp-col__label">
+                        <span class="material-icons">inventory_2</span> Déclaré par l'Agent
+                      </div>
+                      <div class="comp-col__values">
+                        <div class="comp-val">
+                          <span class="comp-val__num">{{ ligne.get('quantiteDeclareeCartons')?.value }}</span>
+                          <span class="comp-val__unit">cartons</span>
+                        </div>
+                        <div class="comp-val">
+                          <span class="comp-val__num">{{ ligne.get('quantiteDeclareeUnites')?.value }}</span>
+                          <span class="comp-val__unit">unités</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="comp-arrow">
+                      <span class="material-icons">compare_arrows</span>
+                    </div>
+
+                    <div class="comp-col comp-col--recu">
+                      <div class="comp-col__label">
+                        <span class="material-icons">warehouse</span> Reçu par le Gestionnaire
+                      </div>
+                      <div class="comp-col__values">
+                        <div class="comp-val">
+                          <input type="number" class="form-control comp-input"
+                                 formControlName="quantiteRecueCartons"
+                                 min="0" placeholder="Cartons" />
+                          <span class="comp-val__unit">cartons</span>
+                        </div>
+                        <div class="comp-val">
+                          <input type="number" class="form-control comp-input"
+                                 formControlName="quantiteRecueUnites"
+                                 min="0" placeholder="Unités" />
+                          <span class="comp-val__unit">unités</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Observation (si écart) -->
+                  <div class="forme-observation" [class.visible]="ecart.unites !== 0">
+                    <label class="form-label">
+                      <span class="material-icons">edit_note</span>
+                      Observation @if (ecart.unites !== 0) { <span class="text-error">*</span> }
+                    </label>
+                    <input type="text" class="form-control" formControlName="observationGestionnaire"
+                           [placeholder]="ecart.unites !== 0 ? 'Décrivez l\'écart observé (obligatoire si écart)…' : 'Observation optionnelle…'" />
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Commentaire global -->
+          <div class="tanty-card" style="margin-top:1rem;">
+            <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+              <span class="material-icons">comment</span> Commentaire global
+            </h3>
+            <div class="form-group">
+              <textarea class="form-control" formControlName="commentaireGestionnaire"
+                        rows="3" placeholder="Commentaire global sur cette réception (optionnel)…"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel résumé live -->
+        <div class="recap-live">
+          <div class="tanty-card" style="position:sticky; top:80px;">
+            <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+              <span class="material-icons">summarize</span> Résumé en temps réel
+            </h3>
+
+            <div class="recap-stat" [class.recap-stat--ok]="totalEcart === 0" [class.recap-stat--ko]="totalEcart < 0" [class.recap-stat--surplus]="totalEcart > 0">
+              <div class="recap-stat__label">Conformité globale</div>
+              <div class="recap-stat__value">{{ conformite }}%</div>
+              <div class="progress" style="margin-top:0.5rem;">
+                <div class="progress__bar" [style.width]="conformite + '%'"
+                     [style.background]="conformite >= 99 ? '#2E7D32' : conformite >= 90 ? '#F57F17' : '#C62828'"></div>
+              </div>
+            </div>
+
+            <div class="recap-row">
+              <span class="text-sm text-muted">Total déclaré</span>
+              <span class="font-semibold">{{ totalDeclaree | number }} u</span>
+            </div>
+            <div class="recap-row">
+              <span class="text-sm text-muted">Total reçu</span>
+              <span class="font-semibold">{{ totalRecue | number }} u</span>
+            </div>
+            <div class="recap-row">
+              <span class="text-sm text-muted">Écart total</span>
+              <span class="font-bold" [class.text-success]="totalEcart === 0" [class.text-error]="totalEcart < 0" [class.text-warning]="totalEcart > 0">
+                {{ totalEcart > 0 ? '+' : '' }}{{ totalEcart | number }} u
+              </span>
+            </div>
+            <div class="recap-row" style="margin-bottom:1rem;">
+              <span class="text-sm text-muted">Lignes avec écart</span>
+              <span class="font-bold" [class.text-error]="nbEcarts > 0">{{ nbEcarts }}</span>
+            </div>
+
+            @if (nbEcarts > 0) {
+              <div class="ecart-warning">
+                <span class="material-icons">warning</span>
+                <div>
+                  <strong>{{ nbEcarts }} écart(s) détecté(s)</strong>
+                  <p>L'agent de production sera invité à fournir une justification.</p>
+                </div>
+              </div>
+            }
+
+            <button type="submit" class="btn btn-primary btn-full">
+              <span class="material-icons">navigate_next</span>
+              Voir le récapitulatif
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  }
+
+  <!-- ─── ÉTAPE 3 : Récapitulatif ──────────────────────────────────────── -->
+  @if (step() === 'recap' && ficheSel()) {
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Récapitulatif de réception</h1>
+        <p class="page-header__subtitle">Vérifiez les informations avant d'enregistrer</p>
+      </div>
+      <button class="btn btn-ghost" (click)="retourSaisie()">
+        <span class="material-icons">arrow_back</span> Modifier
+      </button>
+    </div>
+
+    <!-- Global summary banner -->
+    <div class="recap-banner" [class.recap-banner--ok]="totalEcart === 0" [class.recap-banner--ko]="totalEcart !== 0">
+      <div class="recap-banner__icon">
+        <span class="material-icons">{{ totalEcart === 0 ? 'verified' : 'warning' }}</span>
+      </div>
+      <div class="recap-banner__content">
+        <h2>{{ totalEcart === 0 ? 'Réception conforme' : 'Écart(s) détecté(s)' }}</h2>
+        <p>
+          @if (totalEcart === 0) {
+            Toutes les quantités reçues correspondent aux déclarations de l'agent. La réception sera enregistrée comme conforme.
+          } @else {
+            {{ nbEcarts }} ligne(s) présentent un écart. L'agent de production recevra une notification pour fournir une justification.
+          }
+        </p>
+      </div>
+      <div class="recap-banner__stats">
+        <div class="rbs">
+          <span class="rbs__label">Déclaré</span>
+          <span class="rbs__value">{{ totalDeclaree | number }} u</span>
+        </div>
+        <span class="material-icons" style="color:#9E9E9E;">arrow_forward</span>
+        <div class="rbs">
+          <span class="rbs__label">Reçu</span>
+          <span class="rbs__value">{{ totalRecue | number }} u</span>
+        </div>
+        <div class="rbs">
+          <span class="rbs__label">Conformité</span>
+          <span class="rbs__value" [class.text-success]="conformite === 100" [class.text-error]="conformite < 90">
+            {{ conformite }}%
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lignes recap table -->
+    <div class="tanty-card" style="padding:0; overflow:hidden; margin-bottom:1rem;">
+      <table class="tanty-table">
+        <thead>
+          <tr>
+            <th>Produit</th>
+            <th>Déclaré (cartons)</th>
+            <th>Déclaré (unités)</th>
+            <th>Reçu (cartons)</th>
+            <th>Reçu (unités)</th>
+            <th>Écart unités</th>
+            <th>Écart %</th>
+            <th>Statut</th>
+            <th>Observation gestionnaire</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ligne of lignes.controls; track $index) {
+            @let ecart = calculerEcart($index);
+            @let lv = ligne.value;
+            <tr [class.ecart-row]="ecart.unites !== 0">
+              <td>
+                <div class="font-medium text-sm">{{ lv.produitNom }}</div>
+                <div class="text-xs text-muted font-mono">{{ lv.produitCode }}</div>
+              </td>
+              <td>{{ lv.quantiteDeclareeCartons }}</td>
+              <td>{{ lv.quantiteDeclareeUnites | number }}</td>
+              <td class="font-semibold">{{ lv.quantiteRecueCartons }}</td>
+              <td class="font-semibold">{{ lv.quantiteRecueUnites | number }}</td>
+              <td>
+                <span [class.text-success]="ecart.unites === 0"
+                      [class.text-error]="ecart.unites < 0"
+                      [class.text-warning]="ecart.unites > 0"
+                      class="font-bold">
+                  {{ ecart.unites > 0 ? '+' : '' }}{{ ecart.unites | number }}
+                </span>
+              </td>
+              <td>
+                <span [class.text-success]="ecart.pct === 0" [class.text-error]="ecart.pct < 0" [class.text-warning]="ecart.pct > 0">
+                  {{ ecart.pct > 0 ? '+' : '' }}{{ ecart.pct }}%
+                </span>
+              </td>
+              <td>
+                @if (ecart.unites === 0) {
+                  <span class="badge badge--valide">Conforme</span>
+                } @else if (ecart.unites > 0) {
+                  <span class="badge badge--attente">Surplus</span>
+                } @else {
+                  <span class="badge badge--annule">Déficit</span>
+                }
+              </td>
+              <td class="text-xs text-muted">{{ lv.observationGestionnaire || '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Commentaire -->
+    @if (form.get('commentaireGestionnaire')?.value) {
+      <div class="tanty-card" style="margin-bottom:1rem;">
+        <div class="comment-recap">
+          <span class="material-icons">comment</span>
+          <div>
+            <div class="text-xs text-muted font-semibold uppercase">Commentaire du gestionnaire</div>
+            <div class="text-sm">{{ form.get('commentaireGestionnaire')?.value }}</div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Actions -->
+    <div class="recap-actions">
+      <button class="btn btn-ghost btn-lg" (click)="retourSaisie()">
+        <span class="material-icons">arrow_back</span> Modifier
+      </button>
+      <button class="btn btn-primary btn-lg" (click)="enregistrer()" [disabled]="saving()">
+        @if (saving()) { <div class="spinner spinner-sm"></div> }
+        <span class="material-icons">save</span>
+        Enregistrer le registre de réception
+      </button>
+    </div>
+  }
+</div>

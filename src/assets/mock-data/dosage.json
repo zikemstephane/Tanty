@@ -1,0 +1,68 @@
+{
+  "sessions": [
+    {
+      "id": 1,
+      "referencePPH": "PPH-2026-001-S1",
+      "date": "2026-06-09",
+      "agentMatricule": "TAN2026006",
+      "agentNom": "Sandrine BIYA",
+      "typeMelange": "BOUILLIE",
+      "typeMelangeLibelle": "Bouillie",
+      "nombreFuts": 10,
+      "poidsNetTotalKg": 500.0,
+      "compositionConforme": true,
+      "avertissementComposition": null,
+      "composition": {
+        "maisKg": 400.0, "sojaKg": 90.0, "arachideKg": 10.0
+      }
+    },
+    {
+      "id": 2,
+      "referencePPH": "PPH-2026-001-S1",
+      "date": "2026-06-10",
+      "agentMatricule": "TAN2026006",
+      "agentNom": "Sandrine BIYA",
+      "typeMelange": "MELANGE_ARACHIDE",
+      "typeMelangeLibelle": "Mélange Arachide",
+      "nombreFuts": 8,
+      "poidsNetTotalKg": 400.0,
+      "compositionConforme": true,
+      "avertissementComposition": null,
+      "composition": {
+        "maisKg": 320.0, "sojaKg": 8.0, "arachideKg": 72.0
+      }
+    },
+    {
+      "id": 3,
+      "referencePPH": "PPH-2026-001-S2",
+      "date": "2026-06-16",
+      "agentMatricule": "TAN2026006",
+      "agentNom": "Sandrine BIYA",
+      "typeMelange": "BOUILLIE",
+      "typeMelangeLibelle": "Bouillie",
+      "nombreFuts": 12,
+      "poidsNetTotalKg": 600.0,
+      "compositionConforme": false,
+      "avertissementComposition": "Ratio maïs légèrement inférieur à la norme",
+      "composition": {
+        "maisKg": 472.0, "sojaKg": 108.0, "arachideKg": 20.0
+      }
+    }
+  ],
+  "statistiques": {
+    "semaine": {
+      "dateDebut": "2026-06-16",
+      "dateFin": "2026-06-22",
+      "totalFuts": 18,
+      "totalPoidsKg": 900.0,
+      "parType": [
+        {"typeMelange": "BOUILLIE", "nombreFuts": 12, "poidsKg": 600.0},
+        {"typeMelange": "MELANGE_ARACHIDE", "nombreFuts": 6, "poidsKg": 300.0}
+      ],
+      "evolutionTotalPct": 12.5,
+      "semainePrecedente": {
+        "totalFuts": 16, "totalPoidsKg": 800.0
+      }
+    }
+  }
+}

@@ -1,0 +1,209 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+
+  <!-- Welcome header -->
+  <div class="dashboard-header">
+    <div>
+      <h1 class="page-header__title">
+        {{ greetingMessage() }}, {{ auth.currentUser()?.nomComplet?.split(' ')?.[0] }} 👋
+      </h1>
+      <p class="page-header__subtitle">
+        {{ auth.currentUser()?.roleLibelle }} · {{ today | date:'EEEE d MMMM yyyy':'':'fr' }}
+      </p>
+    </div>
+    <div class="page-header__actions">
+      <a routerLink="/bons-de-commande/nouveau" class="btn btn-primary">
+        <span class="material-icons">add</span> Nouveau BC
+      </a>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <div class="dash-loader">
+      <div class="spinner"></div>
+      <p>Chargement du tableau de bord…</p>
+    </div>
+  } @else {
+
+    <!-- KPI Stats grid -->
+    <div class="grid grid--4 stats-grid">
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--green">
+          <span class="material-icons">receipt_long</span>
+        </div>
+        <span class="stat-card__label">Bons de Commande</span>
+        <span class="stat-card__value">{{ stats().totalBC }}</span>
+        <span class="stat-card__change stat-card__change--up">
+          <span class="material-icons">trending_up</span> Total global
+        </span>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--orange">
+          <span class="material-icons">pending_actions</span>
+        </div>
+        <span class="stat-card__label">En attente validation</span>
+        <span class="stat-card__value">{{ stats().bcEnAttente }}</span>
+        <span class="stat-card__change" [class.stat-card__change--up]="stats().bcEnAttente === 0" [class.stat-card__change--down]="stats().bcEnAttente > 0">
+          <span class="material-icons">{{ stats().bcEnAttente === 0 ? 'check' : 'warning' }}</span>
+          {{ stats().bcEnAttente === 0 ? 'À jour' : 'Action requise' }}
+        </span>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--yellow">
+          <span class="material-icons">calendar_today</span>
+        </div>
+        <span class="stat-card__label">PPH en cours</span>
+        <span class="stat-card__value">{{ stats().pphEnCours }}</span>
+        <span class="stat-card__change stat-card__change--flat">
+          <span class="material-icons">schedule</span> Semaine active
+        </span>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--blue">
+          <span class="material-icons">percent</span>
+        </div>
+        <span class="stat-card__label">Taux de réalisation</span>
+        <span class="stat-card__value">{{ stats().tauxRealisation }}%</span>
+        <div class="progress" style="margin-top: 4px;">
+          <div class="progress__bar" [style.width]="stats().tauxRealisation + '%'"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two column section -->
+    <div class="dash-grid">
+
+      <!-- Recent BCs -->
+      <div class="tanty-card">
+        <div class="tanty-card__header">
+          <h3 class="tanty-card__title">
+            <span class="material-icons">receipt_long</span> Bons de Commande récents
+          </h3>
+          <a routerLink="/bons-de-commande" class="btn btn-outline btn-sm">Voir tout</a>
+        </div>
+        <table class="tanty-table">
+          <thead>
+            <tr>
+              <th>Référence</th>
+              <th>Créateur</th>
+              <th>Statut</th>
+              <th>Semaines</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (bc of recentBCs(); track bc.id) {
+              <tr class="clickable-row" [routerLink]="['/bons-de-commande', bc.reference]">
+                <td><strong>{{ bc.reference }}</strong></td>
+                <td class="text-sm text-muted">{{ bc.createurNom }}</td>
+                <td><span class="badge {{ getStatutClass(bc.statut) }}">{{ bc.statutLibelle }}</span></td>
+                <td>{{ bc.nombreSemaines }}S</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Active PPHs -->
+      <div class="tanty-card">
+        <div class="tanty-card__header">
+          <h3 class="tanty-card__title">
+            <span class="material-icons">calendar_today</span> Plans de Production actifs
+          </h3>
+          <a routerLink="/pphs" class="btn btn-outline btn-sm">Voir tout</a>
+        </div>
+        @if (recentPPHs().length === 0) {
+          <p class="empty-msg">Aucun PPH en cours</p>
+        } @else {
+          <div class="pph-list">
+            @for (pph of recentPPHs(); track pph.id) {
+              <div class="pph-item" [routerLink]="['/pphs', pph.reference]">
+                <div class="pph-item__ref">
+                  <strong>{{ pph.reference }}</strong>
+                  <span class="badge {{ getPPHStatusClass(pph.statut) }}">{{ pph.statutLibelle }}</span>
+                </div>
+                <div class="pph-item__dates text-xs text-muted">
+                  {{ pph.dateDebut }} → {{ pph.dateFin }}
+                </div>
+                <div class="pph-item__progress">
+                  @for (ligne of pph.lignes.slice(0,2); track ligne.produitId) {
+                    <div class="mini-progress">
+                      <span class="text-xs truncate" style="flex:1">{{ ligne.produitNom }}</span>
+                      <span class="text-xs font-medium" [class.text-success]="ligne.tauxRealisation >= 90" [class.text-warning]="ligne.tauxRealisation < 90">
+                        {{ ligne.tauxRealisation | number:'1.0-0' }}%
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Role-based quick actions -->
+    <div class="tanty-card quick-actions">
+      <h3 class="tanty-card__title" style="margin-bottom: 1rem;">
+        <span class="material-icons">flash_on</span> Actions rapides
+      </h3>
+      <div class="grid grid--4">
+        @if (auth.hasAnyRole('GESTIONNAIRE_STOCK','DIRECTEUR_GENERAL')) {
+          <a routerLink="/reception/nouveau" class="action-card action-card--teal">
+            <span class="material-icons">warehouse</span>
+            <span>Réceptionner</span>
+          </a>
+        }
+        @if (auth.hasAnyRole('DIRECTEUR_GENERAL','GESTIONNAIRE_STOCK','CHEF_PRODUCTION')) {
+          <a routerLink="/bons-de-commande/nouveau" class="action-card action-card--green">
+            <span class="material-icons">add_circle</span>
+            <span>Créer un BC</span>
+          </a>
+        }
+        @if (auth.hasAnyRole('DIRECTEUR_GENERAL','CHEF_PRODUCTION','AGENT_PRODUCTION')) {
+          <a routerLink="/production" class="action-card action-card--yellow">
+            <span class="material-icons">inventory_2</span>
+            <span>Fiche Produit</span>
+          </a>
+        }
+        @if (auth.hasAnyRole('DIRECTEUR_GENERAL','CHEF_MACHINISTE')) {
+          <a routerLink="/broyage" class="action-card action-card--blue">
+            <span class="material-icons">precision_manufacturing</span>
+            <span>Journée Broyage</span>
+          </a>
+        }
+        @if (auth.hasAnyRole('DIRECTEUR_GENERAL','AGENT_DOSEUR')) {
+          <a routerLink="/dosage" class="action-card action-card--purple">
+            <span class="material-icons">science</span>
+            <span>Session Dosage</span>
+          </a>
+        }
+        @if (auth.hasAnyRole('DIRECTEUR_GENERAL','GESTIONNAIRE_STOCK','CHEF_PRODUCTION')) {
+          <a routerLink="/produits" class="action-card action-card--teal">
+            <span class="material-icons">inventory</span>
+            <span>Catalogue Produits</span>
+          </a>
+        }
+        @if (auth.hasAnyRole('DIRECTEUR_GENERAL')) {
+          <a routerLink="/autorisations-otp" class="action-card action-card--dg">
+            <span class="material-icons">admin_panel_settings</span>
+            <span>Générer OTP</span>
+          </a>
+        }
+        @if (auth.hasAnyRole('DIRECTEUR_GENERAL')) {
+          <a routerLink="/utilisateurs" class="action-card action-card--red">
+            <span class="material-icons">group</span>
+            <span>Utilisateurs</span>
+          </a>
+        }
+        <a routerLink="/pphs" class="action-card action-card--orange">
+          <span class="material-icons">calendar_today</span>
+          <span>Plans (PPH)</span>
+        </a>
+      </div>
+    </div>
+
+  }
+</div>

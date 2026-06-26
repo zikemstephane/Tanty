@@ -1,0 +1,222 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">
+        <span class="material-icons" style="vertical-align:middle;margin-right:0.5rem;color:#2E7D32;">warehouse</span>
+        Réception Produits Finis
+      </h1>
+      <p class="page-header__subtitle">
+        Contrôle des quantités produites et gestion des écarts entre déclaration et réception physique
+      </p>
+    </div>
+    @if (canCreateReception()) {
+      <div class="page-header__actions">
+        <a routerLink="/reception/nouveau" class="btn btn-primary">
+          <span class="material-icons">add_task</span>
+          Nouvelle réception
+        </a>
+      </div>
+    }
+  </div>
+
+  <!-- KPI Cards -->
+  @if (dashboard()) {
+    <div class="grid grid--4" style="margin-bottom: 1.5rem;">
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--orange">
+          <span class="material-icons">pending_actions</span>
+        </div>
+        <span class="stat-card__label">Fiches en attente</span>
+        <span class="stat-card__value">{{ dashboard()!.totalFichesEnAttente }}</span>
+        <span class="stat-card__change stat-card__change--flat">À réceptionner</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--green">
+          <span class="material-icons">check_circle</span>
+        </div>
+        <span class="stat-card__label">Réceptions conformes</span>
+        <span class="stat-card__value">{{ dashboard()!.totalFichesRecues }}</span>
+        <span class="stat-card__change stat-card__change--up">Sans écart</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon" style="background:rgba(198,40,40,0.12);">
+          <span class="material-icons" style="color:#C62828;">warning</span>
+        </div>
+        <span class="stat-card__label">Écarts signalés</span>
+        <span class="stat-card__value" [class.text-error]="dashboard()!.totalEcartsSignales > 0">
+          {{ dashboard()!.totalEcartsSignales }}
+        </span>
+        @if (dashboard()!.totalEcartsSignales > 0) {
+          <span class="stat-card__change stat-card__change--down">Action requise</span>
+        }
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--yellow">
+          <span class="material-icons">rate_review</span>
+        </div>
+        <span class="stat-card__label">Justifications en attente</span>
+        <span class="stat-card__value" [class.text-warning]="dashboard()!.totalJustificationsEnAttente > 0">
+          {{ dashboard()!.totalJustificationsEnAttente }}
+        </span>
+        @if (dashboard()!.totalJustificationsEnAttente > 0 && isAgent()) {
+          <a routerLink="/reception" class="stat-card__change stat-card__change--down" style="cursor:pointer;">
+            Justifier maintenant →
+          </a>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Workflow explainer -->
+  <div class="workflow-card">
+    <h3 class="workflow-card__title">
+      <span class="material-icons">info</span>
+      Workflow de réception
+    </h3>
+    <div class="workflow-steps">
+      <div class="wf-step">
+        <div class="wf-step__icon wf-step__icon--agent">
+          <span class="material-icons">inventory_2</span>
+        </div>
+        <div class="wf-step__label">Agent déclare</div>
+        <div class="wf-step__desc">Fiche produit journalière avec quantités produites</div>
+      </div>
+      <span class="material-icons wf-arrow">arrow_forward</span>
+      <div class="wf-step">
+        <div class="wf-step__icon wf-step__icon--stock">
+          <span class="material-icons">warehouse</span>
+        </div>
+        <div class="wf-step__label">Gestionnaire reçoit</div>
+        <div class="wf-step__desc">Compte physiquement et remplit le registre</div>
+      </div>
+      <span class="material-icons wf-arrow">arrow_forward</span>
+      <div class="wf-step" [class.wf-step--ecart]="true">
+        <div class="wf-step__icon wf-step__icon--check">
+          <span class="material-icons">compare_arrows</span>
+        </div>
+        <div class="wf-step__label">Comparaison</div>
+        <div class="wf-step__desc">Calcul automatique des écarts (quantité, %)</div>
+      </div>
+      <span class="material-icons wf-arrow">arrow_forward</span>
+      <div class="wf-step">
+        <div class="wf-step__icon wf-step__icon--agent">
+          <span class="material-icons">rate_review</span>
+        </div>
+        <div class="wf-step__label">Agent justifie</div>
+        <div class="wf-step__desc">Si écart : l'agent explique la différence</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="tanty-card" style="padding: 0.75rem 1.5rem; margin-bottom: 1rem;">
+    <div class="filter-tabs">
+      @for (s of statuts; track s.value) {
+        <button class="filter-tab" [class.filter-tab--active]="filterStatut() === s.value"
+                (click)="filterStatut.set(s.value); chargerRegistres()">
+          {{ s.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading()) {
+    @if (registres().length === 0) {
+      <div class="tanty-card" style="text-align:center; padding: 3rem;">
+        <span class="material-icons" style="font-size:56px; color:#E0E0E0;">warehouse</span>
+        <h3 style="margin-top:1rem; color:#757575;">Aucun registre de réception</h3>
+        @if (canCreateReception()) {
+          <p style="color:#9E9E9E; margin-top:0.5rem; font-size:0.875rem;">
+            Créez une nouvelle réception pour contrôler les produits finis livrés par les agents.
+          </p>
+          <a routerLink="/reception/nouveau" class="btn btn-primary" style="margin-top:1rem;">
+            <span class="material-icons">add_task</span> Nouvelle réception
+          </a>
+        }
+      </div>
+    } @else {
+      <div class="tanty-card" style="padding:0; overflow:hidden;">
+        <table class="tanty-table">
+          <thead>
+            <tr>
+              <th>Référence</th>
+              <th>Date réception</th>
+              <th>Fiche production</th>
+              <th>Agent</th>
+              <th>Gestionnaire</th>
+              <th>Déclaré</th>
+              <th>Reçu</th>
+              <th>Écart</th>
+              <th>Conformité</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of registres(); track r.id) {
+              <tr class="table-row-link" [routerLink]="['/reception', r.id]">
+                <td>
+                  <div class="font-semibold text-sm text-green">{{ r.reference }}</div>
+                  <div class="text-xs text-muted">{{ r.referencePPH }}</div>
+                </td>
+                <td>
+                  <div class="text-sm">{{ r.dateReception }}</div>
+                  @if (r.heureReception) {
+                    <div class="text-xs text-muted">{{ r.heureReception }}</div>
+                  }
+                </td>
+                <td class="text-sm text-muted">Fiche #{{ r.ficheProductionId }} · {{ r.dateProduction }}</td>
+                <td>
+                  <div class="text-sm">{{ r.agentProductionNom }}</div>
+                  <div class="text-xs text-muted">{{ r.agentProductionMatricule }}</div>
+                </td>
+                <td class="text-sm">{{ r.gestionnaireNom }}</td>
+                <td class="font-semibold text-sm">{{ r.totalDeclareeUnites | number }}</td>
+                <td class="font-semibold text-sm">{{ r.totalRecueUnites | number }}</td>
+                <td>
+                  @if (r.totalEcartUnites === 0) {
+                    <span class="ecart-chip ecart-chip--ok">0</span>
+                  } @else {
+                    <span class="ecart-chip ecart-chip--ko">
+                      {{ r.totalEcartUnites > 0 ? '+' : '' }}{{ r.totalEcartUnites | number }}
+                    </span>
+                  }
+                </td>
+                <td>
+                  <div class="conformite-cell">
+                    <div class="progress" style="width:60px;">
+                      <div class="progress__bar"
+                           [style.width]="r.tauxConformite + '%'"
+                           [style.background]="r.tauxConformite >= 99 ? '#2E7D32' : r.tauxConformite >= 90 ? '#F57F17' : '#C62828'">
+                      </div>
+                    </div>
+                    <span class="{{ conformiteClass(r.tauxConformite) }} font-semibold text-sm">
+                      {{ r.tauxConformite | number:'1.0-1' }}%
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <div style="display:flex; flex-direction:column; gap:2px; align-items:flex-start;">
+                    <span class="badge {{ statutClass(r.statut) }}">{{ r.statutLibelle }}</span>
+                    @if (r.statut === 'ECART_SIGNALE' && !r.justificationAgent && isAgent() && r.agentProductionMatricule === auth.matricule()) {
+                      <span class="badge badge--attente" style="font-size:9px;">Justification requise</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <a [routerLink]="['/reception', r.id]" class="btn btn-ghost btn-sm" (click)="$event.stopPropagation()">
+                    <span class="material-icons">visibility</span>
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,26 @@
+<nav class="navbar">
+  <div class="navbar__left">
+    <button class="navbar__toggle btn btn-ghost btn-icon" (click)="toggleSidebar.emit()">
+      <span class="material-icons">{{ sidebarCollapsed() ? 'menu_open' : 'menu' }}</span>
+    </button>
+    <div class="navbar__brand">
+      <span class="brand-text">TANTY</span>
+      <span class="brand-dot"></span>
+    </div>
+  </div>
+
+  <div class="navbar__right">
+    <div class="navbar__user">
+      <div class="user-avatar" [style.background-color]="getRoleColor()">
+        {{ getInitials() }}
+      </div>
+      <div class="user-info">
+        <span class="user-name">{{ auth.nomComplet() }}</span>
+        <span class="user-role">{{ auth.currentUser()?.roleLibelle }}</span>
+      </div>
+      <button class="btn btn-ghost btn-icon navbar__logout" (click)="onLogout()" title="Déconnexion">
+        <span class="material-icons">logout</span>
+      </button>
+    </div>
+  </div>
+</nav>

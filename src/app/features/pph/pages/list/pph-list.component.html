@@ -1,0 +1,68 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Plans de Production Hebdomadaires</h1>
+      <p class="page-header__subtitle">Consultez et suivez l'avancement des plans de production</p>
+    </div>
+    <div class="page-header__actions">
+      @for (s of statuts.slice(1); track s.value) {
+        <button class="btn btn-sm" [class.btn-primary]="filterStatut() === s.value"
+                [class.btn-ghost]="filterStatut() !== s.value"
+                (click)="filterStatut.set(s.value); load()">
+          {{ s.label }}
+        </button>
+      }
+      <button class="btn btn-ghost btn-sm" (click)="filterStatut.set(''); load()">Tous</button>
+    </div>
+  </div>
+
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading()) {
+    @if (pphs().length === 0) {
+      <app-empty-state icon="calendar_today" title="Aucun PPH" description="Les plans de production sont générés automatiquement à la validation des bons de commande." />
+    } @else {
+      <div class="pph-grid">
+        @for (pph of pphs(); track pph.id) {
+          <a class="pph-card" [routerLink]="['/pphs', pph.reference]">
+            <div class="pph-card__header">
+              <div>
+                <div class="pph-card__ref">{{ pph.reference }}</div>
+                <div class="text-xs text-muted">BC : {{ pph.referenceBC }}</div>
+              </div>
+              <span class="badge {{ statusClass(pph.statut) }}">{{ pph.statutLibelle }}</span>
+            </div>
+            <div class="pph-card__dates">
+              <span class="material-icons">schedule</span>
+              Semaine {{ pph.numeroSemaine }} · {{ pph.dateDebut }} → {{ pph.dateFin }}
+            </div>
+            <div class="pph-card__progress">
+              <div class="pph-card__progress-label">
+                <span>Taux de réalisation</span>
+                <span class="font-semibold">{{ tauxMoyen(pph) }}%</span>
+              </div>
+              <div class="progress">
+                <div class="progress__bar"
+                     [style.width]="tauxMoyen(pph) + '%'"
+                     [style.background]="tauxMoyen(pph) >= 90 ? '#2E7D32' : tauxMoyen(pph) >= 60 ? '#F57F17' : '#C62828'">
+                </div>
+              </div>
+            </div>
+            <div class="pph-card__products">
+              @for (ligne of pph.lignes.slice(0,3); track ligne.produitId) {
+                <div class="product-chip">
+                  <span class="truncate text-xs">{{ ligne.produitCode }}</span>
+                  <span class="text-xs font-medium">{{ ligne.tauxRealisation | number:'1.0-0' }}%</span>
+                </div>
+              }
+              @if (pph.lignes.length > 3) {
+                <span class="text-xs text-muted">+{{ pph.lignes.length - 3 }} produit(s)</span>
+              }
+            </div>
+          </a>
+        }
+      </div>
+    }
+  }
+</div>

@@ -1,0 +1,121 @@
+{
+  "pphs": [
+    {
+      "id": 1,
+      "reference": "PPH-2026-001-S1",
+      "referenceBC": "BC-2026-001",
+      "numeroSemaine": 1,
+      "dateDebut": "2026-06-09",
+      "dateFin": "2026-06-15",
+      "statut": "TERMINE",
+      "statutLibelle": "Terminé",
+      "lignes": [
+        {
+          "id": 1, "produitId": "P001",
+          "produitCode": "BSA-25",
+          "produitNom": "REINE BOUILLIE SOJA ARACHIDES",
+          "categorie": "BOUILLIE_SOJA",
+          "quantiteCibleCartons": 40,
+          "quantiteCibleUnites": 1000,
+          "quantiteRealiseeCartons": 38,
+          "quantiteRealiseeUnites": 950,
+          "tauxRealisation": 95.0
+        },
+        {
+          "id": 2, "produitId": "P006",
+          "produitCode": "TBSA-25",
+          "produitNom": "TANTY BOUILLIE SOJA ARACHIDES",
+          "categorie": "BOUILLIE_SOJA",
+          "quantiteCibleCartons": 27,
+          "quantiteCibleUnites": 667,
+          "quantiteRealiseeCartons": 27,
+          "quantiteRealiseeUnites": 667,
+          "tauxRealisation": 100.0
+        },
+        {
+          "id": 3, "produitId": "P032",
+          "produitCode": "MAE-MINI",
+          "produitNom": "MINI A GRIGNOTER ARACHIDES ENROBEES",
+          "categorie": "A_GRIGNOTER",
+          "quantiteCibleCartons": 17,
+          "quantiteCibleUnites": 1334,
+          "quantiteRealiseeCartons": 15,
+          "quantiteRealiseeUnites": 1200,
+          "tauxRealisation": 89.9
+        }
+      ],
+      "besoinsMatieresPremieres": {
+        "maisKg": 480,
+        "sojaKg": 108,
+        "arachideKg": 12
+      }
+    },
+    {
+      "id": 2,
+      "reference": "PPH-2026-001-S2",
+      "referenceBC": "BC-2026-001",
+      "numeroSemaine": 2,
+      "dateDebut": "2026-06-16",
+      "dateFin": "2026-06-22",
+      "statut": "EN_COURS",
+      "statutLibelle": "En cours",
+      "lignes": [
+        {
+          "id": 4, "produitId": "P001",
+          "produitCode": "BSA-25",
+          "produitNom": "REINE BOUILLIE SOJA ARACHIDES",
+          "categorie": "BOUILLIE_SOJA",
+          "quantiteCibleCartons": 40,
+          "quantiteCibleUnites": 1000,
+          "quantiteRealiseeCartons": 12,
+          "quantiteRealiseeUnites": 300,
+          "tauxRealisation": 30.0
+        },
+        {
+          "id": 5, "produitId": "P006",
+          "produitCode": "TBSA-25",
+          "produitNom": "TANTY BOUILLIE SOJA ARACHIDES",
+          "categorie": "BOUILLIE_SOJA",
+          "quantiteCibleCartons": 27,
+          "quantiteCibleUnites": 667,
+          "quantiteRealiseeCartons": 10,
+          "quantiteRealiseeUnites": 250,
+          "tauxRealisation": 37.5
+        }
+      ],
+      "besoinsMatieresPremieres": {
+        "maisKg": 480,
+        "sojaKg": 108,
+        "arachideKg": 12
+      }
+    },
+    {
+      "id": 3,
+      "reference": "PPH-2026-001-S3",
+      "referenceBC": "BC-2026-001",
+      "numeroSemaine": 3,
+      "dateDebut": "2026-06-23",
+      "dateFin": "2026-06-29",
+      "statut": "PLANIFIE",
+      "statutLibelle": "Planifié",
+      "lignes": [
+        {
+          "id": 6, "produitId": "P001",
+          "produitCode": "BSA-25",
+          "produitNom": "REINE BOUILLIE SOJA ARACHIDES",
+          "categorie": "BOUILLIE_SOJA",
+          "quantiteCibleCartons": 40,
+          "quantiteCibleUnites": 1000,
+          "quantiteRealiseeCartons": 0,
+          "quantiteRealiseeUnites": 0,
+          "tauxRealisation": 0
+        }
+      ],
+      "besoinsMatieresPremieres": {
+        "maisKg": 480,
+        "sojaKg": 108,
+        "arachideKg": 12
+      }
+    }
+  ]
+}

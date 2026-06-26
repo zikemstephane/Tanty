@@ -1,0 +1,141 @@
+{
+  "bonsDeCommande": [
+    {
+      "id": 1,
+      "reference": "BC-2026-001",
+      "dateCreation": "2026-06-02",
+      "dateDebutProduction": "2026-06-09",
+      "dateFinProduction": "2026-06-29",
+      "nombreSemaines": 3,
+      "statut": "VALIDE",
+      "statutLibelle": "Validé",
+      "createurMatricule": "TAN2026002",
+      "createurNom": "Marie-Claire FOUDA",
+      "validateurMatricule": "TAN2026003",
+      "validateurNom": "Paul NKOMO",
+      "dateValidation": "2026-06-04",
+      "lignes": [
+        {
+          "id": 1, "numeroligne": 1,
+          "produitId": "P001", "produitCode": "BSA-25",
+          "produitNom": "REINE BOUILLIE SOJA ARACHIDES",
+          "categorie": "BOUILLIE_SOJA",
+          "conditionnement": "25 sachets x 57g",
+          "quantiteCartons": 120,
+          "quantiteUnites": 3000
+        },
+        {
+          "id": 2, "numeroligne": 2,
+          "produitId": "P006", "produitCode": "TBSA-25",
+          "produitNom": "TANTY BOUILLIE SOJA ARACHIDES",
+          "categorie": "BOUILLIE_SOJA",
+          "conditionnement": "25 sachets x 59g",
+          "quantiteCartons": 80,
+          "quantiteUnites": 2000
+        },
+        {
+          "id": 3, "numeroligne": 3,
+          "produitId": "P032", "produitCode": "MAE-MINI",
+          "produitNom": "MINI A GRIGNOTER ARACHIDES ENROBEES",
+          "categorie": "A_GRIGNOTER",
+          "conditionnement": "80 sachets x 35g",
+          "gamme": "MINI",
+          "quantiteCartons": 50,
+          "quantiteUnites": 4000
+        }
+      ],
+      "pphReferences": ["PPH-2026-001-S1", "PPH-2026-001-S2", "PPH-2026-001-S3"]
+    },
+    {
+      "id": 2,
+      "reference": "BC-2026-002",
+      "dateCreation": "2026-06-10",
+      "dateDebutProduction": "2026-06-16",
+      "dateFinProduction": "2026-06-22",
+      "nombreSemaines": 1,
+      "statut": "EN_ATTENTE_VALIDATION",
+      "statutLibelle": "En attente de validation",
+      "createurMatricule": "TAN2026002",
+      "createurNom": "Marie-Claire FOUDA",
+      "validateurMatricule": null,
+      "validateurNom": null,
+      "dateValidation": null,
+      "lignes": [
+        {
+          "id": 4, "numeroligne": 1,
+          "produitId": "P028", "produitCode": "TC2L",
+          "produitNom": "TANTY CHOCOLAT 2L",
+          "categorie": "CHOCOLAT",
+          "conditionnement": "4 seaux x 2.2kg",
+          "quantiteCartons": 30,
+          "quantiteUnites": 120
+        },
+        {
+          "id": 5, "numeroligne": 2,
+          "produitId": "P031", "produitCode": "TCHAP-12",
+          "produitNom": "TANTY CHAPELURE",
+          "categorie": "INGREDIENTS",
+          "conditionnement": "12 etuis x 200g",
+          "quantiteCartons": 40,
+          "quantiteUnites": 480
+        }
+      ],
+      "pphReferences": []
+    },
+    {
+      "id": 3,
+      "reference": "BC-2026-003",
+      "dateCreation": "2026-06-14",
+      "dateDebutProduction": "2026-06-23",
+      "dateFinProduction": "2026-07-06",
+      "nombreSemaines": 2,
+      "statut": "BROUILLON",
+      "statutLibelle": "Brouillon",
+      "createurMatricule": "TAN2026003",
+      "createurNom": "Paul NKOMO",
+      "validateurMatricule": null,
+      "validateurNom": null,
+      "dateValidation": null,
+      "lignes": [
+        {
+          "id": 6, "numeroligne": 1,
+          "produitId": "P037", "produitCode": "MAE-MOY",
+          "produitNom": "MOYEN A GRIGNOTER ARACHIDES ENROBEES",
+          "categorie": "A_GRIGNOTER",
+          "conditionnement": "24 doypack x 125g",
+          "gamme": "MOYEN",
+          "quantiteCartons": 60,
+          "quantiteUnites": 1440
+        }
+      ],
+      "pphReferences": []
+    },
+    {
+      "id": 4,
+      "reference": "BC-2026-004",
+      "dateCreation": "2026-05-15",
+      "dateDebutProduction": "2026-05-20",
+      "dateFinProduction": "2026-06-09",
+      "nombreSemaines": 3,
+      "statut": "CLOS",
+      "statutLibelle": "Clos",
+      "createurMatricule": "TAN2026002",
+      "createurNom": "Marie-Claire FOUDA",
+      "validateurMatricule": "TAN2026003",
+      "validateurNom": "Paul NKOMO",
+      "dateValidation": "2026-05-16",
+      "lignes": [
+        {
+          "id": 7, "numeroligne": 1,
+          "produitId": "P011", "produitCode": "PRBA-12",
+          "produitNom": "PRESTIGE REINE BOUILLIE ARACHIDES",
+          "categorie": "BOUILLIE_SOJA",
+          "conditionnement": "12 etuis x 150g",
+          "quantiteCartons": 100,
+          "quantiteUnites": 1200
+        }
+      ],
+      "pphReferences": ["PPH-2026-004-S1", "PPH-2026-004-S2", "PPH-2026-004-S3"]
+    }
+  ]
+}

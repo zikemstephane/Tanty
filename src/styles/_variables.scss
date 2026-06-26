@@ -1,0 +1,94 @@
+// ─── TANTY Design System — Variables SCSS ───────────────────────────────────
+
+// Palette principale
+$tanty-yellow:      #FFD600;
+$tanty-yellow-dark: #E6C200;
+$tanty-yellow-light:#FFF59D;
+$tanty-green:       #2E7D32;
+$tanty-green-dark:  #1B5E20;
+$tanty-green-light: #4CAF50;
+$tanty-white:       #FFFFFF;
+
+// Palette étendue
+$tanty-black:       #1A1A1A;
+$tanty-gray-900:    #212121;
+$tanty-gray-800:    #424242;
+$tanty-gray-700:    #616161;
+$tanty-gray-600:    #757575;
+$tanty-gray-500:    #9E9E9E;
+$tanty-gray-400:    #BDBDBD;
+$tanty-gray-300:    #E0E0E0;
+$tanty-gray-200:    #EEEEEE;
+$tanty-gray-100:    #F5F5F5;
+$tanty-gray-50:     #FAFAFA;
+
+// Sémantique
+$color-success:     #2E7D32;
+$color-warning:     #F57F17;
+$color-error:       #C62828;
+$color-info:        #0277BD;
+$color-surface:     #FFFFFF;
+$color-background:  #F5F5F5;
+$color-border:      #E0E0E0;
+
+// Statuts BC
+$status-brouillon:  #78909C;
+$status-attente:    #F57F17;
+$status-valide:     #2E7D32;
+$status-clos:       #455A64;
+$status-annule:     #C62828;
+
+// Typography
+$font-family-base:  'Inter', 'Segoe UI', sans-serif;
+$font-family-display: 'Inter', sans-serif;
+$font-size-xs:      0.75rem;    // 12px
+$font-size-sm:      0.875rem;   // 14px
+$font-size-base:    1rem;       // 16px
+$font-size-lg:      1.125rem;   // 18px
+$font-size-xl:      1.25rem;    // 20px
+$font-size-2xl:     1.5rem;     // 24px
+$font-size-3xl:     1.875rem;   // 30px
+$font-size-4xl:     2.25rem;    // 36px
+
+// Spacing
+$spacing-1:   0.25rem;
+$spacing-2:   0.5rem;
+$spacing-3:   0.75rem;
+$spacing-4:   1rem;
+$spacing-5:   1.25rem;
+$spacing-6:   1.5rem;
+$spacing-8:   2rem;
+$spacing-10:  2.5rem;
+$spacing-12:  3rem;
+$spacing-16:  4rem;
+
+// Borders
+$border-radius-sm:  4px;
+$border-radius:     8px;
+$border-radius-lg:  12px;
+$border-radius-xl:  16px;
+$border-radius-full: 9999px;
+
+// Shadows
+$shadow-sm:   0 1px 3px rgba(0,0,0,0.08);
+$shadow-md:   0 4px 12px rgba(0,0,0,0.10);
+$shadow-lg:   0 8px 24px rgba(0,0,0,0.12);
+$shadow-xl:   0 16px 48px rgba(0,0,0,0.16);
+
+// Layout
+$sidebar-width:     260px;
+$sidebar-collapsed: 68px;
+$navbar-height:     64px;
+$content-max-width: 1400px;
+
+// Transitions
+$transition-fast:   150ms ease;
+$transition-base:   250ms ease;
+$transition-slow:   400ms ease;
+
+// Breakpoints
+$bp-sm:   576px;
+$bp-md:   768px;
+$bp-lg:   992px;
+$bp-xl:   1200px;
+$bp-2xl:  1400px;

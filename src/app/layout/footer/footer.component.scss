@@ -1,0 +1,13 @@
+@use '../../../styles/variables' as *;
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-3 $spacing-6;
+  border-top: 1px solid $color-border;
+  background: $color-surface;
+  font-size: $font-size-xs;
+  color: $tanty-gray-500;
+  flex-shrink: 0;
+}
+.footer__version { font-weight: 600; color: $tanty-green; }

@@ -1,0 +1,13 @@
+@use '../../../../../styles/variables' as *;
+.formule-banner {
+  display: flex; gap: $spacing-6; background: rgba($tanty-green, 0.06);
+  border: 1px solid rgba($tanty-green, 0.2); border-radius: $border-radius-lg;
+  padding: $spacing-4; margin-bottom: $spacing-4; flex-wrap: wrap;
+}
+.formule-item { display: flex; flex-direction: column; gap: 2px; }
+.formule-divider { width: 1px; background: $color-border; }
+.formule-reminder {
+  background: rgba($color-info, 0.08); border: 1px solid rgba($color-info, 0.2);
+  padding: $spacing-3; border-radius: $border-radius; font-size: $font-size-sm;
+  color: $color-info; margin-bottom: $spacing-3;
+}

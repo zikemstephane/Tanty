@@ -1,0 +1,150 @@
+@use '../../../styles/variables' as *;
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: $spacing-4;
+  margin-bottom: $spacing-6;
+}
+
+.kpi-card {
+  border-radius: $border-radius-lg;
+  padding: $spacing-5;
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-3;
+  color: $tanty-white;
+  box-shadow: $shadow-md;
+
+  &__icon .material-icons { font-size: 36px; opacity: 0.9; }
+  &__body { flex: 1; }
+  &__value { font-size: 2rem; font-weight: 800; line-height: 1; }
+  &__label { font-size: $font-size-sm; font-weight: 600; margin: 4px 0 2px; opacity: 0.9; }
+  &__sub   { font-size: $font-size-xs; opacity: 0.75; }
+
+  &--green  { background: linear-gradient(135deg, $tanty-green, darken($tanty-green, 10%)); }
+  &--yellow { background: linear-gradient(135deg, #F9A825, #E65100); }
+  &--blue   { background: linear-gradient(135deg, #1565C0, #0D47A1); }
+  &--orange { background: linear-gradient(135deg, #E65100, #BF360C); }
+  &--purple { background: linear-gradient(135deg, #6A1B9A, #4A148C); }
+  &--teal   { background: linear-gradient(135deg, #00695C, #004D40); }
+}
+
+// ── Charts (GRANDS et lisibles) ────────────────────────────────────────────────
+.charts-row {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: $spacing-4;
+  margin-bottom: $spacing-6;
+  @media (max-width: $bp-xl) { grid-template-columns: 1fr; }
+}
+
+.chart-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-4;
+  margin-bottom: $spacing-6;
+  @media (max-width: $bp-lg) { grid-template-columns: 1fr; }
+}
+
+.chart-card {
+  min-height: 320px;
+  padding: $spacing-5;
+}
+
+// Donut — GRAND
+.donut-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-4;
+}
+
+.donut-svg {
+  width: 200px;
+  height: 200px;
+}
+
+.donut-seg {
+  transition: opacity $transition-fast;
+  &:hover { opacity: 0.75; }
+}
+.donut-center-val   { font-size: 22px; font-weight: 900; fill: $tanty-gray-900; }
+.donut-center-label { font-size: 9px;  fill: $tanty-gray-500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+  width: 100%;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  font-size: $font-size-sm;
+  padding: $spacing-1 $spacing-2;
+  border-radius: $border-radius;
+  cursor: default;
+  &:hover { background: $tanty-gray-50; }
+}
+.legend-dot   { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.legend-label { flex: 1; color: $tanty-gray-700; font-weight: 500; }
+.legend-val   { font-weight: 700; color: $tanty-gray-900; }
+
+// Bar chart horizontal — GRAND
+.bar-chart  { display: flex; flex-direction: column; gap: $spacing-4; padding: $spacing-2 0; }
+.bar-item   { display: flex; align-items: center; gap: $spacing-3; }
+.bar-label  { width: 56px; text-align: right; flex-shrink: 0; font-size: $font-size-xs; color: $tanty-gray-600; }
+.bar-track  { flex: 1; height: 28px; background: $tanty-gray-100; border-radius: $border-radius-full; overflow: hidden; }
+.bar-fill   { height: 100%; border-radius: $border-radius-full; transition: width $transition-slow; display: flex; align-items: center; padding-left: 8px; }
+.bar-val    { width: 44px; text-align: right; flex-shrink: 0; font-weight: 700; font-size: $font-size-sm; }
+
+// SVG bar chart vertical — GRAND
+.line-chart-wrapper { padding: $spacing-2 0; }
+.line-svg { width: 100%; min-height: 200px; }
+.axis-label    { font-size: 11px; fill: $tanty-gray-500; font-weight: 500; }
+.bar-label-top { font-size: 10px; fill: $tanty-gray-700; font-weight: 700; }
+.bar-rect      {
+  cursor: pointer;
+  transition: opacity $transition-fast;
+  &:hover { opacity: 0.7; }
+}
+
+// Synthesis
+.synthesis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-4;
+  @media (max-width: $bp-md) { grid-template-columns: 1fr; }
+}
+
+.synth-list  { display: flex; flex-direction: column; gap: $spacing-3; }
+.synth-item  {
+  display: flex; flex-direction: column; gap: $spacing-2;
+  padding: $spacing-3; border: 1px solid $color-border; border-radius: $border-radius;
+  &__info { display: flex; align-items: center; justify-content: space-between; }
+  &__bar  { display: flex; align-items: center; gap: $spacing-2; }
+}
+.synth-link {
+  color: $tanty-green; text-decoration: none; font-weight: 600;
+  &:hover { text-decoration: underline; }
+}
+
+.alerts-list  { display: flex; flex-direction: column; gap: $spacing-2; }
+.alert-item   {
+  display: flex; align-items: flex-start; gap: $spacing-3;
+  padding: $spacing-3 $spacing-4; border-radius: $border-radius-lg; font-size: $font-size-sm;
+  .material-icons { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+  a { color: inherit; font-weight: 600; text-decoration: none; &:hover { text-decoration: underline; } }
+  div { font-size: $font-size-base; }
+
+  &--warning { background: rgba($color-warning,0.08); color: darken($color-warning,15%); border-left: 4px solid $color-warning; }
+  &--error   { background: rgba($color-error,0.08);   color: $color-error;               border-left: 4px solid $color-error; }
+  &--info    { background: rgba($color-info,0.08);    color: darken($color-info,10%);    border-left: 4px solid $color-info; }
+  &--ok      { background: rgba($color-success,0.08); color: $color-success;             border-left: 4px solid $color-success; }
+}
+
+.text-success { color: $color-success; }
+.text-warning { color: $color-warning; }
+.text-error   { color: $color-error; }

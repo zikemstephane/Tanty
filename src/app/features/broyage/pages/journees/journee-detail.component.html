@@ -1,0 +1,199 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs()" />
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading() && journee()) {
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Journée du {{ journee()!.date }}</h1>
+        <p class="page-header__subtitle">PPH : {{ journee()!.referencePPH }} · Chef : {{ journee()!.chefMachinisteNom }}</p>
+      </div>
+      <div class="page-header__actions">
+        @if (canSaisirResultat()) {
+          <button class="btn btn-outline" (click)="showResultatForm.set(true)">
+            <span class="material-icons">add_task</span> Saisir résultat
+          </button>
+        }
+        @if (canCloturer()) {
+          <button class="btn btn-secondary" (click)="showConfirmClot.set(true)">
+            <span class="material-icons">lock</span> Clôturer journée
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Résumé clôture -->
+    @if (journee()!.statut === 'CLOTUREE') {
+      <div class="cloture-banner">
+        <div class="cloture-banner__item">
+          <span class="material-icons">scale</span>
+          <div>
+            <div class="text-xs text-muted">Poudre nette totale</div>
+            <div class="font-bold">{{ journee()!.totalPoudreNetteKg! | number:'1.1-1' }} kg</div>
+          </div>
+        </div>
+        <div class="cloture-banner__item">
+          <span class="material-icons">trending_down</span>
+          <div>
+            <div class="text-xs text-muted">Taux de perte global</div>
+            <div class="font-bold" [class.text-success]="journee()!.tauxPerteGlobalPourcentage! < 3" [class.text-warning]="journee()!.tauxPerteGlobalPourcentage! >= 3">
+              {{ journee()!.tauxPerteGlobalPourcentage! | number:'1.1-1' }}%
+            </div>
+          </div>
+        </div>
+        <span class="badge badge--valide badge--lg">Journée clôturée</span>
+      </div>
+    }
+
+    <!-- Machinistes table -->
+    <div class="tanty-card" style="padding:0;overflow:hidden;">
+      <div style="padding:1.5rem 1.5rem 1rem;">
+        <h3 class="tanty-card__title">
+          <span class="material-icons">precision_manufacturing</span>
+          Résultats des machinistes ({{ journee()!.machinistes.length }})
+        </h3>
+      </div>
+      <table class="tanty-table">
+        <thead>
+          <tr>
+            <th>Machiniste</th>
+            <th>Type poudre</th>
+            <th>Qté départ (kg)</th>
+            <th>Qté obtenue (kg)</th>
+            <th>Perte (kg)</th>
+            <th>Taux perte</th>
+            <th>Score</th>
+            <th>Correction</th>
+            @if (canSaisirResultat()) { <th>Actions</th> }
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of journee()!.machinistes; track m.id) {
+            <tr>
+              <td>
+                <div class="font-medium text-sm">{{ m.machinisteNom }}</div>
+                <div class="text-xs text-muted">{{ m.machinisteMatricule }}</div>
+              </td>
+              <td>
+                <span class="badge badge--info">{{ TYPE_POUDRE_LABELS[m.typePoudre] }}</span>
+              </td>
+              <td class="font-semibold">{{ m.quantiteDepart !== null ? (m.quantiteDepart | number:'1.1-1') : '—' }}</td>
+              <td class="font-semibold">{{ m.quantiteObtenue !== null ? (m.quantiteObtenue | number:'1.1-1') : '—' }}</td>
+              <td>{{ m.perteKg !== null ? (m.perteKg | number:'1.1-1') : '—' }}</td>
+              <td>
+                @if (m.tauxPertePct !== null) {
+                  <span [class.text-success]="m.tauxPertePct < 3" [class.text-warning]="m.tauxPertePct >= 3 && m.tauxPertePct < 5" [class.text-error]="m.tauxPertePct >= 5">
+                    {{ m.tauxPertePct | number:'1.1-1' }}%
+                  </span>
+                } @else { <span>—</span> }
+              </td>
+              <td>
+                @if (m.score !== null) {
+                  <span class="score-chip {{ scoreClass(m.score) }}">{{ m.score | number:'1.1-1' }}</span>
+                } @else { <span class="text-muted">—</span> }
+              </td>
+              <td class="text-xs text-muted">{{ m.correction ?? '—' }}</td>
+              @if (canSaisirResultat()) {
+                <td>
+                  <div style="display:flex;gap:4px;">
+                    @if (m.quantiteDepart === null) {
+                      <button class="btn btn-outline btn-sm" (click)="openResultat(m)">
+                        <span class="material-icons">add</span> Saisir
+                      </button>
+                    } @else {
+                      <button class="btn btn-ghost btn-sm" (click)="openCorriger(m)" title="Corriger">
+                        <span class="material-icons">edit</span>
+                      </button>
+                    }
+                  </div>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- Modal saisir résultat -->
+@if (showResultatForm()) {
+  <div class="overlay" (click)="showResultatForm.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">Enregistrer un résultat</h3>
+        <button class="btn btn-ghost btn-icon" (click)="showResultatForm.set(false)"><span class="material-icons">close</span></button>
+      </div>
+      <form [formGroup]="resultatForm" (ngSubmit)="enregistrerResultat()">
+        <div class="modal__body">
+          <div class="form-group">
+            <label class="form-label">Machiniste *</label>
+            <select class="form-control" formControlName="productionMachinisteId">
+              <option value="">-- Sélectionner --</option>
+              @for (m of journee()?.machinistes; track m.id) {
+                <option [value]="m.id">{{ m.machinisteNom }} ({{ TYPE_POUDRE_LABELS[m.typePoudre] }})</option>
+              }
+            </select>
+          </div>
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="form-label">Quantité de départ (kg) *</label>
+              <input type="number" class="form-control" formControlName="quantiteDepart" min="1" step="0.1" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Quantité obtenue (kg) *</label>
+              <input type="number" class="form-control" formControlName="quantiteObtenue" min="0" step="0.1" />
+            </div>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button type="button" class="btn btn-ghost" (click)="showResultatForm.set(false)">Annuler</button>
+          <button type="submit" class="btn btn-primary"><span class="material-icons">save</span> Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Modal corriger -->
+@if (showCorrigerForm()) {
+  <div class="overlay" (click)="showCorrigerForm.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">Corriger un résultat</h3>
+        <button class="btn btn-ghost btn-icon" (click)="showCorrigerForm.set(false)"><span class="material-icons">close</span></button>
+      </div>
+      <form [formGroup]="corrigerForm" (ngSubmit)="corrigerResultat()">
+        <div class="modal__body">
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="form-label">Nouvelle qté départ (kg) *</label>
+              <input type="number" class="form-control" formControlName="nouvelleQuantiteDepart" min="1" step="0.1" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nouvelle qté obtenue (kg) *</label>
+              <input type="number" class="form-control" formControlName="nouvelleQuantiteObtenue" min="0" step="0.1" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Motif de correction *</label>
+            <textarea class="form-control" formControlName="motif" rows="3" placeholder="Motif obligatoire…"></textarea>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button type="button" class="btn btn-ghost" (click)="showCorrigerForm.set(false)">Annuler</button>
+          <button type="submit" class="btn btn-primary"><span class="material-icons">save</span> Corriger</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<app-confirm-dialog
+  [visible]="showConfirmClot()"
+  title="Clôturer la journée"
+  message="Êtes-vous sûr de vouloir clôturer cette journée ? Les résultats ne pourront plus être modifiés (sauf correction avec motif)."
+  confirmLabel="Clôturer"
+  (confirm)="cloturer()"
+  (cancel)="showConfirmClot.set(false)"
+/>

@@ -1,0 +1,253 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs()" />
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading() && bc()) {
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Modifier {{ bc()!.reference }}</h1>
+        <p class="page-header__subtitle">
+          Modification post-validation — OTP requis — BC actuellement :
+          <span class="badge badge--valide">{{ bc()!.statutLibelle }}</span>
+        </p>
+      </div>
+      <a [routerLink]="['/bons-de-commande', bc()!.reference]" class="btn btn-ghost">
+        <span class="material-icons">arrow_back</span> Retour
+      </a>
+    </div>
+
+    <!-- Progress steps -->
+    <div class="steps-indicator">
+      <div class="step" [class.step--active]="etape() === 'verification-otp'" [class.step--done]="etape() === 'modification'">
+        <div class="step__circle">
+          @if (etape() === 'modification') {
+            <span class="material-icons">check</span>
+          } @else { 1 }
+        </div>
+        <div class="step__label">Vérification OTP</div>
+      </div>
+      <div class="step__line" [class.step__line--done]="etape() === 'modification'"></div>
+      <div class="step" [class.step--active]="etape() === 'modification'">
+        <div class="step__circle">2</div>
+        <div class="step__label">Modification du BC</div>
+      </div>
+    </div>
+
+    <!-- ─── ÉTAPE 1 : Vérification OTP ─────────────────────────────────── -->
+    @if (etape() === 'verification-otp') {
+      <div class="otp-verify-layout">
+        <div class="tanty-card otp-verify-card">
+          <div class="otp-verify-card__icon">
+            <span class="material-icons">lock</span>
+          </div>
+          <h2>Saisir le code d'autorisation</h2>
+          <p class="text-muted text-sm">
+            Ce BC est validé. Pour le modifier, le <strong>Directeur Général</strong> doit vous avoir
+            transmis un code OTP à 6 chiffres. Saisissez-le ci-dessous.
+          </p>
+
+          <div class="otp-how-to">
+            <h4><span class="material-icons">help_outline</span> Comment obtenir votre code ?</h4>
+            <ol>
+              <li>Contactez le Directeur Général</li>
+              <li>Expliquez-lui les raisons de la modification</li>
+              <li>Il génère le code depuis <strong>Menu → Autorisations OTP</strong></li>
+              <li>Il vous le transmet oralement ou par SMS sécurisé</li>
+              <li>Saisissez-le ci-dessous (valide 15 min)</li>
+            </ol>
+          </div>
+
+          <form [formGroup]="otpForm" (ngSubmit)="validerOTP()" class="otp-verify-form">
+            <div class="form-group">
+              <label class="form-label">Code OTP à 6 chiffres *</label>
+              <div class="otp-input-wrapper">
+                <input
+                  type="text"
+                  class="form-control otp-input"
+                  formControlName="codeOTP"
+                  maxlength="6"
+                  placeholder="_ _ _ _ _ _"
+                  autocomplete="one-time-code"
+                  inputmode="numeric"
+                />
+                <span class="material-icons otp-input-icon">key</span>
+              </div>
+              @if (otpForm.get('codeOTP')?.invalid && otpForm.get('codeOTP')?.touched) {
+                <span class="form-error">
+                  <span class="material-icons">error</span>
+                  Saisissez exactement 6 chiffres
+                </span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Motif de modification *</label>
+              <textarea
+                class="form-control"
+                formControlName="motif"
+                rows="3"
+                placeholder="Expliquez pourquoi ce BC doit être modifié (min. 10 caractères)…"
+              ></textarea>
+              @if (otpForm.get('motif')?.invalid && otpForm.get('motif')?.touched) {
+                <span class="form-error">
+                  <span class="material-icons">error</span>
+                  Motif obligatoire (min. 10 caractères)
+                </span>
+              }
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-verify">
+              <span class="material-icons">verified</span>
+              Vérifier et continuer
+            </button>
+          </form>
+        </div>
+
+        <!-- Info panel -->
+        <div class="tanty-card info-card">
+          <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+            <span class="material-icons">info</span> BC à modifier
+          </h3>
+          <div class="bc-info-list">
+            <div class="bc-info-item">
+              <span class="bc-info-item__label">Référence</span>
+              <span class="bc-info-item__value font-mono">{{ bc()!.reference }}</span>
+            </div>
+            <div class="bc-info-item">
+              <span class="bc-info-item__label">Créateur</span>
+              <span class="bc-info-item__value">{{ bc()!.createurNom }}</span>
+            </div>
+            <div class="bc-info-item">
+              <span class="bc-info-item__label">Validé par</span>
+              <span class="bc-info-item__value">{{ bc()!.validateurNom }}</span>
+            </div>
+            <div class="bc-info-item">
+              <span class="bc-info-item__label">Période actuelle</span>
+              <span class="bc-info-item__value">{{ bc()!.dateDebutProduction }} → {{ bc()!.dateFinProduction }}</span>
+            </div>
+            <div class="bc-info-item">
+              <span class="bc-info-item__label">Lignes produits</span>
+              <span class="bc-info-item__value">{{ bc()!.lignes.length }} ligne(s)</span>
+            </div>
+          </div>
+
+          <div class="security-note">
+            <span class="material-icons">security</span>
+            <p>La modification d'un BC validé est une action sensible tracée dans le système. Le motif et l'OTP sont enregistrés.</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ─── ÉTAPE 2 : Modification ──────────────────────────────────────── -->
+    @if (etape() === 'modification') {
+      <div class="otp-validated-banner">
+        <span class="material-icons">verified</span>
+        <div>
+          <strong>Code OTP validé</strong> — Vous pouvez maintenant modifier le bon de commande.
+        </div>
+      </div>
+
+      <form [formGroup]="modifForm" (ngSubmit)="sauvegarder()">
+        <div class="create-grid">
+          <div>
+            <div class="tanty-card">
+              <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+                <span class="material-icons">date_range</span> Période de production
+              </h3>
+              <div class="grid grid--2">
+                <div class="form-group">
+                  <label class="form-label">Date de début *</label>
+                  <input type="date" class="form-control" formControlName="dateDebutProduction" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Date de fin *</label>
+                  <input type="date" class="form-control" formControlName="dateFinProduction" />
+                </div>
+              </div>
+            </div>
+
+            <div class="tanty-card" style="margin-top:1rem; padding:0; overflow:hidden;">
+              <div class="lines-header" style="padding:1.5rem 1.5rem 0;">
+                <h3 class="tanty-card__title">
+                  <span class="material-icons">list</span> Lignes de commande
+                </h3>
+                <button type="button" class="btn btn-outline btn-sm" (click)="ajouterLigne()">
+                  <span class="material-icons">add</span> Ajouter
+                </button>
+              </div>
+              <div style="padding:1rem 1.5rem;" formArrayName="lignes">
+                <div class="lines-list">
+                  @for (ligne of lignes.controls; track $index) {
+                    <div class="ligne-item" [formGroupName]="$index">
+                      <div class="ligne-item__num">{{ $index + 1 }}</div>
+                      <div class="ligne-item__fields">
+                        <div class="form-group" style="flex:2">
+                          <label class="form-label">Produit *</label>
+                          <select class="form-control" formControlName="produitId" (change)="onProduitChange($index)">
+                            <option value="">-- Sélectionner --</option>
+                            @for (p of produits(); track p.id) {
+                              <option [value]="p.id">{{ p.nom }}</option>
+                            }
+                          </select>
+                        </div>
+                        <div class="form-group" style="flex:1">
+                          <label class="form-label">Conditionnement</label>
+                          <input type="text" class="form-control" formControlName="conditionnement" readonly />
+                        </div>
+                        <div class="form-group" style="flex:0 0 110px">
+                          <label class="form-label">Qté Cartons *</label>
+                          <input type="number" class="form-control" formControlName="quantiteCartons" min="1" />
+                        </div>
+                        <button type="button" class="btn btn-ghost btn-icon" style="color:#C62828;margin-top:24px;" (click)="supprimerLigne($index)" [disabled]="lignes.length === 1">
+                          <span class="material-icons">delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="tanty-card sticky-summary">
+              <h3 class="tanty-card__title" style="margin-bottom:1rem;">Résumé des modifications</h3>
+
+              <div class="modif-motif">
+                <span class="material-icons">edit_note</span>
+                <div>
+                  <div class="text-xs text-muted">Motif enregistré</div>
+                  <div class="text-sm">{{ otpForm.get('motif')!.value }}</div>
+                </div>
+              </div>
+
+              <hr class="divider" />
+
+              <div class="summary-lines">
+                @for (ligne of lignes.controls; track $index) {
+                  @if (ligne.get('produitId')?.value) {
+                    <div class="summary-line">
+                      <span class="text-sm truncate">{{ getNomProduit(ligne.get('produitId')?.value) }}</span>
+                      <span class="font-semibold text-sm">{{ ligne.get('quantiteCartons')?.value }} crt.</span>
+                    </div>
+                  }
+                }
+              </div>
+
+              <hr class="divider" />
+
+              <div class="form-actions">
+                <a [routerLink]="['/bons-de-commande', bc()!.reference]" class="btn btn-ghost">Annuler</a>
+                <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                  @if (saving()) { <div class="spinner spinner-sm"></div> }
+                  <span class="material-icons">save</span> Enregistrer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    }
+  }
+</div>

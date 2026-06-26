@@ -1,0 +1,272 @@
+@use '../../../../styles/variables' as *;
+
+// ── Workflow banner ───────────────────────────────────────────────────────────
+.workflow-banner {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $border-radius-lg;
+  padding: $spacing-5;
+  margin-bottom: $spacing-6;
+  flex-wrap: wrap;
+
+  @media (max-width: $bp-md) { flex-direction: column; }
+}
+
+.workflow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-3;
+  flex: 1;
+  min-width: 180px;
+
+  &__num {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: $tanty-gray-200;
+    color: $tanty-gray-600;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: $font-size-sm;
+
+    &--active {
+      background: $tanty-yellow;
+      color: $tanty-gray-900;
+      box-shadow: 0 0 0 4px rgba($tanty-yellow, 0.25);
+    }
+  }
+
+  &--active .workflow-step__title { color: $tanty-green; font-weight: 600; }
+
+  &__title { font-size: $font-size-sm; font-weight: 500; color: $tanty-gray-800; margin-bottom: 2px; }
+  &__desc  { font-size: $font-size-xs; color: $tanty-gray-500; line-height: 1.4; }
+}
+
+.workflow-arrow {
+  color: $tanty-gray-300;
+  flex-shrink: 0;
+  @media (max-width: $bp-md) { transform: rotate(90deg); }
+}
+
+// ── Layout ────────────────────────────────────────────────────────────────────
+.otp-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: $spacing-4;
+  align-items: start;
+
+  @media (max-width: $bp-lg) { grid-template-columns: 1fr; }
+}
+
+.otp-form-panel { min-width: 0; }
+
+// ── Form helpers ──────────────────────────────────────────────────────────────
+.form-hint {
+  display: flex;
+  align-items: center;
+  gap: $spacing-1;
+  font-size: $font-size-xs;
+  color: $tanty-gray-500;
+  margin-top: $spacing-1;
+
+  .material-icons { font-size: 14px; }
+}
+
+.otp-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-3;
+  background: rgba($color-warning, 0.08);
+  border: 1px solid rgba($color-warning, 0.3);
+  border-radius: $border-radius;
+  padding: $spacing-3;
+  margin-bottom: $spacing-4;
+  font-size: $font-size-sm;
+  color: darken($color-warning, 15%);
+
+  .material-icons { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+}
+
+.btn-generate {
+  width: 100%;
+  justify-content: center;
+  padding: $spacing-3;
+  font-size: $font-size-base;
+}
+
+// ── OTP Result ────────────────────────────────────────────────────────────────
+.otp-result {
+  border: 2px solid rgba($tanty-green, 0.3);
+  background: rgba($tanty-green, 0.02);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $spacing-3;
+    margin-bottom: $spacing-5;
+  }
+
+  &__icon {
+    font-size: 40px;
+    color: $color-success;
+  }
+}
+
+.otp-code-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-3;
+  padding: $spacing-5;
+  background: $tanty-gray-900;
+  border-radius: $border-radius-lg;
+  margin-bottom: $spacing-4;
+
+  &__label {
+    font-size: $font-size-xs;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  &__code {
+    display: flex;
+    gap: $spacing-2;
+  }
+}
+
+.otp-digit {
+  width: 48px;
+  height: 60px;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba($tanty-yellow, 0.4);
+  border-radius: $border-radius;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-3xl;
+  font-weight: 900;
+  color: $tanty-yellow;
+  font-family: monospace;
+  letter-spacing: 0;
+  user-select: all;
+
+  @media (max-width: $bp-sm) {
+    width: 38px;
+    height: 48px;
+    font-size: $font-size-2xl;
+  }
+}
+
+// ── Countdown ─────────────────────────────────────────────────────────────────
+.otp-countdown {
+  display: flex;
+  align-items: center;
+  gap: $spacing-4;
+  padding: $spacing-3 $spacing-4;
+  background: rgba($color-success, 0.06);
+  border: 1px solid rgba($color-success, 0.2);
+  border-radius: $border-radius-lg;
+  margin-bottom: $spacing-4;
+  transition: all $transition-base;
+
+  .material-icons { color: $color-success; font-size: 24px; }
+
+  &--urgent {
+    background: rgba($color-error, 0.06);
+    border-color: rgba($color-error, 0.2);
+    .material-icons { color: $color-error; }
+    .otp-countdown__time { color: $color-error; }
+    .countdown-fill { stroke: $color-error !important; }
+  }
+
+  &__label { font-size: $font-size-xs; color: $tanty-gray-500; }
+  &__time  { font-size: $font-size-2xl; font-weight: 800; color: $color-success; font-family: monospace; }
+}
+
+.countdown-ring { margin-left: auto; }
+
+.countdown-svg {
+  width: 48px;
+  height: 48px;
+  transform: rotate(-90deg);
+}
+
+.countdown-bg {
+  fill: none;
+  stroke: $tanty-gray-200;
+  stroke-width: 3;
+}
+
+.countdown-fill {
+  fill: none;
+  stroke: $color-success;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray 1s linear;
+}
+
+// ── Instructions ──────────────────────────────────────────────────────────────
+.otp-instructions {
+  background: $tanty-gray-50;
+  border-radius: $border-radius;
+  padding: $spacing-4;
+  margin-bottom: $spacing-4;
+
+  h4 {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    margin-bottom: $spacing-2;
+    color: $tanty-gray-700;
+  }
+
+  ol {
+    padding-left: $spacing-4;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-1;
+
+    li {
+      font-size: $font-size-sm;
+      color: $tanty-gray-700;
+      line-height: 1.5;
+    }
+  }
+}
+
+// ── History ───────────────────────────────────────────────────────────────────
+.history-list { display: flex; flex-direction: column; gap: $spacing-2; max-height: 500px; overflow-y: auto; }
+
+.history-item {
+  border: 1px solid $color-border;
+  border-radius: $border-radius;
+  padding: $spacing-3;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-1;
+  transition: $transition-fast;
+
+  &:hover { background: $tanty-gray-50; }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $spacing-2;
+  }
+
+  &__motif {
+    color: $tanty-gray-600;
+    font-style: italic;
+    background: $tanty-gray-50;
+    padding: $spacing-1 $spacing-2;
+    border-radius: 4px;
+    border-left: 3px solid $tanty-gray-300;
+  }
+}

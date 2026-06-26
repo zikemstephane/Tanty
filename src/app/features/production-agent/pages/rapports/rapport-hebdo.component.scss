@@ -1,0 +1,114 @@
+@use '../../../../../styles/variables' as *;
+
+// ── KPI Banner ────────────────────────────────────────────────────────────────
+.kpi-banner {
+  display: flex; align-items: center; gap: $spacing-4;
+  background: $color-surface; border: 1px solid $color-border;
+  border-radius: $border-radius-lg; padding: $spacing-5;
+  margin-bottom: $spacing-4; flex-wrap: wrap; justify-content: space-around;
+  box-shadow: $shadow-sm;
+}
+.kpi-b { text-align: center; display: flex; flex-direction: column; gap: 4px; }
+.kpi-b__label { font-size: $font-size-xs; font-weight: 600; color: $tanty-gray-500; text-transform: uppercase; letter-spacing: 0.5px; }
+.kpi-b__val   { font-size: $font-size-2xl; font-weight: 800; color: $tanty-gray-900; }
+.kpi-sep      { width: 1px; height: 48px; background: $color-border; }
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+.tabs { display: flex; gap: 4px; margin-bottom: $spacing-4; border-bottom: 2px solid $color-border; flex-wrap: wrap; }
+.tab {
+  display: flex; align-items: center; gap: $spacing-1; padding: 0.625rem 1.25rem;
+  border: none; background: transparent; color: $tanty-gray-500; font-size: $font-size-sm;
+  font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s;
+  .material-icons { font-size: 16px; }
+  &--active { color: $tanty-green; border-bottom-color: $tanty-green; font-weight: 700; }
+  &:hover:not(.tab--active) { color: $tanty-gray-800; background: $tanty-gray-50; }
+}
+
+// ── Layout ────────────────────────────────────────────────────────────────────
+.rapport-layout {
+  display: flex; flex-direction: column; gap: $spacing-4;
+  &--detail {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: $spacing-4;
+    align-items: start;
+    @media (max-width: $bp-xl) { grid-template-columns: 1fr; }
+  }
+}
+
+.main-panel  { display: flex; flex-direction: column; gap: $spacing-4; min-width: 0; }
+.detail-panel { position: sticky; top: 80px; }
+
+// ── Podium ────────────────────────────────────────────────────────────────────
+.podium-card { padding: $spacing-5 $spacing-6; }
+.podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: $spacing-4;
+  padding-bottom: $spacing-2;
+}
+.podium-place {
+  display: flex; flex-direction: column; align-items: center;
+  gap: $spacing-1; cursor: pointer; transition: transform $transition-fast;
+  &:hover { transform: translateY(-4px); }
+  flex: 1; max-width: 160px;
+}
+.podium-medal { font-size: 2.5rem; }
+.podium-name  { font-size: $font-size-sm; font-weight: 700; text-align: center; color: $tanty-gray-800; }
+.podium-score { font-size: $font-size-xl; font-weight: 800; color: $tanty-green; }
+.podium-prod  { color: $tanty-gray-500; }
+.podium-bar   {
+  width: 100%; border-radius: $border-radius $border-radius 0 0; min-height: 20px;
+  &--1 { background: linear-gradient(to top, darken($tanty-yellow,5%), $tanty-yellow); }
+  &--2 { background: linear-gradient(to top, #9E9E9E, #BDBDBD); }
+  &--3 { background: linear-gradient(to top, #8D6E63, #A1887F); }
+}
+
+// ── Tables ────────────────────────────────────────────────────────────────────
+.emp-row, .prod-row {
+  cursor: pointer;
+  &:hover td { background: rgba($tanty-green, 0.04) !important; }
+  &--selected td { background: rgba($tanty-green, 0.08) !important; }
+}
+.score-chip {
+  padding: 2px 10px; border-radius: $border-radius-full; font-size: $font-size-sm; font-weight: 700;
+  background: $tanty-gray-100; color: $tanty-gray-700;
+  &--high { background: rgba($color-success, 0.12); color: $color-success; }
+}
+.ecart-val { font-weight: 700; font-size: $font-size-sm; color: $tanty-gray-400;
+  &--pos { color: $color-warning; } &--neg { color: $color-error; } }
+.taux-inline { display: flex; align-items: center; gap: $spacing-2; }
+.font-mono   { font-family: monospace; }
+.text-success{ color: $color-success; }
+
+// ── Detail panel ──────────────────────────────────────────────────────────────
+.detail-card {
+  border: 2px solid rgba($tanty-green, 0.25);
+  background: rgba($tanty-green, 0.02);
+  &__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: $spacing-4; }
+  &__name   { font-size: $font-size-xl; font-weight: 700; margin: 4px 0; }
+}
+.detail-kpis {
+  display: flex; gap: $spacing-4; margin-bottom: $spacing-4;
+  background: $tanty-gray-50; border-radius: $border-radius;
+  padding: $spacing-3; flex-wrap: wrap;
+}
+.dkpi { flex: 1; text-align: center; display: flex; flex-direction: column; gap: 2px;
+  &__label { font-size: $font-size-xs; color: $tanty-gray-500; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  &__val   { font-size: $font-size-xl; font-weight: 800; }
+}
+.detail-line { display: flex; flex-direction: column; gap: $spacing-1; margin-bottom: $spacing-3;
+  padding-bottom: $spacing-3; border-bottom: 1px solid $color-border;
+  &:last-child { border-bottom: none; }
+  &__info { }
+  &__bar  { display: flex; align-items: center; gap: $spacing-2; }
+}
+.participant-line {
+  display: flex; align-items: flex-start; gap: $spacing-3;
+  padding: $spacing-2 0; border-bottom: 1px solid $color-border;
+  &:last-child { border-bottom: none; }
+}
+.participant-rank { font-size: 1.25rem; flex-shrink: 0; width: 32px; }
+.participant-info { flex: 1; }
+.participant-bar  { display: flex; align-items: center; gap: $spacing-2; margin-top: 4px; }

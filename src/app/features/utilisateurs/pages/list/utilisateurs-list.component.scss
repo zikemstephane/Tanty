@@ -1,0 +1,62 @@
+@use '../../../../../styles/variables' as *;
+
+.search-box {
+  position: relative; flex: 1; min-width: 200px;
+  .material-icons { position: absolute; left: $spacing-3; top: 50%; transform: translateY(-50%); color: $tanty-gray-400; font-size: 18px; pointer-events: none; }
+  .form-control { padding-left: 38px; }
+}
+
+.users-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: $spacing-4;
+}
+
+.user-card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $border-radius-lg;
+  padding: $spacing-4;
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  transition: $transition-fast;
+  flex-wrap: wrap;
+
+  &:hover { box-shadow: $shadow-md; }
+
+  &__avatar {
+    width: 44px; height: 44px; border-radius: $border-radius-full;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: $font-size-base; color: $tanty-white;
+    flex-shrink: 0;
+
+    &.role--dg { background: #C62828; }
+    &.role--gs { background: #F57F17; }
+    &.role--cp { background: $tanty-green; }
+    &.role--ap { background: #1565C0; }
+    &.role--cm { background: #6A1B9A; }
+    &.role--ad { background: #00695C; }
+  }
+
+  &__info { flex: 1; min-width: 0; }
+  &__name { font-weight: 600; font-size: $font-size-sm; color: $tanty-gray-900; }
+  &__matricule { font-size: $font-size-xs; font-family: monospace; color: $tanty-green; font-weight: 500; }
+  &__email { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  &__role { font-size: 10px; }
+  &__status { display: flex; align-items: center; gap: $spacing-1; }
+}
+
+// Role badge colors
+.role--dg--badge { background: rgba(#C62828, 0.12); color: #C62828; }
+.role--gs--badge { background: rgba(#F57F17, 0.12); color: #F57F17; }
+.role--cp--badge { background: rgba($tanty-green, 0.12); color: $tanty-green; }
+.role--ap--badge { background: rgba(#1565C0, 0.12); color: #1565C0; }
+.role--cm--badge { background: rgba(#6A1B9A, 0.12); color: #6A1B9A; }
+.role--ad--badge { background: rgba(#00695C, 0.12); color: #00695C; }
+
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: $tanty-gray-300;
+  &--active { background: $color-success; }
+}

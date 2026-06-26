@@ -1,0 +1,92 @@
+@use '../../../styles/variables' as *;
+
+.dashboard-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $spacing-6;
+  flex-wrap: wrap;
+  gap: $spacing-3;
+}
+
+.stats-grid { margin-bottom: $spacing-6; }
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $spacing-4;
+  margin-bottom: $spacing-6;
+
+  @media (max-width: $bp-lg) { grid-template-columns: 1fr; }
+}
+
+.dash-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-16;
+  gap: $spacing-4;
+  p { color: $tanty-gray-600; }
+}
+
+.clickable-row {
+  cursor: pointer;
+  &:hover td { background: rgba($tanty-green, 0.04) !important; }
+}
+
+.empty-msg {
+  text-align: center;
+  color: $tanty-gray-500;
+  padding: $spacing-8;
+  font-size: $font-size-sm;
+}
+
+.pph-list { display: flex; flex-direction: column; gap: $spacing-3; }
+
+.pph-item {
+  padding: $spacing-3;
+  border: 1px solid $color-border;
+  border-radius: $border-radius;
+  cursor: pointer;
+  transition: all $transition-fast;
+  &:hover { border-color: $tanty-green; background: rgba($tanty-green, 0.02); }
+
+  &__ref { display: flex; align-items: center; justify-content: space-between; margin-bottom: $spacing-1; }
+  &__dates { margin-bottom: $spacing-2; }
+  &__progress { display: flex; flex-direction: column; gap: 4px; }
+}
+
+.mini-progress {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+}
+
+.quick-actions { margin-bottom: $spacing-6; }
+
+.action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-2;
+  padding: $spacing-5;
+  border-radius: $border-radius-lg;
+  text-decoration: none;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  text-align: center;
+  transition: all $transition-base;
+  border: 2px solid transparent;
+
+  .material-icons { font-size: 28px; }
+
+  &--dg { background: rgba(#C62828,0.08); color: #C62828; border-color: rgba(#C62828,0.2); &:hover { background: #C62828; color: $tanty-white; text-decoration: none; } }
+  &--green  { background: rgba($tanty-green,0.08);  color: $tanty-green;  border-color: rgba($tanty-green,0.2);  &:hover { background: $tanty-green; color: $tanty-white; border-color: $tanty-green; text-decoration: none; } }
+  &--yellow { background: rgba($tanty-yellow,0.15); color: darken($tanty-yellow,25%); border-color: rgba($tanty-yellow,0.4); &:hover { background: $tanty-yellow; color: $tanty-gray-900; text-decoration: none; } }
+  &--blue   { background: rgba($color-info,0.08);   color: $color-info;   border-color: rgba($color-info,0.2);   &:hover { background: $color-info;  color: $tanty-white; text-decoration: none; } }
+  &--purple { background: rgba(#7B1FA2,0.08); color: #7B1FA2; border-color: rgba(#7B1FA2,0.2); &:hover { background: #7B1FA2; color: $tanty-white; text-decoration: none; } }
+  &--teal   { background: rgba(#00695C,0.08); color: #00695C; border-color: rgba(#00695C,0.2); &:hover { background: #00695C; color: $tanty-white; text-decoration: none; } }
+  &--red    { background: rgba($color-error,0.08);  color: $color-error;  border-color: rgba($color-error,0.2);  &:hover { background: $color-error; color: $tanty-white; text-decoration: none; } }
+  &--orange { background: rgba($color-warning,0.08); color: $color-warning; border-color: rgba($color-warning,0.2); &:hover { background: $color-warning; color: $tanty-white; text-decoration: none; } }
+}

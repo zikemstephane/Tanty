@@ -1,0 +1,20 @@
+<nav class="breadcrumb" aria-label="Fil d'Ariane">
+  @for (item of items(); track item.label; let last = $last) {
+    @if (!last) {
+      @if (item.url) {
+        <a class="breadcrumb__item" [routerLink]="item.url">
+          @if (item.icon) { <span class="material-icons">{{ item.icon }}</span> }
+          {{ item.label }}
+        </a>
+      } @else {
+        <span class="breadcrumb__item">
+          @if (item.icon) { <span class="material-icons">{{ item.icon }}</span> }
+          {{ item.label }}
+        </span>
+      }
+      <span class="material-icons breadcrumb__sep">chevron_right</span>
+    } @else {
+      <span class="breadcrumb__item breadcrumb__item--current">{{ item.label }}</span>
+    }
+  }
+</nav>

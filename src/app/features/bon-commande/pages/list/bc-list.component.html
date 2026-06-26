@@ -1,0 +1,117 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Bons de Commande</h1>
+      <p class="page-header__subtitle">Gérez le cycle de vie des bons de commande TANTY</p>
+    </div>
+    @if (canCreate()) {
+      <div class="page-header__actions">
+        <a routerLink="/bons-de-commande/nouveau" class="btn btn-primary">
+          <span class="material-icons">add</span> Nouveau BC
+        </a>
+      </div>
+    }
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar tanty-card" style="padding: 1rem 1.5rem;">
+    <div class="filters-bar__inner">
+      <div class="search-box">
+        <span class="material-icons">search</span>
+        <input type="text" class="form-control" placeholder="Rechercher par référence ou créateur…"
+               [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+      </div>
+      <div class="filter-group">
+        <select class="form-control" [ngModel]="filterStatut()" (ngModelChange)="filterStatut.set($event); onFilterChange()">
+          @for (s of statuts; track s.value) {
+            <option [value]="s.value">{{ s.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+    <span class="filters-bar__count text-sm text-muted">{{ filteredBCs.length }} résultat(s)</span>
+  </div>
+
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading()) {
+    @if (filteredBCs.length === 0) {
+      <app-empty-state
+        icon="receipt_long"
+        title="Aucun bon de commande"
+        description="Créez votre premier bon de commande pour démarrer la planification de production."
+        [actionLabel]="canCreate() ? 'Créer un BC' : ''"
+        actionIcon="add"
+        (action)="null"
+      />
+    } @else {
+      <div class="tanty-card" style="padding: 0; overflow: hidden;">
+        <table class="tanty-table">
+          <thead>
+            <tr>
+              <th>Référence</th>
+              <th>Période de production</th>
+              <th>Créateur</th>
+              <th>Semaines</th>
+              <th>Produits</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (bc of filteredBCs; track bc.id) {
+              <tr>
+                <td>
+                  <a class="bc-ref" [routerLink]="['/bons-de-commande', bc.reference]">{{ bc.reference }}</a>
+                  <div class="text-xs text-muted">Créé le {{ bc.dateCreation }}</div>
+                </td>
+                <td>
+                  <div class="text-sm">{{ bc.dateDebutProduction }}</div>
+                  <div class="text-xs text-muted">→ {{ bc.dateFinProduction }}</div>
+                </td>
+                <td class="text-sm">{{ bc.createurNom }}</td>
+                <td><span class="week-badge">{{ bc.nombreSemaines }} S</span></td>
+                <td class="text-sm">{{ bc.lignes.length }} ligne(s)</td>
+                <td><span class="badge {{ statusClass(bc.statut) }}">{{ bc.statutLibelle }}</span></td>
+                <td>
+                  <div class="action-btns">
+                    <a [routerLink]="['/bons-de-commande', bc.reference]" class="btn btn-ghost btn-sm" title="Voir le détail">
+                      <span class="material-icons">visibility</span>
+                    </a>
+                    @if (canSubmit(bc)) {
+                      <button class="btn btn-outline btn-sm" (click)="soumettre(bc.reference)" title="Soumettre">
+                        <span class="material-icons">send</span>
+                      </button>
+                    }
+                    @if (canValidate(bc)) {
+                      <button class="btn btn-secondary btn-sm" (click)="valider(bc.reference, bc)" title="Valider">
+                        <span class="material-icons">check_circle</span>
+                      </button>
+                    }
+                    @if (canDelete(bc)) {
+                      <button class="btn btn-ghost btn-sm danger" (click)="askDelete(bc.reference)" title="Supprimer">
+                        <span class="material-icons">delete</span>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>
+
+<app-confirm-dialog
+  [visible]="showConfirm()"
+  title="Supprimer le bon de commande"
+  [message]="'Êtes-vous sûr de vouloir supprimer le BC ' + pendingRef() + ' ? Cette action est irréversible.'"
+  confirmLabel="Supprimer"
+  [danger]="true"
+  (confirm)="confirmDelete()"
+  (cancel)="showConfirm.set(false)"
+/>

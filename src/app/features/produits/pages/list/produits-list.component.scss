@@ -1,0 +1,44 @@
+@use '../../../../../styles/variables' as *;
+
+.filters-bar {
+  display: flex; gap: $spacing-4; align-items: center; flex-wrap: wrap;
+}
+
+.search-box {
+  position: relative; flex: 1; min-width: 200px;
+  .material-icons { position: absolute; left: $spacing-3; top: 50%; transform: translateY(-50%); color: $tanty-gray-400; font-size: 18px; pointer-events: none; }
+  .form-control { padding-left: 38px; }
+}
+
+.produits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: $spacing-4;
+}
+
+.produit-card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $border-radius-lg;
+  padding: $spacing-4;
+  transition: all $transition-fast;
+  display: flex; flex-direction: column; gap: $spacing-2;
+
+  &:hover { box-shadow: $shadow-md; border-color: rgba($tanty-green, 0.4); }
+
+  &__header { display: flex; align-items: center; justify-content: space-between; }
+  &__code   { font-size: $font-size-xs; font-family: monospace; color: $tanty-gray-500; background: $tanty-gray-100; padding: 2px 6px; border-radius: 4px; }
+  &__nom    { font-size: $font-size-sm; font-weight: 600; color: $tanty-gray-900; line-height: 1.3; flex: 1; }
+
+  &__meta {
+    display: flex; align-items: center; gap: $spacing-1;
+    .material-icons { font-size: 14px; color: $tanty-gray-400; }
+  }
+
+  &__footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: $spacing-2; border-top: 1px solid $color-border; }
+  &__gamme  { font-size: $font-size-xs; color: $tanty-gray-500; text-transform: uppercase; letter-spacing: 0.5px; }
+  &__prix   { font-size: $font-size-sm; font-weight: 700; color: $tanty-green; }
+}
+
+.btn.active { background: $tanty-gray-100; }
+.font-mono  { font-family: monospace; }

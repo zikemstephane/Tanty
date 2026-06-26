@@ -1,0 +1,147 @@
+@use '../../../../../styles/variables' as *;
+
+.title-row { display: flex; align-items: center; gap: $spacing-3; flex-wrap: wrap; }
+.badge-lg  { font-size: $font-size-sm; padding: $spacing-1 $spacing-3; }
+
+.no-edit-info {
+  display: flex; align-items: center; gap: $spacing-1; font-size: $font-size-xs;
+  color: $tanty-gray-500; background: $tanty-gray-50; border: 1px solid $color-border;
+  padding: $spacing-2 $spacing-3; border-radius: $border-radius;
+  .material-icons { font-size: 15px; }
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+.tabs {
+  display: flex; gap: 4px; margin-bottom: 1rem;
+  border-bottom: 2px solid $color-border; padding-bottom: 0; flex-wrap: wrap;
+}
+.tab {
+  display: flex; align-items: center; gap: 0.375rem;
+  padding: 0.625rem 1rem; border: none; background: transparent;
+  color: $tanty-gray-500; font-size: $font-size-sm; font-weight: 500;
+  cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s;
+  .material-icons { font-size: 16px; }
+  &--active { color: $tanty-green; border-bottom-color: $tanty-green; font-weight: 600; }
+  &:hover:not(.tab--active) { color: $tanty-gray-700; background: $tanty-gray-50; border-radius: 4px 4px 0 0; }
+}
+
+// ── Info banner ───────────────────────────────────────────────────────────────
+.info-banner {
+  display: flex; align-items: flex-start; gap: $spacing-2;
+  background: rgba($color-info, 0.07); border: 1px solid rgba($color-info, 0.2);
+  padding: $spacing-3 $spacing-4; border-radius: $border-radius-lg;
+  font-size: $font-size-sm; color: darken($color-info, 10%); margin-bottom: $spacing-4;
+  .material-icons { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+}
+
+// ── Répartition par jour ──────────────────────────────────────────────────────
+.repartition-section { display: flex; flex-direction: column; gap: $spacing-4; }
+
+.chart-day { padding: $spacing-5; }
+
+.day-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 220px;
+  gap: $spacing-3;
+  padding: $spacing-3 $spacing-2 0;
+  border-bottom: 2px solid $color-border;
+}
+
+.day-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-1;
+  flex: 1;
+  cursor: pointer;
+  transition: transform $transition-fast;
+  &:hover { transform: translateY(-2px); }
+  &--selected .day-bar-fill { background: $tanty-green !important; }
+  &--selected .day-bar-label { color: $tanty-green; font-weight: 700; }
+}
+
+.day-bar-track {
+  width: 100%;
+  height: 160px;
+  display: flex;
+  align-items: flex-end;
+  background: $tanty-gray-100;
+  border-radius: $border-radius $border-radius 0 0;
+  overflow: hidden;
+}
+
+.day-bar-fill {
+  width: 100%;
+  background: rgba($tanty-green, 0.5);
+  border-radius: $border-radius $border-radius 0 0;
+  transition: height $transition-slow, background $transition-fast;
+  &--selected { background: $tanty-green !important; }
+}
+
+.day-bar-val   { font-size: $font-size-xs; font-weight: 700; color: $tanty-gray-700; margin-top: $spacing-1; }
+.day-bar-label { font-size: $font-size-sm; font-weight: 500; color: $tanty-gray-700; }
+.day-bar-date  { font-size: 10px; color: $tanty-gray-400; }
+
+.total-chip {
+  background: rgba($tanty-green, 0.1); color: $tanty-green;
+  font-size: $font-size-sm; font-weight: 700;
+  padding: $spacing-1 $spacing-3; border-radius: $border-radius-full;
+}
+
+.carton-badge, .poudre-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 10px; border-radius: $border-radius-full; font-size: $font-size-sm; font-weight: 600;
+  .material-icons { font-size: 14px; }
+}
+.carton-badge { background: rgba($tanty-green, 0.1); color: $tanty-green; }
+.poudre-badge { background: rgba($color-warning, 0.12); color: darken($color-warning, 10%); }
+
+.day-nav {
+  display: flex; gap: $spacing-2; flex-wrap: wrap;
+}
+.day-nav-btn {
+  flex: 1; min-width: 80px;
+  padding: $spacing-2 $spacing-3; border: 1px solid $color-border;
+  border-radius: $border-radius; background: $color-surface;
+  cursor: pointer; text-align: center; transition: all $transition-fast;
+  &:hover { border-color: $tanty-green; }
+  &--active { background: $tanty-green; color: $tanty-white; border-color: $tanty-green; }
+}
+
+// ── Emballages ────────────────────────────────────────────────────────────────
+.emb-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: $border-radius-full; font-size: $font-size-sm; font-weight: 600;
+  .material-icons { font-size: 13px; }
+  &--carton { background: rgba($tanty-green, 0.1); color: $tanty-green; }
+  &--sachet  { background: rgba($tanty-yellow, 0.2); color: darken($tanty-yellow, 30%); }
+}
+
+// ── Matières premières ────────────────────────────────────────────────────────
+.matieres-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: $spacing-4;
+  @media (max-width: $bp-md) { grid-template-columns: repeat(2, 1fr); }
+}
+.matiere-card {
+  padding: $spacing-6; border-radius: $border-radius-lg; text-align: center;
+  display: flex; flex-direction: column; gap: $spacing-2; align-items: center;
+  font-size: 2rem;
+  &.mais     { background: rgba(#F9A825, 0.12); }
+  &.soja     { background: rgba($tanty-green, 0.10); }
+  &.arachide { background: rgba(#8D6E63, 0.12); }
+  &.total    { background: $tanty-gray-50; }
+}
+.matiere-label { font-size: $font-size-xs; color: $tanty-gray-500; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.matiere-value { font-size: $font-size-2xl; font-weight: 800; }
+
+.taux-cell { display: flex; align-items: center; gap: $spacing-2; }
+.font-mono { font-family: monospace; }
+
+.planifie-info {
+  display: flex; align-items: center; gap: $spacing-2;
+  background: rgba($color-success, 0.08); border: 1px solid rgba($color-success, 0.2);
+  padding: $spacing-3; border-radius: $border-radius; font-size: $font-size-sm; color: $color-success;
+  .material-icons { font-size: 18px; }
+}

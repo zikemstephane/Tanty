@@ -1,0 +1,520 @@
+// ─── TANTY Global Styles ────────────────────────────────────────────────────
+@use 'variables' as *;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --tanty-yellow:       #{$tanty-yellow};
+  --tanty-yellow-dark:  #{$tanty-yellow-dark};
+  --tanty-yellow-light: #{$tanty-yellow-light};
+  --tanty-green:        #{$tanty-green};
+  --tanty-green-dark:   #{$tanty-green-dark};
+  --tanty-green-light:  #{$tanty-green-light};
+  --tanty-white:        #{$tanty-white};
+  --color-surface:      #{$color-surface};
+  --color-background:   #{$color-background};
+  --color-border:       #{$color-border};
+  --sidebar-width:      #{$sidebar-width};
+  --sidebar-collapsed:  #{$sidebar-collapsed};
+  --navbar-height:      #{$navbar-height};
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  color: $tanty-gray-900;
+  background-color: $color-background;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+// ── Scrollbar custom ──────────────────────────────────────────────────────
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: $tanty-gray-100; }
+::-webkit-scrollbar-thumb {
+  background: $tanty-gray-400;
+  border-radius: $border-radius-full;
+  &:hover { background: $tanty-gray-600; }
+}
+
+// ── Typography ────────────────────────────────────────────────────────────
+h1,h2,h3,h4,h5,h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  color: $tanty-gray-900;
+}
+
+a {
+  color: $tanty-green;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+// ── Utility classes ───────────────────────────────────────────────────────
+.text-xs    { font-size: $font-size-xs; }
+.text-sm    { font-size: $font-size-sm; }
+.text-base  { font-size: $font-size-base; }
+.text-lg    { font-size: $font-size-lg; }
+.text-xl    { font-size: $font-size-xl; }
+.text-2xl   { font-size: $font-size-2xl; }
+
+.font-light   { font-weight: 300; }
+.font-normal  { font-weight: 400; }
+.font-medium  { font-weight: 500; }
+.font-semibold{ font-weight: 600; }
+.font-bold    { font-weight: 700; }
+
+.text-muted   { color: $tanty-gray-600; }
+.text-success { color: $color-success; }
+.text-warning { color: $color-warning; }
+.text-error   { color: $color-error; }
+.text-info    { color: $color-info; }
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// ── Card base ─────────────────────────────────────────────────────────────
+.tanty-card {
+  background: $color-surface;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-sm;
+  border: 1px solid $color-border;
+  padding: $spacing-6;
+  transition: box-shadow $transition-base;
+
+  &:hover { box-shadow: $shadow-md; }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-4;
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: 600;
+    color: $tanty-gray-900;
+  }
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-2;
+  padding: $spacing-2 $spacing-4;
+  border-radius: $border-radius;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all $transition-fast;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .material-icons { font-size: 18px; }
+}
+
+.btn-primary {
+  background: $tanty-green;
+  color: $tanty-white;
+  &:hover:not(:disabled) { background: $tanty-green-dark; }
+}
+
+.btn-secondary {
+  background: $tanty-yellow;
+  color: $tanty-gray-900;
+  &:hover:not(:disabled) { background: $tanty-yellow-dark; }
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid $tanty-green;
+  color: $tanty-green;
+  &:hover:not(:disabled) { background: rgba($tanty-green, 0.06); }
+}
+
+.btn-danger {
+  background: $color-error;
+  color: $tanty-white;
+  &:hover:not(:disabled) { background: darken($color-error, 8%); }
+}
+
+.btn-ghost {
+  background: transparent;
+  color: $tanty-gray-700;
+  &:hover:not(:disabled) { background: $tanty-gray-100; }
+}
+
+.btn-sm {
+  padding: $spacing-1 $spacing-3;
+  font-size: $font-size-xs;
+}
+
+.btn-lg {
+  padding: $spacing-3 $spacing-6;
+  font-size: $font-size-base;
+}
+
+.btn-icon {
+  padding: $spacing-2;
+  border-radius: $border-radius;
+  .material-icons { font-size: 20px; }
+}
+
+// ── Badge/Status ──────────────────────────────────────────────────────────
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px $spacing-2;
+  border-radius: $border-radius-full;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &--brouillon    { background: rgba($status-brouillon,0.15); color: $status-brouillon; }
+  &--attente      { background: rgba($status-attente,0.15);   color: $status-attente; }
+  &--valide       { background: rgba($status-valide,0.15);    color: $status-valide; }
+  &--clos         { background: rgba($status-clos,0.15);      color: $status-clos; }
+  &--annule       { background: rgba($status-annule,0.15);    color: $status-annule; }
+  &--success      { background: rgba($color-success,0.15);    color: $color-success; }
+  &--warning      { background: rgba($color-warning,0.15);    color: $color-warning; }
+  &--error        { background: rgba($color-error,0.15);      color: $color-error; }
+  &--info         { background: rgba($color-info,0.15);       color: $color-info; }
+}
+
+// ── Forms ─────────────────────────────────────────────────────────────────
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-1;
+  margin-bottom: $spacing-4;
+}
+
+.form-label {
+  font-size: $font-size-sm;
+  font-weight: 500;
+  color: $tanty-gray-700;
+}
+
+.form-control {
+  padding: $spacing-2 $spacing-3;
+  border: 1px solid $color-border;
+  border-radius: $border-radius;
+  font-size: $font-size-sm;
+  color: $tanty-gray-900;
+  background: $color-surface;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
+  width: 100%;
+
+  &:focus {
+    outline: none;
+    border-color: $tanty-green;
+    box-shadow: 0 0 0 3px rgba($tanty-green, 0.12);
+  }
+
+  &.ng-invalid.ng-touched {
+    border-color: $color-error;
+    &:focus { box-shadow: 0 0 0 3px rgba($color-error, 0.12); }
+  }
+}
+
+.form-error {
+  font-size: $font-size-xs;
+  color: $color-error;
+  display: flex;
+  align-items: center;
+  gap: $spacing-1;
+  .material-icons { font-size: 14px; }
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────
+.tanty-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-sm;
+
+  th {
+    padding: $spacing-3 $spacing-4;
+    background: $tanty-gray-50;
+    color: $tanty-gray-600;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: $font-size-xs;
+    letter-spacing: 0.5px;
+    text-align: left;
+    border-bottom: 2px solid $color-border;
+  }
+
+  td {
+    padding: $spacing-3 $spacing-4;
+    border-bottom: 1px solid $color-border;
+    color: $tanty-gray-800;
+    vertical-align: middle;
+  }
+
+  tr:hover td { background: $tanty-gray-50; }
+  tr:last-child td { border-bottom: none; }
+}
+
+// ── Page layout ───────────────────────────────────────────────────────────
+.page-container {
+  padding: $spacing-6;
+  max-width: $content-max-width;
+
+  @media (max-width: $bp-md) {
+    padding: $spacing-4;
+  }
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-6;
+  flex-wrap: wrap;
+  gap: $spacing-3;
+
+  &__title {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    color: $tanty-gray-900;
+  }
+
+  &__subtitle {
+    font-size: $font-size-sm;
+    color: $tanty-gray-600;
+    margin-top: $spacing-1;
+  }
+
+  &__actions {
+    display: flex;
+    gap: $spacing-2;
+    flex-wrap: wrap;
+  }
+}
+
+// ── Stat Cards ────────────────────────────────────────────────────────────
+.stat-card {
+  background: $color-surface;
+  border-radius: $border-radius-lg;
+  padding: $spacing-5;
+  border: 1px solid $color-border;
+  box-shadow: $shadow-sm;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+
+  &__label {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: $tanty-gray-600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  &__value {
+    font-size: $font-size-3xl;
+    font-weight: 700;
+    color: $tanty-gray-900;
+  }
+
+  &__change {
+    font-size: $font-size-xs;
+    display: flex;
+    align-items: center;
+    gap: $spacing-1;
+
+    &--up   { color: $color-success; }
+    &--down { color: $color-error; }
+    &--flat { color: $tanty-gray-500; }
+  }
+
+  &__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: $border-radius;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .material-icons { font-size: 24px; }
+
+    &--yellow { background: rgba($tanty-yellow, 0.2); color: darken($tanty-yellow, 20%); }
+    &--green  { background: rgba($tanty-green, 0.12); color: $tanty-green; }
+    &--blue   { background: rgba($color-info, 0.12);  color: $color-info; }
+    &--orange { background: rgba($color-warning, 0.12); color: $color-warning; }
+  }
+}
+
+// ── Responsive grid ───────────────────────────────────────────────────────
+.grid {
+  display: grid;
+  gap: $spacing-4;
+
+  &--2 { grid-template-columns: repeat(2, 1fr); }
+  &--3 { grid-template-columns: repeat(3, 1fr); }
+  &--4 { grid-template-columns: repeat(4, 1fr); }
+
+  @media (max-width: $bp-lg) {
+    &--4 { grid-template-columns: repeat(2, 1fr); }
+    &--3 { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: $bp-md) {
+    &--4, &--3, &--2 { grid-template-columns: 1fr; }
+  }
+}
+
+// ── Loading spinner ───────────────────────────────────────────────────────
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid $tanty-gray-200;
+  border-top-color: $tanty-green;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.spinner-sm {
+  width: 20px;
+  height: 20px;
+  border-width: 2px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────
+.progress {
+  height: 6px;
+  background: $tanty-gray-200;
+  border-radius: $border-radius-full;
+  overflow: hidden;
+
+  &__bar {
+    height: 100%;
+    background: $tanty-green;
+    border-radius: $border-radius-full;
+    transition: width $transition-slow;
+  }
+}
+
+// ── Divider ───────────────────────────────────────────────────────────────
+.divider {
+  border: none;
+  border-top: 1px solid $color-border;
+  margin: $spacing-4 0;
+}
+
+// ── Overlay ───────────────────────────────────────────────────────────────
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba($tanty-black, 0.4);
+  backdrop-filter: blur(2px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────
+.modal {
+  background: $color-surface;
+  border-radius: $border-radius-xl;
+  box-shadow: $shadow-xl;
+  width: 90%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  &__header {
+    padding: $spacing-5 $spacing-6;
+    border-bottom: 1px solid $color-border;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: 600;
+  }
+
+  &__body {
+    padding: $spacing-6;
+  }
+
+  &__footer {
+    padding: $spacing-4 $spacing-6;
+    border-top: 1px solid $color-border;
+    display: flex;
+    justify-content: flex-end;
+    gap: $spacing-2;
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+.toast-container {
+  position: fixed;
+  top: $spacing-4;
+  right: $spacing-4;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  padding: $spacing-3 $spacing-4;
+  border-radius: $border-radius-lg;
+  min-width: 300px;
+  max-width: 480px;
+  box-shadow: $shadow-lg;
+  animation: slideIn $transition-base;
+
+  &__icon { flex-shrink: 0; .material-icons { font-size: 20px; } }
+  &__message { flex: 1; font-size: $font-size-sm; font-weight: 500; }
+  &__close { flex-shrink: 0; cursor: pointer; opacity: 0.7; &:hover { opacity: 1; } }
+
+  &--success { background: $color-success; color: $tanty-white; }
+  &--error   { background: $color-error;   color: $tanty-white; }
+  &--warning { background: $color-warning; color: $tanty-white; }
+  &--info    { background: $color-info;    color: $tanty-white; }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+// ── Yellow accent stripe ──────────────────────────────────────────────────
+.tanty-accent {
+  border-left: 4px solid $tanty-yellow;
+  padding-left: $spacing-4;
+}

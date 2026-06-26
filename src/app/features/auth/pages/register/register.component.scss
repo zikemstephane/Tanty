@@ -1,0 +1,57 @@
+@use '../../../../../styles/variables' as *;
+@use '../login/login.component' as *;
+
+.auth-layout--register {
+  background: $color-background;
+  align-items: flex-start;
+  justify-content: center;
+  padding: $spacing-8 $spacing-4;
+}
+
+.register-container {
+  background: $color-surface;
+  border-radius: $border-radius-xl;
+  box-shadow: $shadow-lg;
+  padding: $spacing-8;
+  width: 100%;
+  max-width: 600px;
+  margin: auto;
+}
+
+.register-header {
+  text-align: center;
+  margin-bottom: $spacing-6;
+
+  h1 { font-size: $font-size-2xl; font-weight: 700; margin: $spacing-3 0 $spacing-1; }
+  p  { color: $tanty-gray-600; font-size: $font-size-sm; }
+}
+
+.register-form { display: flex; flex-direction: column; gap: $spacing-1; }
+
+.register-footer {
+  text-align: center;
+  margin-top: $spacing-5;
+  font-size: $font-size-sm;
+  color: $tanty-gray-600;
+  a { color: $tanty-green; font-weight: 500; }
+}
+
+.success-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-3;
+  background: rgba($color-success, 0.08);
+  border: 1px solid rgba($color-success, 0.3);
+  border-radius: $border-radius-lg;
+  padding: $spacing-5;
+  color: $color-success;
+
+  .material-icons { font-size: 28px; flex-shrink: 0; }
+  strong { font-size: $font-size-lg; }
+  p { margin-top: $spacing-1; }
+}
+
+.logo { display: inline-flex; align-items: center; gap: $spacing-1; margin-bottom: $spacing-2; }
+.logo__text { font-size: $font-size-2xl; font-weight: 800; font-family: $font-family-display; }
+.logo--dark .logo__text { color: $tanty-green; }
+.logo__dot { width: 8px; height: 8px; background: $tanty-yellow; border-radius: 50%; margin-bottom: 3px; }

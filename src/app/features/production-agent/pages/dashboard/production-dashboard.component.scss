@@ -1,0 +1,20 @@
+@use '../../../../../styles/variables' as *;
+.active-pph-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  background: $color-surface; border: 1px solid $color-border;
+  padding: $spacing-3 $spacing-4; border-radius: $border-radius-lg;
+  font-size: $font-size-sm; margin-bottom: $spacing-4;
+  flex-wrap: wrap; gap: $spacing-2;
+}
+.module-nav { display: flex; flex-direction: column; gap: $spacing-3; }
+.module-nav__card {
+  display: flex; align-items: center; gap: $spacing-4;
+  background: $color-surface; border: 1px solid $color-border;
+  border-radius: $border-radius-lg; padding: $spacing-4;
+  text-decoration: none; color: inherit; transition: all $transition-fast;
+  &:hover { border-color: $tanty-green; box-shadow: $shadow-sm; text-decoration: none; }
+}
+.module-nav__icon { font-size: 32px; color: $tanty-green; flex-shrink: 0; }
+.module-nav__title { font-weight: 600; margin-bottom: 2px; }
+.module-nav__desc { font-size: $font-size-sm; color: $tanty-gray-600; }
+.module-nav__arrow { margin-left: auto; color: $tanty-gray-400; }

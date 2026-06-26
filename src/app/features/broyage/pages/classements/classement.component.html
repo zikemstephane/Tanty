@@ -1,0 +1,99 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Classements Machinistes</h1>
+      <p class="page-header__subtitle">Performances hebdomadaires et mensuelles</p>
+    </div>
+  </div>
+
+  <!-- Mode selector -->
+  <div class="mode-bar tanty-card" style="padding:1rem 1.5rem;">
+    <div style="display:flex;gap:0.5rem;">
+      <button class="btn" [class.btn-primary]="modeView()==='hebdo'" [class.btn-ghost]="modeView()!=='hebdo'" (click)="modeView.set('hebdo'); charger()">
+        <span class="material-icons">calendar_today</span> Hebdomadaire
+      </button>
+      <button class="btn" [class.btn-primary]="modeView()==='mensuel'" [class.btn-ghost]="modeView()!=='mensuel'" (click)="modeView.set('mensuel'); charger()">
+        <span class="material-icons">calendar_month</span> Mensuel
+      </button>
+    </div>
+    @if (modeView() === 'hebdo') {
+      <select class="form-control" style="max-width:260px;" [ngModel]="selectedPPH()" (ngModelChange)="selectedPPH.set($event); charger()">
+        @for (p of pphs(); track p.id) {
+          <option [value]="p.reference">{{ p.reference }}</option>
+        }
+      </select>
+    } @else {
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <input type="number" class="form-control" style="width:90px;" [ngModel]="annee()" (ngModelChange)="annee.set($event)" placeholder="Année" />
+        <select class="form-control" style="width:120px;" [ngModel]="mois()" (ngModelChange)="mois.set($event)">
+          @for (m of [1,2,3,4,5,6,7,8,9,10,11,12]; track m) {
+            <option [value]="m">Mois {{ m }}</option>
+          }
+        </select>
+        <button class="btn btn-outline btn-sm" (click)="charger()">Rechercher</button>
+      </div>
+    }
+  </div>
+
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading() && classement()) {
+    <div class="classement-container">
+      @if (classement()!.entries.length === 0) {
+        <div class="tanty-card" style="text-align:center;padding:3rem;">
+          <span class="material-icons" style="font-size:48px;color:#E0E0E0;">emoji_events</span>
+          <p class="text-muted" style="margin-top:1rem;">Aucun résultat pour cette période</p>
+        </div>
+      } @else {
+        <!-- Podium top 3 -->
+        @if (classement()!.entries.length >= 3) {
+          <div class="podium">
+            @let e = classement()!.entries;
+            <div class="podium__place podium__place--2">
+              <div class="podium__medal">🥈</div>
+              <div class="podium__name">{{ e[1].machinisteNom }}</div>
+              <div class="podium__score">{{ e[1].scoreMoyen | number:'1.1-1' }}</div>
+              <div class="podium__bar podium__bar--2"></div>
+            </div>
+            <div class="podium__place podium__place--1">
+              <div class="podium__medal">🥇</div>
+              <div class="podium__name">{{ e[0].machinisteNom }}</div>
+              <div class="podium__score">{{ e[0].scoreMoyen | number:'1.1-1' }}</div>
+              <div class="podium__bar podium__bar--1"></div>
+            </div>
+            <div class="podium__place podium__place--3">
+              <div class="podium__medal">🥉</div>
+              <div class="podium__name">{{ e[2].machinisteNom }}</div>
+              <div class="podium__score">{{ e[2].scoreMoyen | number:'1.1-1' }}</div>
+              <div class="podium__bar podium__bar--3"></div>
+            </div>
+          </div>
+        }
+
+        <!-- Tableau complet -->
+        <div class="tanty-card" style="padding:0;overflow:hidden;margin-top:1.5rem;">
+          <table class="tanty-table">
+            <thead><tr><th>Rang</th><th>Machiniste</th><th>Matricule</th><th>Journées</th><th>Production totale (kg)</th><th>Score moyen</th></tr></thead>
+            <tbody>
+              @for (e of classement()!.entries; track e.rang) {
+                <tr [class.top-row]="e.rang <= 3">
+                  <td class="font-bold text-lg">{{ getMedal(e.rang) }}</td>
+                  <td class="font-semibold">{{ e.machinisteNom }}</td>
+                  <td class="text-sm text-muted font-mono">{{ e.machinisteMatricule }}</td>
+                  <td>{{ e.nbJournees }}</td>
+                  <td class="font-semibold">{{ e.totalProduit | number:'1.1-1' }}</td>
+                  <td>
+                    <span class="score-badge" [class.score-high]="e.scoreMoyen >= 97" [class.score-mid]="e.scoreMoyen >= 93 && e.scoreMoyen < 97">
+                      {{ e.scoreMoyen | number:'1.1-1' }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+</div>

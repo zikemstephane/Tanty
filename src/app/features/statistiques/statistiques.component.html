@@ -1,0 +1,292 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+  <div class="page-header">
+    <h1 class="page-header__title">
+      <span class="material-icons" style="vertical-align:middle;margin-right:0.5rem;">bar_chart</span>
+      Statistiques
+    </h1>
+    <p class="page-header__subtitle">Vue globale — {{ auth.currentUser()?.roleLibelle }}</p>
+  </div>
+
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading()) {
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      @if (auth.hasAnyRole('DIRECTEUR_GENERAL','GESTIONNAIRE_STOCK','CHEF_PRODUCTION')) {
+        <div class="kpi-card kpi-card--green">
+          <div class="kpi-card__icon"><span class="material-icons">receipt_long</span></div>
+          <div class="kpi-card__body">
+            <div class="kpi-card__value">{{ stats().totalBC }}</div>
+            <div class="kpi-card__label">Bons de Commande</div>
+            <div class="kpi-card__sub">{{ stats().bcValides }} validé(s) · {{ stats().bcEnAttente }} en attente</div>
+          </div>
+        </div>
+      }
+      <div class="kpi-card kpi-card--yellow">
+        <div class="kpi-card__icon"><span class="material-icons">calendar_today</span></div>
+        <div class="kpi-card__body">
+          <div class="kpi-card__value">{{ stats().tauxRealisationMoyen }}%</div>
+          <div class="kpi-card__label">Taux réalisation PPH</div>
+          <div class="kpi-card__sub">{{ stats().pphEnCours }} en cours · {{ stats().pphTermines }} terminé(s)</div>
+        </div>
+      </div>
+      @if (auth.hasAnyRole('DIRECTEUR_GENERAL','CHEF_PRODUCTION','CHEF_MACHINISTE')) {
+        <div class="kpi-card kpi-card--orange">
+          <div class="kpi-card__icon"><span class="material-icons">precision_manufacturing</span></div>
+          <div class="kpi-card__body">
+            <div class="kpi-card__value">{{ stats().totalPoudreNette | number:'1.0-0' }} kg</div>
+            <div class="kpi-card__label">Poudre nette broyage</div>
+            <div class="kpi-card__sub">{{ stats().totalJournees }} journée(s) · {{ stats().tauxPerteMoyen }}% perte</div>
+          </div>
+        </div>
+      }
+      @if (auth.hasAnyRole('DIRECTEUR_GENERAL','CHEF_PRODUCTION','AGENT_DOSEUR')) {
+        <div class="kpi-card kpi-card--purple">
+          <div class="kpi-card__icon"><span class="material-icons">science</span></div>
+          <div class="kpi-card__body">
+            <div class="kpi-card__value">{{ stats().totalFuts }}</div>
+            <div class="kpi-card__label">Fûts dosés</div>
+            <div class="kpi-card__sub">{{ stats().totalPoidsKg | number:'1.0-0' }} kg total</div>
+          </div>
+        </div>
+      }
+      @if (auth.hasAnyRole('DIRECTEUR_GENERAL','GESTIONNAIRE_STOCK','CHEF_PRODUCTION','AGENT_PRODUCTION')) {
+        <div class="kpi-card kpi-card--teal">
+          <div class="kpi-card__icon"><span class="material-icons">warehouse</span></div>
+          <div class="kpi-card__body">
+            <div class="kpi-card__value">{{ stats().tauxConformite }}%</div>
+            <div class="kpi-card__label">Conformité réception</div>
+            <div class="kpi-card__sub">{{ stats().totalEcarts }} écart(s) signalé(s)</div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Graphiques ligne 1 -->
+    <div class="charts-row">
+
+      <!-- GRAND Donut BC -->
+      @if (auth.hasAnyRole('DIRECTEUR_GENERAL','GESTIONNAIRE_STOCK','CHEF_PRODUCTION')) {
+        <div class="tanty-card chart-card">
+          <h3 class="tanty-card__title" style="margin-bottom:1.5rem;">
+            <span class="material-icons">donut_large</span> Répartition des Bons de Commande
+          </h3>
+          <div class="donut-container">
+            <svg viewBox="0 0 200 200" class="donut-svg">
+              @for (seg of donutSegments(); track seg.label) {
+                <path [attr.d]="seg.path" [attr.fill]="seg.color" class="donut-seg">
+                  <title>{{ seg.label }} : {{ seg.pct }}%</title>
+                </path>
+              }
+              <text x="100" y="94" text-anchor="middle" class="donut-center-val">{{ stats().totalBC }}</text>
+              <text x="100" y="112" text-anchor="middle" class="donut-center-label">Total BC</text>
+            </svg>
+            <div class="donut-legend">
+              @for (item of bcRepartition(); track item.label) {
+                @if (item.value > 0) {
+                  <div class="legend-item">
+                    <span class="legend-dot" [style.background]="item.color"></span>
+                    <span class="legend-label">{{ item.label }}</span>
+                    <span class="legend-val">{{ item.value }} ({{ item.pct }}%)</span>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- GRAND Barres PPH -->
+      <div class="tanty-card chart-card">
+        <h3 class="tanty-card__title" style="margin-bottom:1.5rem;">
+          <span class="material-icons">bar_chart</span> Taux de réalisation par Plan de Production
+        </h3>
+        <div class="bar-chart">
+          @for (item of pphTaux(); track item.ref) {
+            <div class="bar-item">
+              <div class="bar-label" [title]="item.ref">{{ item.ref.split('-').slice(-1)[0] }}</div>
+              <div class="bar-track">
+                <div class="bar-fill"
+                     [style.width]="item.taux + '%'"
+                     [style.background]="item.taux >= 90 ? '#2E7D32' : item.taux >= 60 ? '#F57F17' : '#C62828'">
+                </div>
+              </div>
+              <div class="bar-val" [class.text-success]="item.taux>=90" [class.text-warning]="item.taux<90&&item.taux>=60" [class.text-error]="item.taux<60">
+                {{ item.taux }}%
+              </div>
+            </div>
+          }
+          @if (pphTaux().length === 0) {
+            <p class="text-muted text-sm" style="text-align:center;padding:3rem;">Aucun PPH disponible</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphiques ligne 2 -->
+    <div class="chart-row-2">
+
+      <!-- GRAND Graphique production semaine -->
+      <div class="tanty-card chart-card">
+        <h3 class="tanty-card__title" style="margin-bottom:1.5rem;">
+          <span class="material-icons">show_chart</span> Production semaine en cours (unités)
+        </h3>
+        <div class="line-chart-wrapper">
+          <svg viewBox="0 0 400 200" class="line-svg">
+            <!-- Grille horizontale -->
+            @for (y of [0,1,2,3,4]; track y) {
+              @let yPos = 20 + y * 36;
+              <line x1="50" [attr.y1]="yPos" x2="390" [attr.y2]="yPos" stroke="#F0F0F0" stroke-width="1"/>
+              <text x="45" [attr.y]="yPos + 4" text-anchor="end" class="axis-label">
+                {{ ((4 - y) * maxProd() / 4) | number:'1.0-0' }}
+              </text>
+            }
+            <!-- Barres -->
+            @for (item of evolutionProd(); track $index) {
+              @let x = 60 + $index * 56;
+              @let barH = (item.value / maxProd()) * 140;
+              @let barY = 160 - barH;
+              <rect [attr.x]="x" [attr.y]="barY" width="40" [attr.height]="barH" rx="6"
+                    fill="rgba(46,125,50,0.75)" class="bar-rect"/>
+              <text [attr.x]="x + 20" y="180" text-anchor="middle" class="axis-label" font-weight="600">{{ item.label }}</text>
+              <text [attr.x]="x + 20" [attr.y]="barY - 6" text-anchor="middle" class="bar-label-top">{{ item.value }}</text>
+            }
+          </svg>
+        </div>
+      </div>
+
+      <!-- Alertes et synthèse -->
+      <div class="tanty-card chart-card">
+        <h3 class="tanty-card__title" style="margin-bottom:1.5rem;">
+          <span class="material-icons">notifications_active</span> Points d'attention
+        </h3>
+        <div class="alerts-list">
+          @if (stats().bcEnAttente > 0) {
+            <div class="alert-item alert-item--warning">
+              <span class="material-icons">pending_actions</span>
+              <div>
+                <div>{{ stats().bcEnAttente }} BC en attente de validation</div>
+                <a routerLink="/bons-de-commande">Voir les BC →</a>
+              </div>
+            </div>
+          }
+          @if (stats().totalEcarts > 0) {
+            <div class="alert-item alert-item--error">
+              <span class="material-icons">warning</span>
+              <div>
+                <div>{{ stats().totalEcarts }} écart(s) de réception non justifié(s)</div>
+                <a routerLink="/reception">Voir les réceptions →</a>
+              </div>
+            </div>
+          }
+          @if (stats().pphEnCours > 0) {
+            <div class="alert-item alert-item--info">
+              <span class="material-icons">schedule</span>
+              <div>
+                <div>{{ stats().pphEnCours }} PPH en cours de production</div>
+                <a routerLink="/pphs">Voir les PPH →</a>
+              </div>
+            </div>
+          }
+          @if (stats().tauxPerteMoyen > 3) {
+            <div class="alert-item alert-item--warning">
+              <span class="material-icons">trending_down</span>
+              <div>
+                <div>Taux de perte broyage élevé : {{ stats().tauxPerteMoyen }}%</div>
+                <a routerLink="/broyage">Voir le broyage →</a>
+              </div>
+            </div>
+          }
+          @if (stats().bcEnAttente === 0 && stats().totalEcarts === 0 && stats().tauxPerteMoyen <= 3) {
+            <div class="alert-item alert-item--ok">
+              <span class="material-icons">check_circle</span>
+              <div>Tous les indicateurs sont au vert !</div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Avancement PPH -->
+    <div class="synthesis-grid">
+      <div class="tanty-card">
+        <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+          <span class="material-icons">calendar_today</span> Avancement par PPH
+        </h3>
+        <div class="synth-list">
+          @for (pph of pphTaux(); track pph.ref) {
+            <div class="synth-item">
+              <div class="synth-item__info">
+                <a [routerLink]="['/pphs', pph.ref]" class="synth-link">{{ pph.ref }}</a>
+                <span class="badge text-xs"
+                      [class.badge--valide]="pph.statut==='TERMINE'"
+                      [class.badge--warning]="pph.statut==='EN_COURS'"
+                      [class.badge--info]="pph.statut==='PLANIFIE'">
+                  {{ pph.statut === 'TERMINE' ? 'Terminé' : pph.statut === 'EN_COURS' ? 'En cours' : 'Planifié' }}
+                </span>
+              </div>
+              <div class="synth-item__bar">
+                <div class="progress" style="flex:1; height:12px;">
+                  <div class="progress__bar" [style.width]="pph.taux+'%'"
+                       [style.background]="pph.taux>=90?'#2E7D32':pph.taux>=60?'#F57F17':'#C62828'"></div>
+                </div>
+                <span class="font-bold" style="width:40px;text-align:right;"
+                      [class.text-success]="pph.taux>=90" [class.text-warning]="pph.taux<90&&pph.taux>=60" [class.text-error]="pph.taux<60">
+                  {{ pph.taux }}%
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Résumé chiffres clés -->
+      <div class="tanty-card">
+        <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+          <span class="material-icons">summarize</span> Résumé global
+        </h3>
+        <div class="synth-list">
+          @if (auth.hasAnyRole('DIRECTEUR_GENERAL','GESTIONNAIRE_STOCK','CHEF_PRODUCTION')) {
+            <div class="synth-item">
+              <div class="synth-item__info">
+                <span class="font-medium text-sm">BC Brouillons</span>
+                <span class="font-bold">{{ stats().bcBrouillon }}</span>
+              </div>
+            </div>
+            <div class="synth-item">
+              <div class="synth-item__info">
+                <span class="font-medium text-sm">BC En attente</span>
+                <span class="font-bold" [class.text-warning]="stats().bcEnAttente>0">{{ stats().bcEnAttente }}</span>
+              </div>
+            </div>
+            <div class="synth-item">
+              <div class="synth-item__info">
+                <span class="font-medium text-sm">BC Validés</span>
+                <span class="font-bold text-success">{{ stats().bcValides }}</span>
+              </div>
+            </div>
+            <div class="synth-item">
+              <div class="synth-item__info">
+                <span class="font-medium text-sm">BC Clos</span>
+                <span class="font-bold">{{ stats().bcClos }}</span>
+              </div>
+            </div>
+          }
+          <div class="synth-item">
+            <div class="synth-item__info">
+              <span class="font-medium text-sm">PPH Total</span>
+              <span class="font-bold">{{ stats().totalPPH }}</span>
+            </div>
+          </div>
+          <div class="synth-item">
+            <div class="synth-item__info">
+              <span class="font-medium text-sm">Taux réalisation moyen</span>
+              <span class="font-bold" [class.text-success]="stats().tauxRealisationMoyen>=90">{{ stats().tauxRealisationMoyen }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

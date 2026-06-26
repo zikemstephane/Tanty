@@ -1,0 +1,110 @@
+<div class="auth-layout auth-layout--register">
+  <div class="register-container">
+    <div class="register-header">
+      <div class="logo logo--dark">
+        <span class="logo__text">TANTY</span>
+        <span class="logo__dot"></span>
+      </div>
+      <h1>Créer un compte</h1>
+      <p>Remplissez le formulaire pour rejoindre la plateforme TANTY</p>
+    </div>
+
+    @if (success()) {
+      <div class="success-banner">
+        <span class="material-icons">check_circle</span>
+        <div>
+          <strong>Compte créé avec succès !</strong>
+          <p>{{ success() }}</p>
+          <p class="text-sm text-muted">Redirection vers la page de connexion…</p>
+        </div>
+      </div>
+    } @else {
+
+      @if (errorMsg()) {
+        <div class="form-error-banner">
+          <span class="material-icons">error_outline</span>
+          {{ errorMsg() }}
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="register-form">
+        <div class="grid grid--2">
+          <div class="form-group">
+            <label class="form-label">Nom *</label>
+            <input type="text" class="form-control" formControlName="nom" placeholder="MBARGA" />
+            @if (nom.invalid && nom.touched) {
+              <span class="form-error"><span class="material-icons">error</span>Nom obligatoire (min 3 caractères)</span>
+            }
+          </div>
+          <div class="form-group">
+            <label class="form-label">Prénom *</label>
+            <input type="text" class="form-control" formControlName="prenom" placeholder="Jean-Pierre" />
+            @if (prenom.invalid && prenom.touched) {
+              <span class="form-error"><span class="material-icons">error</span>Prénom obligatoire</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon">email</span>
+            <input type="email" class="form-control input-with-icon" formControlName="email" placeholder="exemple@tanty.cm" />
+          </div>
+          @if (email.invalid && email.touched) {
+            <span class="form-error"><span class="material-icons">error</span>Email valide obligatoire</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Rôle *</label>
+          <select class="form-control" formControlName="role">
+            <option value="">-- Sélectionner un rôle --</option>
+            @for (r of roles; track r.value) {
+              <option [value]="r.value">{{ r.label }}</option>
+            }
+          </select>
+          @if (role.invalid && role.touched) {
+            <span class="form-error"><span class="material-icons">error</span>Rôle obligatoire</span>
+          }
+        </div>
+
+        <div class="grid grid--2">
+          <div class="form-group">
+            <label class="form-label">Mot de passe *</label>
+            <div class="input-wrapper">
+              <span class="material-icons input-icon">lock</span>
+              <input [type]="showPwd() ? 'text' : 'password'" class="form-control input-with-icon input-with-icon-right" formControlName="motDePasse" placeholder="Min. 8 caractères" />
+              <button type="button" class="input-toggle" (click)="toggleShowPwd()">
+                <span class="material-icons">{{ showPwd() ? 'visibility_off' : 'visibility' }}</span>
+              </button>
+            </div>
+            @if (mdp.invalid && mdp.touched) {
+              <span class="form-error"><span class="material-icons">error</span>Min. 8 caractères</span>
+            }
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirmation *</label>
+            <div class="input-wrapper">
+              <span class="material-icons input-icon">lock_reset</span>
+              <input [type]="showPwd() ? 'text' : 'password'" class="form-control input-with-icon" formControlName="confirmationMotDePasse" placeholder="Répéter le mot de passe" />
+            </div>
+            @if (confirm.invalid && confirm.touched) {
+              <span class="form-error"><span class="material-icons">error</span>Confirmation obligatoire</span>
+            }
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-submit" [disabled]="loading()">
+          @if (loading()) {
+            <div class="spinner spinner-sm"></div> Création en cours…
+          } @else {
+            <span class="material-icons">person_add</span> Créer le compte
+          }
+        </button>
+      </form>
+
+      <p class="register-footer">Déjà un compte ? <a routerLink="/auth/login">Se connecter</a></p>
+    }
+  </div>
+</div>

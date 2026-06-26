@@ -1,0 +1,10 @@
+@use '../../../../../../styles/variables' as *;
+.create-layout { display: grid; grid-template-columns: 1fr 280px; gap: $spacing-4; align-items: start; @media(max-width:$bp-lg){grid-template-columns:1fr;} }
+.lines-header  { display: flex; align-items: center; justify-content: space-between; margin-bottom: $spacing-4; }
+.lines-list    { display: flex; flex-direction: column; gap: $spacing-3; }
+.ligne-card    { display: flex; gap: $spacing-2; align-items: flex-start; border: 1px solid $color-border; border-radius: $border-radius; padding: $spacing-3; }
+.ligne-card__num { width: 26px; height: 26px; border-radius: 50%; background: $tanty-gray-100; display: flex; align-items: center; justify-content: center; font-size: $font-size-xs; font-weight: 600; color: $tanty-gray-600; flex-shrink: 0; margin-top: 24px; }
+.ligne-card__content { display: flex; flex: 1; gap: $spacing-2; flex-wrap: wrap; align-items: flex-end; }
+.sticky-summary { position: sticky; top: 80px; }
+.sum-item { display: flex; justify-content: space-between; font-size: $font-size-sm; padding: $spacing-2 0; border-bottom: 1px solid $color-border; }
+.form-actions { display: flex; gap: $spacing-2; justify-content: flex-end; margin-top: $spacing-4; }

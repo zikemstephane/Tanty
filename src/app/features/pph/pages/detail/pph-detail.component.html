@@ -1,0 +1,317 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs()" />
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading() && pph()) {
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="title-row">
+          <h1 class="page-header__title">{{ pph()!.reference }}</h1>
+          <span class="badge {{ statusClass(pph()!.statut) }} badge-lg">{{ pph()!.statutLibelle }}</span>
+          @if (isPlanifie()) {
+            <span class="badge badge--info" style="font-size:11px;">✏️ Modifiable</span>
+          }
+        </div>
+        <p class="page-header__subtitle">
+          BC : {{ pph()!.referenceBC }} · Semaine {{ pph()!.numeroSemaine }} ·
+          {{ pph()!.dateDebut }} → {{ pph()!.dateFin }}
+        </p>
+      </div>
+      <div class="page-header__actions">
+        @if (canAjuster()) {
+          <button class="btn btn-outline" (click)="showAjuster.set(true)">
+            <span class="material-icons">tune</span> Ajuster quantité
+          </button>
+        } @else if (!isPlanifie()) {
+          <div class="no-edit-info">
+            <span class="material-icons">info</span>
+            Modifications désactivées (statut : {{ pph()!.statutLibelle }})
+          </div>
+        }
+        @if (auth.hasAnyRole('AGENT_PRODUCTION','CHEF_PRODUCTION','DIRECTEUR_GENERAL')) {
+          <a routerLink="/production/fiches/nouveau" class="btn btn-primary">
+            <span class="material-icons">add</span> Nouvelle fiche
+          </a>
+        }
+        @if (auth.hasAnyRole('CHEF_MACHINISTE','CHEF_PRODUCTION','DIRECTEUR_GENERAL')) {
+          <a routerLink="/broyage/journees/nouveau" class="btn btn-secondary">
+            <span class="material-icons">precision_manufacturing</span> Ouvrir journée broyage
+          </a>
+        }
+      </div>
+    </div>
+
+    <!-- Onglets -->
+    <div class="tabs">
+      <button class="tab" [class.tab--active]="activeTab()==='produits'" (click)="activeTab.set('produits')">
+        <span class="material-icons">inventory</span> Produits & Réalisation
+      </button>
+      <button class="tab" [class.tab--active]="activeTab()==='repartition'" (click)="activeTab.set('repartition')">
+        <span class="material-icons">view_week</span> Répartition par jour
+      </button>
+      <button class="tab" [class.tab--active]="activeTab()==='emballages'" (click)="activeTab.set('emballages')">
+        <span class="material-icons">inventory_2</span> Emballages estimés
+      </button>
+      @if (pph()!.besoinsMatieresPremieres) {
+        <button class="tab" [class.tab--active]="activeTab()==='matieres'" (click)="activeTab.set('matieres')">
+          <span class="material-icons">science</span> Matières premières
+        </button>
+      }
+    </div>
+
+    <!-- ── ONGLET 1 : Produits ─────────────────────────────────────────── -->
+    @if (activeTab() === 'produits') {
+      <div class="tanty-card" style="padding:0;overflow:hidden;">
+        <table class="tanty-table">
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th>Catégorie</th>
+              <th>Cible (cartons)</th>
+              <th>Réalisé (cartons)</th>
+              <th>Réalisé (unités)</th>
+              <th>Taux de réalisation</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (ligne of pph()!.lignes; track ligne.produitId) {
+              <tr>
+                <td>
+                  <div class="font-semibold text-sm">{{ ligne.produitNom }}</div>
+                  <div class="text-xs text-muted">{{ ligne.produitCode }}</div>
+                </td>
+                <td><span class="badge badge--info text-xs">{{ ligne.categorie }}</span></td>
+                <td class="font-semibold">{{ ligne.quantiteCibleCartons }}</td>
+                <td>{{ ligne.quantiteRealiseeCartons }}</td>
+                <td class="text-muted">{{ ligne.quantiteRealiseeUnites | number }}</td>
+                <td>
+                  <div class="taux-cell">
+                    <div class="progress" style="width:120px;">
+                      <div class="progress__bar" [style.width]="ligne.tauxRealisation+'%'"
+                        [style.background]="ligne.tauxRealisation>=90?'#2E7D32':ligne.tauxRealisation>=60?'#F57F17':'#C62828'">
+                      </div>
+                    </div>
+                    <span class="font-semibold {{ tauxClass(ligne.tauxRealisation) }}">
+                      {{ ligne.tauxRealisation | number:'1.1-1' }}%
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- ── ONGLET 2 : Répartition par jour ──────────────────────────────── -->
+    @if (activeTab() === 'repartition') {
+      <div class="repartition-section">
+
+        <!-- Info banner -->
+        <div class="info-banner">
+          <span class="material-icons">info</span>
+          <div>
+            <strong>Estimation journalière</strong> — La charge de production est répartie sur les 5 jours ouvrés de la semaine.
+            Ces valeurs sont indicatives pour permettre à l'Agent de Production de planifier sa journée.
+            Total semaine estimé : <strong>{{ totalKgSemaine() | number:'1.0-0' }} kg de poudre</strong>.
+          </div>
+        </div>
+
+        <!-- Graphique barres par jour -->
+        <div class="tanty-card chart-day">
+          <h3 class="tanty-card__title" style="margin-bottom:1.5rem;">
+            <span class="material-icons">bar_chart</span>
+            Charge en poudre estimée par jour (kg)
+          </h3>
+          <div class="day-bars">
+            @for (jour of repartition(); track jour.jour) {
+              <div class="day-bar-col" [class.day-bar-col--selected]="jourSelectionne()?.jour === jour.jour"
+                   (click)="jourSelectionne.set(jour)">
+                <div class="day-bar-track">
+                  <div class="day-bar-fill"
+                       [style.height]="(jour.totalKg / maxKg() * 100) + '%'"
+                       [class.day-bar-fill--selected]="jourSelectionne()?.jour === jour.jour">
+                  </div>
+                </div>
+                <div class="day-bar-val">{{ jour.totalKg | number:'1.0-0' }} kg</div>
+                <div class="day-bar-label">{{ jour.jour }}</div>
+                <div class="day-bar-date">{{ jour.date }}</div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Détail du jour sélectionné -->
+        @if (jourSelectionne()) {
+          <div class="tanty-card" style="padding:0;overflow:hidden;">
+            <div style="padding:1.5rem 1.5rem 0.75rem;display:flex;align-items:center;justify-content:space-between;">
+              <h3 class="tanty-card__title">
+                <span class="material-icons">event</span>
+                {{ jourSelectionne()!.jour }} {{ jourSelectionne()!.date }} — Détail des estimations
+              </h3>
+              <span class="total-chip">Total : {{ jourSelectionne()!.totalKg | number:'1.0-0' }} kg</span>
+            </div>
+            <table class="tanty-table">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Code</th>
+                  <th>Cartons cibles / jour</th>
+                  <th>Poudre estimée / jour</th>
+                  <th>Proportion semaine</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ligne of jourSelectionne()!.lignes; track ligne.produitCode) {
+                  <tr>
+                    <td class="font-semibold text-sm">{{ ligne.produitNom }}</td>
+                    <td class="font-mono text-xs text-muted">{{ ligne.produitCode }}</td>
+                    <td>
+                      <span class="carton-badge">
+                        <span class="material-icons">inventory_2</span>
+                        {{ ligne.cartonsCible }} carton(s)
+                      </span>
+                    </td>
+                    <td>
+                      <span class="poudre-badge">
+                        <span class="material-icons">scale</span>
+                        {{ ligne.kgPoudre | number:'1.0-1' }} kg
+                      </span>
+                    </td>
+                    <td>
+                      @let pctSem = getPctSem(pph(), ligne);
+                      <div class="progress" style="width:100px;display:inline-block;">
+                        <div class="progress__bar" style="background:#2E7D32;"
+                             [style.width]="(ligne.cartonsCible / pctSem * 100) + '%'"></div>
+                      </div>
+                      <span class="text-xs text-muted" style="margin-left:6px;">
+                        {{ (ligne.cartonsCible / pctSem * 100) | number:'1.0-0' }}%
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        <!-- Navigation jours rapide -->
+        <div class="day-nav">
+          @for (jour of repartition(); track jour.jour) {
+            <button class="day-nav-btn" [class.day-nav-btn--active]="jourSelectionne()?.jour === jour.jour"
+                    (click)="jourSelectionne.set(jour)">
+              <div class="font-semibold">{{ jour.jour }}</div>
+              <div class="text-xs">{{ jour.totalKg | number:'1.0-0' }} kg</div>
+            </button>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ── ONGLET 3 : Emballages ─────────────────────────────────────────── -->
+    @if (activeTab() === 'emballages') {
+      <div class="info-banner" style="margin-bottom:1rem;">
+        <span class="material-icons">info</span>
+        Estimations calculées depuis les quantités cibles. À confronter avec ce que vous recevez physiquement du stock.
+      </div>
+      <div class="grid grid--3" style="margin-bottom:1.5rem;">
+        <div class="stat-card">
+          <div class="stat-card__icon stat-card__icon--green"><span class="material-icons">inventory_2</span></div>
+          <span class="stat-card__label">Total cartons</span>
+          <span class="stat-card__value">{{ getTotalEmballages().cartons | number }}</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__icon stat-card__icon--yellow"><span class="material-icons">label</span></div>
+          <span class="stat-card__label">Total unités/sachets</span>
+          <span class="stat-card__value">{{ getTotalEmballages().sachets | number }}</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__icon stat-card__icon--blue"><span class="material-icons">list</span></div>
+          <span class="stat-card__label">Références</span>
+          <span class="stat-card__value">{{ pph()!.lignes.length }}</span>
+        </div>
+      </div>
+      <div class="tanty-card" style="padding:0;overflow:hidden;">
+        <table class="tanty-table">
+          <thead><tr><th>Produit</th><th>Cartons prévus</th><th>Unités estimées</th><th>Statut</th></tr></thead>
+          <tbody>
+            @for (ligne of pph()!.lignes; track ligne.produitId) {
+              @let emb = getEmballageEstime(ligne);
+              <tr>
+                <td>
+                  <div class="font-semibold text-sm">{{ ligne.produitNom }}</div>
+                  <div class="text-xs text-muted">{{ ligne.produitCode }}</div>
+                </td>
+                <td><span class="emb-badge emb-badge--carton"><span class="material-icons">inventory_2</span>{{ emb.cartons }}</span></td>
+                <td><span class="emb-badge emb-badge--sachet"><span class="material-icons">label</span>{{ emb.sachets | number }}</span></td>
+                <td>
+                  @if (ligne.tauxRealisation > 0) {
+                    <span class="badge badge--valide">En cours ({{ ligne.tauxRealisation | number:'1.0-0' }}%)</span>
+                  } @else {
+                    <span class="badge badge--attente">En attente</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- ── ONGLET 4 : Matières premières ─────────────────────────────────── -->
+    @if (activeTab() === 'matieres' && pph()!.besoinsMatieresPremieres) {
+      @let bm = pph()!.besoinsMatieresPremieres!;
+      <div class="matieres-grid">
+        <div class="matiere-card mais"><span>🌽</span><span class="matiere-label">Maïs</span><span class="matiere-value">{{ bm.maisKg | number:'1.0-0' }} kg</span></div>
+        <div class="matiere-card soja"><span>🌱</span><span class="matiere-label">Soja</span><span class="matiere-value">{{ bm.sojaKg | number:'1.0-0' }} kg</span></div>
+        <div class="matiere-card arachide"><span>🥜</span><span class="matiere-label">Arachide</span><span class="matiere-value">{{ bm.arachideKg | number:'1.0-0' }} kg</span></div>
+        <div class="matiere-card total"><span>📦</span><span class="matiere-label">Total</span><span class="matiere-value">{{ (bm.maisKg + bm.sojaKg + bm.arachideKg) | number:'1.0-0' }} kg</span></div>
+      </div>
+    }
+  }
+</div>
+
+<!-- Modal ajuster (PLANIFIE seulement) -->
+@if (showAjuster() && isPlanifie()) {
+  <div class="overlay" (click)="showAjuster.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title"><span class="material-icons">tune</span> Ajuster une quantité cible</h3>
+        <button class="btn btn-ghost btn-icon" (click)="showAjuster.set(false)"><span class="material-icons">close</span></button>
+      </div>
+      <div class="modal__body">
+        <div class="planifie-info">
+          <span class="material-icons">check_circle</span>
+          Ce PPH est en statut <strong>Planifié</strong> — modification autorisée.
+        </div>
+      </div>
+      <form [formGroup]="ajusterForm" (ngSubmit)="ajuster()">
+        <div class="modal__body" style="padding-top:0;">
+          <div class="form-group">
+            <label class="form-label">Produit à ajuster *</label>
+            <select class="form-control" formControlName="lignePPHId">
+              <option value="">-- Sélectionner --</option>
+              @for (l of pph()?.lignes; track l.produitId) {
+                <option [value]="l.id">{{ l.produitNom }} — cible actuelle : {{ l.quantiteCibleCartons }} cartons</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nouvelle quantité (cartons) *</label>
+            <input type="number" class="form-control" formControlName="nouvelleQuantite" min="1" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Motif (insuffisant / déjà suffisant / autre) *</label>
+            <textarea class="form-control" formControlName="motif" rows="3"
+              placeholder="Ex: Les quantités prévues sont insuffisantes pour couvrir la demande…"></textarea>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button type="button" class="btn btn-ghost" (click)="showAjuster.set(false)">Annuler</button>
+          <button type="submit" class="btn btn-primary"><span class="material-icons">tune</span> Appliquer l'ajustement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

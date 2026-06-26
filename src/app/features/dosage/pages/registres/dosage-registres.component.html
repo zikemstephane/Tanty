@@ -1,0 +1,218 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Registres de Dosage</h1>
+      <p class="page-header__subtitle">Historique de toutes les sessions de dosage par plan de production</p>
+    </div>
+    @if (auth.hasAnyRole('AGENT_DOSEUR','CHEF_PRODUCTION','DIRECTEUR_GENERAL')) {
+      <div class="page-header__actions">
+        <a routerLink="/dosage" class="btn btn-primary">
+          <span class="material-icons">add</span> Nouvelle session
+        </a>
+      </div>
+    }
+  </div>
+
+  <!-- Filtres -->
+  <div class="tanty-card" style="padding:1rem 1.5rem; margin-bottom:1rem; display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
+    <div class="form-group" style="margin-bottom:0; flex:1; min-width:200px;">
+      <select class="form-control" [ngModel]="selectedPPH()" (ngModelChange)="selectedPPH.set($event); charger()">
+        <option value="">Sélectionner un PPH</option>
+        @for (p of pphs(); track p.id) {
+          <option [value]="p.reference">{{ p.reference }} (S{{ p.numeroSemaine }})</option>
+        }
+      </select>
+    </div>
+    <div class="form-group" style="margin-bottom:0; min-width:180px;">
+      <select class="form-control" [ngModel]="filterType()" (ngModelChange)="filterType.set($event)">
+        <option value="">Tous les types</option>
+        <option value="BOUILLIE">Bouillie</option>
+        <option value="MELANGE_ARACHIDE">Mélange Arachide</option>
+      </select>
+    </div>
+  </div>
+
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading()) {
+    <!-- KPI -->
+    <div class="grid grid--4" style="margin-bottom:1.5rem;">
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--green"><span class="material-icons">science</span></div>
+        <span class="stat-card__label">Sessions</span>
+        <span class="stat-card__value">{{ filteredSessions.length }}</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--yellow"><span class="material-icons">blender</span></div>
+        <span class="stat-card__label">Total fûts</span>
+        <span class="stat-card__value">{{ totalFuts() }}</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--blue"><span class="material-icons">scale</span></div>
+        <span class="stat-card__label">Poids total</span>
+        <span class="stat-card__value">{{ totalPoids() | number:'1.0-0' }} kg</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon" [style.background]="tauxConformite()===100?'rgba(46,125,50,0.12)':'rgba(198,40,40,0.12)'">
+          <span class="material-icons" [style.color]="tauxConformite()===100?'#2E7D32':'#C62828'">verified</span>
+        </div>
+        <span class="stat-card__label">Taux conformité</span>
+        <span class="stat-card__value" [class.text-success]="tauxConformite()===100" [class.text-error]="tauxConformite()<100">
+          {{ tauxConformite() }}%
+        </span>
+      </div>
+    </div>
+
+    <!-- Formule rappel -->
+    <div class="formule-banner">
+      <div class="formule-item">
+        <strong class="text-sm">🥣 Bouillie (fût 50 kg) :</strong>
+        <span class="text-sm">40 kg Maïs + 9 kg Soja + 1 kg Arachide</span>
+      </div>
+      <div style="width:1px;background:#E0E0E0;"></div>
+      <div class="formule-item">
+        <strong class="text-sm">🥜 Mélange Arachide (fût 50 kg) :</strong>
+        <span class="text-sm">40 kg Maïs + 1 kg Soja + 9 kg Arachide</span>
+      </div>
+    </div>
+
+    @if (filteredSessions.length === 0) {
+      <div class="tanty-card" style="text-align:center;padding:3rem;">
+        <span class="material-icons" style="font-size:48px;color:#E0E0E0;">science</span>
+        <p class="text-muted" style="margin-top:1rem;">Aucune session de dosage pour ce PPH</p>
+      </div>
+    } @else {
+
+      <div class="registres-grid">
+        @for (s of filteredSessions; track s.id) {
+          <div class="registre-card" (click)="ouvrirDetail(s)"
+               [class.registre-card--non-conforme]="!s.compositionConforme">
+            <div class="registre-card__header">
+              <div>
+                <div class="font-semibold text-sm">{{ s.date }}</div>
+                <div class="text-xs text-muted">{{ s.referencePPH }}</div>
+              </div>
+              <div style="display:flex;gap:0.25rem;flex-direction:column;align-items:flex-end;">
+                <span class="badge" [class.badge--valide]="s.typeMelange==='BOUILLIE'" [class.badge--info]="s.typeMelange!=='BOUILLIE'">
+                  {{ s.typeMelange==='BOUILLIE' ? '🥣 Bouillie' : '🥜 Mél. Arachide' }}
+                </span>
+                @if (!s.compositionConforme) {
+                  <span class="badge badge--annule" style="font-size:9px;">⚠️ Non conforme</span>
+                }
+              </div>
+            </div>
+
+            <div class="registre-card__agent">
+              <span class="material-icons">person</span>
+              <span class="text-sm">{{ s.agentNom }}</span>
+            </div>
+
+            <div class="registre-card__stats">
+              <div class="rstat">
+                <div class="rstat__label">Fûts</div>
+                <div class="rstat__val">{{ s.nombreFuts }}</div>
+              </div>
+              <div class="rstat">
+                <div class="rstat__label">Poids net</div>
+                <div class="rstat__val">{{ s.poidsNetTotalKg | number:'1.0-0' }} kg</div>
+              </div>
+            </div>
+
+            <div class="composition-mini">
+              <div class="comp-mini" [class.comp-mini--ok]="compositionConforme(s).mais" [class.comp-mini--ko]="!compositionConforme(s).mais">
+                🌽 {{ s.composition.maisKg }} kg
+              </div>
+              <div class="comp-mini" [class.comp-mini--ok]="compositionConforme(s).soja" [class.comp-mini--ko]="!compositionConforme(s).soja">
+                🌱 {{ s.composition.sojaKg }} kg
+              </div>
+              <div class="comp-mini" [class.comp-mini--ok]="compositionConforme(s).arachide" [class.comp-mini--ko]="!compositionConforme(s).arachide">
+                🥜 {{ s.composition.arachideKg }} kg
+              </div>
+            </div>
+
+            <div class="registre-card__action">
+              <span class="material-icons">visibility</span> Voir le détail
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+</div>
+
+<!-- Modal détail session -->
+@if (sessionDetail()) {
+  <div class="overlay" (click)="sessionDetail.set(null)">
+    <div class="modal modal--detail" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">
+          Détail — Session du {{ sessionDetail()!.date }}
+        </h3>
+        <button class="btn btn-ghost btn-icon" (click)="sessionDetail.set(null)"><span class="material-icons">close</span></button>
+      </div>
+      <div class="modal__body">
+        <div class="session-detail-grid">
+          <div class="sd-item"><span class="sd-label">PPH</span><span class="sd-val">{{ sessionDetail()!.referencePPH }}</span></div>
+          <div class="sd-item"><span class="sd-label">Agent</span><span class="sd-val">{{ sessionDetail()!.agentNom }}</span></div>
+          <div class="sd-item"><span class="sd-label">Type</span><span class="sd-val">{{ TYPE_MELANGE_LABELS[sessionDetail()!.typeMelange] }}</span></div>
+          <div class="sd-item"><span class="sd-label">Nombre de fûts</span><span class="sd-val font-bold">{{ sessionDetail()!.nombreFuts }}</span></div>
+          <div class="sd-item"><span class="sd-label">Poids net total</span><span class="sd-val font-bold">{{ sessionDetail()!.poidsNetTotalKg | number:'1.0-0' }} kg</span></div>
+          <div class="sd-item"><span class="sd-label">Conformité</span>
+            <span class="sd-val">
+              @if (sessionDetail()!.compositionConforme) { <span class="badge badge--valide">✓ Conforme</span> }
+              @else { <span class="badge badge--annule">✗ Non conforme</span> }
+            </span>
+          </div>
+        </div>
+
+        @if (sessionDetail()!.avertissementComposition) {
+          <div class="warning-box">
+            <span class="material-icons">warning</span>
+            {{ sessionDetail()!.avertissementComposition }}
+          </div>
+        }
+
+        <h4 style="margin:1rem 0 0.75rem;font-size:0.9rem;font-weight:600;">Composition réelle vs formule</h4>
+        <table class="tanty-table">
+          <thead><tr><th>Ingrédient</th><th>Formule ({{ sessionDetail()!.nombreFuts }} fûts)</th><th>Réel</th><th>Écart</th><th>Statut</th></tr></thead>
+          <tbody>
+            @let f = FORMULES[sessionDetail()!.typeMelange];
+            @let c = compositionConforme(sessionDetail()!);
+            <tr>
+              <td>🌽 Maïs</td>
+              <td>{{ f.mais * sessionDetail()!.nombreFuts }} kg</td>
+              <td class="font-semibold">{{ sessionDetail()!.composition.maisKg }} kg</td>
+              <td [class.text-success]="c.mais" [class.text-error]="!c.mais">
+                {{ (sessionDetail()!.composition.maisKg - f.mais * sessionDetail()!.nombreFuts) > 0 ? '+' : '' }}{{ sessionDetail()!.composition.maisKg - f.mais * sessionDetail()!.nombreFuts }} kg
+              </td>
+              <td><span class="badge" [class.badge--valide]="c.mais" [class.badge--annule]="!c.mais">{{ c.mais ? 'OK' : 'Écart' }}</span></td>
+            </tr>
+            <tr>
+              <td>🌱 Soja</td>
+              <td>{{ f.soja * sessionDetail()!.nombreFuts }} kg</td>
+              <td class="font-semibold">{{ sessionDetail()!.composition.sojaKg }} kg</td>
+              <td [class.text-success]="c.soja" [class.text-error]="!c.soja">
+                {{ (sessionDetail()!.composition.sojaKg - f.soja * sessionDetail()!.nombreFuts) > 0 ? '+' : '' }}{{ sessionDetail()!.composition.sojaKg - f.soja * sessionDetail()!.nombreFuts }} kg
+              </td>
+              <td><span class="badge" [class.badge--valide]="c.soja" [class.badge--annule]="!c.soja">{{ c.soja ? 'OK' : 'Écart' }}</span></td>
+            </tr>
+            <tr>
+              <td>🥜 Arachide</td>
+              <td>{{ f.arachide * sessionDetail()!.nombreFuts }} kg</td>
+              <td class="font-semibold">{{ sessionDetail()!.composition.arachideKg }} kg</td>
+              <td [class.text-success]="c.arachide" [class.text-error]="!c.arachide">
+                {{ (sessionDetail()!.composition.arachideKg - f.arachide * sessionDetail()!.nombreFuts) > 0 ? '+' : '' }}{{ sessionDetail()!.composition.arachideKg - f.arachide * sessionDetail()!.nombreFuts }} kg
+              </td>
+              <td><span class="badge" [class.badge--valide]="c.arachide" [class.badge--annule]="!c.arachide">{{ c.arachide ? 'OK' : 'Écart' }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn-ghost" (click)="sessionDetail.set(null)">Fermer</button>
+      </div>
+    </div>
+  </div>
+}

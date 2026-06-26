@@ -1,0 +1,154 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Dosage</h1>
+      <p class="page-header__subtitle">Sessions de dosage journalières · Formules Bouillie et Mélange Arachide</p>
+    </div>
+    @if (auth.hasAnyRole('AGENT_DOSEUR','CHEF_PRODUCTION','DIRECTEUR_GENERAL')) {
+      <div class="page-header__actions">
+        <button class="btn btn-primary" (click)="showForm.set(true); getPPHRef()">
+          <span class="material-icons">add</span> Nouvelle session
+        </button>
+      </div>
+    }
+  </div>
+
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading()) {
+    <!-- Stats -->
+    @if (stats()) {
+      <div class="grid grid--4" style="margin-bottom:1.5rem;">
+        <div class="stat-card">
+          <div class="stat-card__icon stat-card__icon--green"><span class="material-icons">science</span></div>
+          <span class="stat-card__label">Fûts cette semaine</span>
+          <span class="stat-card__value">{{ stats()!.totalFuts }}</span>
+          @if (stats()!.evolutionTotalPct !== null) {
+            <span class="stat-card__change" [class.stat-card__change--up]="stats()!.evolutionTotalPct! > 0" [class.stat-card__change--down]="stats()!.evolutionTotalPct! < 0">
+              <span class="material-icons">{{ stats()!.evolutionTotalPct! > 0 ? 'trending_up' : 'trending_down' }}</span>
+              {{ stats()!.evolutionTotalPct | number:'1.1-1' }}% vs sem. préc.
+            </span>
+          }
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__icon stat-card__icon--yellow"><span class="material-icons">scale</span></div>
+          <span class="stat-card__label">Poids total</span>
+          <span class="stat-card__value">{{ stats()!.totalPoidsKg | number:'1.0-0' }} kg</span>
+        </div>
+        @for (t of stats()!.parType; track t.typeMelange) {
+          <div class="stat-card">
+            <div class="stat-card__icon stat-card__icon--blue"><span class="material-icons">blender</span></div>
+            <span class="stat-card__label">{{ t.typeMelange === 'BOUILLIE' ? 'Bouillie' : 'Mél. Arachide' }}</span>
+            <span class="stat-card__value">{{ t.nombreFuts }} fûts</span>
+            <span class="stat-card__change stat-card__change--flat">{{ t.poidsKg }} kg</span>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Formule reminder -->
+    <div class="formule-banner">
+      <div class="formule-item">
+        <span class="font-semibold text-sm">🥣 Bouillie (1 fût 50 kg) :</span>
+        <span class="text-sm">40 kg Maïs + 9 kg Soja + 1 kg Arachide</span>
+      </div>
+      <div class="formule-divider"></div>
+      <div class="formule-item">
+        <span class="font-semibold text-sm">🥜 Mélange Arachide (1 fût 50 kg) :</span>
+        <span class="text-sm">40 kg Maïs + 1 kg Soja + 9 kg Arachide</span>
+      </div>
+    </div>
+
+    <!-- Sessions list -->
+    <div class="tanty-card" style="padding:0;overflow:hidden;">
+      <div style="padding:1.5rem 1.5rem 1rem;">
+        <h3 class="tanty-card__title">Sessions de dosage</h3>
+      </div>
+      <table class="tanty-table">
+        <thead><tr><th>Date</th><th>PPH</th><th>Agent</th><th>Type mélange</th><th>Fûts</th><th>Poids net</th><th>Composition</th></tr></thead>
+        <tbody>
+          @for (s of sessions(); track s.id) {
+            <tr>
+              <td class="font-medium">{{ s.date }}</td>
+              <td class="text-sm text-muted">{{ s.referencePPH }}</td>
+              <td class="text-sm">{{ s.agentNom }}</td>
+              <td>
+                <span class="badge" [class.badge--valide]="s.typeMelange === 'BOUILLIE'" [class.badge--info]="s.typeMelange !== 'BOUILLIE'">
+                  {{ s.typeMelangeLibelle }}
+                </span>
+              </td>
+              <td class="font-semibold">{{ s.nombreFuts }}</td>
+              <td>{{ s.poidsNetTotalKg | number:'1.0-0' }} kg</td>
+              <td>
+                @if (s.compositionConforme) {
+                  <span class="badge badge--valide"><span class="material-icons" style="font-size:12px;">check</span> Conforme</span>
+                } @else {
+                  <span class="badge badge--attente" [title]="s.avertissementComposition ?? ''">
+                    <span class="material-icons" style="font-size:12px;">warning</span> Non conforme
+                  </span>
+                }
+              </td>
+            </tr>
+          }
+          @if (sessions().length === 0) {
+            <tr><td colspan="7" style="text-align:center;padding:2rem;color:#757575;">Aucune session enregistrée</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+<!-- Session form modal -->
+@if (showForm()) {
+  <div class="overlay" (click)="showForm.set(false)">
+    <div class="modal" style="max-width:560px;" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">Nouvelle Session de Dosage</h3>
+        <button class="btn btn-ghost btn-icon" (click)="showForm.set(false)"><span class="material-icons">close</span></button>
+      </div>
+      <form [formGroup]="sessionForm" (ngSubmit)="onSubmit()">
+        <div class="modal__body">
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="form-label">PPH *</label>
+              <input type="text" class="form-control" formControlName="referencePPH" placeholder="PPH-2026-XXX" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date *</label>
+              <input type="date" class="form-control" formControlName="date" />
+            </div>
+          </div>
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="form-label">Type de mélange *</label>
+              <select class="form-control" formControlName="typeMelange" (change)="onTypeMelangeChange()">
+                <option value="BOUILLIE">Bouillie</option>
+                <option value="MELANGE_ARACHIDE">Mélange Arachide</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nombre de fûts *</label>
+              <input type="number" class="form-control" formControlName="nombreFuts" min="1" (change)="onFutsChange()" />
+            </div>
+          </div>
+          @if (formule()) {
+            <div class="formule-reminder">
+              Formule : {{ formule()!.mais * (sessionForm.get('nombreFuts')?.value || 1) }} kg maïs + {{ formule()!.soja * (sessionForm.get('nombreFuts')?.value || 1) }} kg soja + {{ formule()!.arachide * (sessionForm.get('nombreFuts')?.value || 1) }} kg arachide
+            </div>
+          }
+          <div class="form-group"><label class="form-label">Maïs (kg) *</label><input type="number" class="form-control" formControlName="maisKg" min="0" step="0.1" /></div>
+          <div class="form-group"><label class="form-label">Soja (kg) *</label><input type="number" class="form-control" formControlName="sojaKg" min="0" step="0.1" /></div>
+          <div class="form-group"><label class="form-label">Arachide (kg) *</label><input type="number" class="form-control" formControlName="arachideKg" min="0" step="0.1" /></div>
+        </div>
+        <div class="modal__footer">
+          <button type="button" class="btn btn-ghost" (click)="showForm.set(false)">Annuler</button>
+          <button type="submit" class="btn btn-primary">
+            <span class="material-icons">save</span> Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

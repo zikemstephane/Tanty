@@ -1,0 +1,134 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+  <div class="page-header">
+    <h1 class="page-header__title">Nouveau Registre Journalier</h1>
+    <p class="page-header__subtitle" style="margin-top:0.25rem;">Enregistrez la production de chaque employé pour la journée</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="reg-layout">
+      <div>
+        <!-- En-tête -->
+        <div class="tanty-card" style="margin-bottom:1rem;">
+          <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+            <span class="material-icons">info</span> Informations générales
+          </h3>
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="form-label">Plan de Production (PPH) *</label>
+              <select class="form-control" formControlName="referencePPH">
+                <option value="">-- Sélectionner --</option>
+                @for (p of pphs(); track p.id) {
+                  <option [value]="p.reference">{{ p.reference }} · S{{ p.numeroSemaine }} ({{ p.dateDebut }} → {{ p.dateFin }})</option>
+                }
+              </select>
+              @if (form.get('referencePPH')?.invalid && form.get('referencePPH')?.touched) {
+                <span class="form-error"><span class="material-icons">error</span>Obligatoire</span>
+              }
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date *</label>
+              <input type="date" class="form-control" formControlName="date" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Employés -->
+        <div formArrayName="employes">
+          @for (emp of employes.controls; track $index) {
+            <div class="employe-card" [formGroupName]="$index">
+              <div class="employe-card__header">
+                <div style="display:flex;align-items:center;gap:0.75rem;flex:1;">
+                  <div class="employe-num">{{ $index + 1 }}</div>
+                  <div class="form-group" style="flex:1;margin-bottom:0;">
+                    <input type="text" class="form-control" formControlName="nom"
+                           [placeholder]="'Nom de l\'employé ' + ($index + 1) + ' *'" />
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                  <div class="employe-total">
+                    <span class="text-xs text-muted">Total</span>
+                    <span class="font-bold" style="color:#2E7D32;">{{ totalEmploye($index) | number }}</span>
+                  </div>
+                  <button type="button" class="btn btn-ghost btn-icon" style="color:#C62828;"
+                          (click)="supprimerEmploye($index)" [disabled]="employes.length === 1">
+                    <span class="material-icons">person_remove</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Produits de l'employé -->
+              <div formArrayName="produitsTravailles" class="produits-list">
+                @for (prod of getProduits($index).controls; track $index) {
+                  <div class="prod-line" [formGroupName]="$index">
+                    <div class="form-group" style="flex:2;">
+                      <label class="form-label">Produit *</label>
+                      <select class="form-control" formControlName="produitCode" (change)="onProduitChange($index, $index)">
+                        <option value="">-- Produit --</option>
+                        @for (p of produits(); track p.id) {
+                          <option [value]="p.code">{{ p.nom }} ({{ p.code }})</option>
+                        }
+                      </select>
+                    </div>
+                    <div class="form-group" style="flex:0 0 120px;">
+                      <label class="form-label">Quantité *</label>
+                      <input type="number" class="form-control" formControlName="quantiteRealise" min="0" />
+                    </div>
+                    <div class="form-group" style="flex:0 0 120px;">
+                      <label class="form-label">Unité</label>
+                      <select class="form-control" formControlName="unite">
+                        <option value="sachets">sachets</option>
+                        <option value="cartons">cartons</option>
+                        <option value="seaux">seaux</option>
+                        <option value="etuis">étuis</option>
+                        <option value="doypacks">doypacks</option>
+                      </select>
+                    </div>
+                    <button type="button" class="btn btn-ghost btn-icon" style="color:#9E9E9E;margin-top:24px;"
+                            (click)="supprimerProduitEmploye($index, $index)"
+                            [disabled]="getProduits($index).length === 1">
+                      <span class="material-icons">remove_circle</span>
+                    </button>
+                  </div>
+                }
+                <button type="button" class="btn btn-ghost btn-sm" style="margin-top:0.5rem;"
+                        (click)="ajouterProduitEmploye($index)">
+                  <span class="material-icons">add</span> Ajouter un produit
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <button type="button" class="btn btn-outline" style="width:100%;margin-top:1rem;justify-content:center;"
+                (click)="ajouterEmploye()">
+          <span class="material-icons">person_add</span> Ajouter un employé
+        </button>
+      </div>
+
+      <!-- Résumé -->
+      <div class="summary-panel">
+        <div class="tanty-card" style="position:sticky;top:80px;">
+          <h3 class="tanty-card__title" style="margin-bottom:1rem;">Résumé</h3>
+          <div class="sum-item"><span>Employés</span><strong>{{ employes.length }}</strong></div>
+          @for (emp of employes.controls; track $index) {
+            @if (emp.get('nom')?.value) {
+              <div class="sum-item">
+                <span class="text-sm truncate">{{ emp.get('nom')?.value }}</span>
+                <strong class="text-success">{{ totalEmploye($index) | number }}</strong>
+              </div>
+            }
+          }
+          <hr class="divider" />
+          <div class="form-actions">
+            <a routerLink="/production/registres" class="btn btn-ghost">Annuler</a>
+            <button type="submit" class="btn btn-primary" [disabled]="loading()">
+              @if (loading()) { <div class="spinner spinner-sm"></div> }
+              <span class="material-icons">save</span> Enregistrer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

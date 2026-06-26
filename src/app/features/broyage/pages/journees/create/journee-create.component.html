@@ -1,0 +1,101 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+  <div class="page-header">
+    <h1 class="page-header__title">Ouvrir une Journée de Broyage</h1>
+    <p class="page-header__subtitle">Assignez les machinistes et définissez leurs types de poudre</p>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="create-layout">
+      <div>
+        <div class="tanty-card" style="margin-bottom:1rem;">
+          <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+            <span class="material-icons">info</span> Informations de la journée
+          </h3>
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="form-label">Plan PPH en cours *</label>
+              <select class="form-control" formControlName="referencePPH">
+                <option value="">-- Sélectionner --</option>
+                @for (p of pphs(); track p.id) {
+                  <option [value]="p.reference">{{ p.reference }} · S{{ p.numeroSemaine }} ({{ p.dateDebut }}→{{ p.dateFin }})</option>
+                }
+              </select>
+              @if (form.get('referencePPH')?.invalid && form.get('referencePPH')?.touched) {
+                <span class="form-error"><span class="material-icons">error</span> Obligatoire</span>
+              }
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date *</label>
+              <input type="date" class="form-control" formControlName="date" />
+            </div>
+          </div>
+        </div>
+
+        <div class="tanty-card">
+          <div class="assign-header">
+            <h3 class="tanty-card__title">
+              <span class="material-icons">precision_manufacturing</span>
+              Assignation des machinistes
+            </h3>
+            <button type="button" class="btn btn-outline btn-sm" (click)="ajouterAssignation()">
+              <span class="material-icons">add</span> Ajouter
+            </button>
+          </div>
+
+          <div formArrayName="assignations" class="assign-list">
+            @for (a of assignations.controls; track $index) {
+              <div class="assign-item" [formGroupName]="$index">
+                <div class="assign-item__num">{{ $index + 1 }}</div>
+                <div class="form-group" style="flex:2;">
+                  <label class="form-label">Machiniste *</label>
+                  <select class="form-control" formControlName="machinisteMatricule">
+                    <option value="">-- Sélectionner --</option>
+                    @for (m of machinistes(); track m.id) {
+                      <option [value]="m.matricule">{{ m.nomComplet }} ({{ m.roleLibelle }})</option>
+                    }
+                  </select>
+                </div>
+                <div class="form-group" style="flex:1;">
+                  <label class="form-label">Type de poudre *</label>
+                  <select class="form-control" formControlName="typePoudre">
+                    @for (t of typesPoudre; track t.value) {
+                      <option [value]="t.value">{{ t.label }}</option>
+                    }
+                  </select>
+                </div>
+                <button type="button" class="btn btn-ghost btn-icon" style="color:#C62828;margin-top:24px;"
+                        (click)="supprimerAssignation($index)" [disabled]="assignations.length === 1">
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="tanty-card" style="position:sticky;top:80px;">
+          <h3 class="tanty-card__title" style="margin-bottom:1rem;">Résumé</h3>
+          <div class="sum-row"><span class="text-sm text-muted">Machinistes assignés</span><strong>{{ assignations.length }}</strong></div>
+          @for (a of assignations.controls; track $index) {
+            @if (a.get('machinisteMatricule')?.value) {
+              <div class="sum-row">
+                <span class="text-sm truncate">{{ getNomMachiniste(a.get('machinisteMatricule')?.value) }}</span>
+                <span class="badge badge--info text-xs">{{ a.get('typePoudre')?.value }}</span>
+              </div>
+            }
+          }
+          <hr class="divider" />
+          <div class="form-actions">
+            <a routerLink="/broyage/journees" class="btn btn-ghost">Annuler</a>
+            <button type="submit" class="btn btn-primary" [disabled]="loading()">
+              @if (loading()) { <div class="spinner spinner-sm"></div> }
+              <span class="material-icons">play_arrow</span> Ouvrir la journée
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

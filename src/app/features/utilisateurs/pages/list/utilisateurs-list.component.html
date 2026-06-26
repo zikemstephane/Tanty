@@ -1,0 +1,56 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Utilisateurs</h1>
+      <p class="page-header__subtitle">{{ filtered.length }} utilisateur(s) enregistré(s)</p>
+    </div>
+    @if (auth.hasAnyRole('DIRECTEUR_GENERAL')) {
+      <div class="page-header__actions">
+        <a routerLink="/auth/register" class="btn btn-primary">
+          <span class="material-icons">person_add</span> Nouvel utilisateur
+        </a>
+      </div>
+    }
+  </div>
+
+  <!-- Filters -->
+  <div class="tanty-card" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem; display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
+    <div class="search-box">
+      <span class="material-icons">search</span>
+      <input class="form-control" placeholder="Nom, matricule ou email…"
+             [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+    </div>
+    <select class="form-control" style="width:220px;" [ngModel]="filterRole()" (ngModelChange)="filterRole.set($event)">
+      @for (r of roles; track r.value) {
+        <option [value]="r.value">{{ r.label }}</option>
+      }
+    </select>
+  </div>
+
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading()) {
+    <div class="users-grid">
+      @for (u of filtered; track u.id) {
+        <div class="user-card">
+          <div class="user-card__avatar {{ roleClass(u.role) }}">
+            {{ getInitials(u.nomComplet) }}
+          </div>
+          <div class="user-card__info">
+            <div class="user-card__name">{{ u.nomComplet }}</div>
+            <div class="user-card__matricule">{{ u.matricule }}</div>
+            <div class="user-card__email text-xs text-muted">{{ u.email }}</div>
+          </div>
+          <span class="badge user-card__role {{ roleClass(u.role) }}--badge">
+            {{ getRoleLabel(u.role) }}
+          </span>
+          <div class="user-card__status">
+            <span class="status-dot" [class.status-dot--active]="u.actif"></span>
+            <span class="text-xs text-muted">{{ u.actif ? 'Actif' : 'Inactif' }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

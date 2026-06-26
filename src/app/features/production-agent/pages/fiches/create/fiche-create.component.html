@@ -1,0 +1,95 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+  <div class="page-header">
+    <h1 class="page-header__title">Nouvelle Fiche Info Produit</h1>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="create-layout">
+      <div>
+        <div class="tanty-card">
+          <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+            <span class="material-icons">info</span> Informations générales
+          </h3>
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="form-label">Plan de Production (PPH) *</label>
+              <select class="form-control" formControlName="referencePPH">
+                <option value="">-- Sélectionner --</option>
+                @for (p of pphs(); track p.id) {
+                  <option [value]="p.reference">{{ p.reference }} (S{{ p.numeroSemaine }} · {{ p.dateDebut }}→{{ p.dateFin }})</option>
+                }
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date *</label>
+              <input type="date" class="form-control" formControlName="date" />
+            </div>
+          </div>
+        </div>
+
+        <div class="tanty-card" style="margin-top:1rem;">
+          <div class="lines-header">
+            <h3 class="tanty-card__title"><span class="material-icons">inventory</span> Lignes produites</h3>
+            <button type="button" class="btn btn-outline btn-sm" (click)="ajouterLigne()">
+              <span class="material-icons">add</span> Ajouter
+            </button>
+          </div>
+
+          <div formArrayName="lignes" class="lines-list">
+            @for (ligne of lignes.controls; track $index) {
+              <div class="ligne-card" [formGroupName]="$index">
+                <div class="ligne-card__num">{{ $index + 1 }}</div>
+                <div class="ligne-card__content">
+                  <div class="form-group">
+                    <label class="form-label">Produit *</label>
+                    <select class="form-control" formControlName="produitId">
+                      <option value="">-- Produit --</option>
+                      @for (p of produits(); track p.id) {
+                        <option [value]="p.id">{{ p.nom }} ({{ p.code }})</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Qté Cartons</label>
+                    <input type="number" class="form-control" formControlName="quantiteCartons" min="0" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Qté Unités</label>
+                    <input type="number" class="form-control" formControlName="quantiteUnites" min="0" />
+                  </div>
+                  <div class="form-group" style="flex:2">
+                    <label class="form-label">Observation</label>
+                    <input type="text" class="form-control" formControlName="observation" placeholder="Optionnel" />
+                  </div>
+                </div>
+                <button type="button" class="btn btn-ghost btn-icon" style="color: #C62828;" (click)="supprimerLigne($index)" [disabled]="lignes.length === 1">
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-panel">
+        <div class="tanty-card sticky-summary">
+          <h3 class="tanty-card__title" style="margin-bottom:1rem;">Résumé</h3>
+          <div class="sum-item"><span>Nombre de lignes</span><strong>{{ lignes.length }}</strong></div>
+          <div class="sum-item">
+            <span>Total unités</span>
+            <strong>{{ totalQuantiteUnites }}</strong>
+          </div>
+          <hr class="divider" />
+          <div class="form-actions">
+            <a routerLink="/production/fiches" class="btn btn-ghost">Annuler</a>
+            <button type="submit" class="btn btn-primary" [disabled]="loading()">
+              @if (loading()) { <div class="spinner spinner-sm"></div> }
+              <span class="material-icons">save</span> Enregistrer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

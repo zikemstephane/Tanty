@@ -1,0 +1,41 @@
+@use '../../../../../styles/variables' as *;
+
+.pph-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: $spacing-4;
+}
+
+.pph-card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $border-radius-lg;
+  padding: $spacing-5;
+  text-decoration: none;
+  color: inherit;
+  transition: all $transition-fast;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3;
+
+  &:hover { border-color: $tanty-green; box-shadow: $shadow-md; text-decoration: none; }
+
+  &__header { display: flex; align-items: flex-start; justify-content: space-between; }
+  &__ref    { font-size: $font-size-base; font-weight: 700; color: $tanty-gray-900; }
+
+  &__dates {
+    display: flex; align-items: center; gap: $spacing-1;
+    font-size: $font-size-xs; color: $tanty-gray-600;
+    .material-icons { font-size: 14px; }
+  }
+
+  &__progress-label { display: flex; justify-content: space-between; font-size: $font-size-xs; margin-bottom: $spacing-1; }
+
+  &__products { display: flex; flex-wrap: wrap; gap: $spacing-1; }
+}
+
+.product-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: $tanty-gray-100; padding: 2px 8px;
+  border-radius: $border-radius-full;
+}

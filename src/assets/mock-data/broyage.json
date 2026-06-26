@@ -1,0 +1,132 @@
+{
+  "journeesProduction": [
+    {
+      "id": 1,
+      "referencePPH": "PPH-2026-001-S1",
+      "date": "2026-06-09",
+      "statut": "CLOTUREE",
+      "statutLibelle": "Clôturée",
+      "chefMachinisteMatricule": "TAN2026005",
+      "chefMachinisteNom": "Théodore OWONA",
+      "totalPoudreNetteKg": 485.5,
+      "tauxPerteGlobalPourcentage": 2.9,
+      "machinistes": [
+        {
+          "id": 1,
+          "machinisteMatricule": "TAN2026007",
+          "machinisteNom": "Rodrigue ATANGA",
+          "typePoudre": "MAIS",
+          "typePoudreLibelle": "Maïs",
+          "quantiteDepart": 250.0,
+          "quantiteObtenue": 243.0,
+          "perteKg": 7.0,
+          "tauxPertePct": 2.8,
+          "score": 97.2,
+          "correction": null
+        },
+        {
+          "id": 2,
+          "machinisteMatricule": "TAN2026008",
+          "machinisteNom": "Celestine ONDO",
+          "typePoudre": "SOJA",
+          "typePoudreLibelle": "Soja",
+          "quantiteDepart": 250.0,
+          "quantiteObtenue": 242.5,
+          "perteKg": 7.5,
+          "tauxPertePct": 3.0,
+          "score": 97.0,
+          "correction": null
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "referencePPH": "PPH-2026-001-S1",
+      "date": "2026-06-10",
+      "statut": "CLOTUREE",
+      "statutLibelle": "Clôturée",
+      "chefMachinisteMatricule": "TAN2026005",
+      "chefMachinisteNom": "Théodore OWONA",
+      "totalPoudreNetteKg": 490.0,
+      "tauxPerteGlobalPourcentage": 2.0,
+      "machinistes": [
+        {
+          "id": 3,
+          "machinisteMatricule": "TAN2026007",
+          "machinisteNom": "Rodrigue ATANGA",
+          "typePoudre": "MAIS",
+          "typePoudreLibelle": "Maïs",
+          "quantiteDepart": 250.0,
+          "quantiteObtenue": 246.0,
+          "perteKg": 4.0,
+          "tauxPertePct": 1.6,
+          "score": 98.4,
+          "correction": null
+        },
+        {
+          "id": 4,
+          "machinisteMatricule": "TAN2026008",
+          "machinisteNom": "Celestine ONDO",
+          "typePoudre": "SOJA",
+          "typePoudreLibelle": "Soja",
+          "quantiteDepart": 250.0,
+          "quantiteObtenue": 244.0,
+          "perteKg": 6.0,
+          "tauxPertePct": 2.4,
+          "score": 97.6,
+          "correction": null
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "referencePPH": "PPH-2026-001-S2",
+      "date": "2026-06-16",
+      "statut": "OUVERTE",
+      "statutLibelle": "Ouverte",
+      "chefMachinisteMatricule": "TAN2026005",
+      "chefMachinisteNom": "Théodore OWONA",
+      "totalPoudreNetteKg": null,
+      "tauxPerteGlobalPourcentage": null,
+      "machinistes": [
+        {
+          "id": 5,
+          "machinisteMatricule": "TAN2026007",
+          "machinisteNom": "Rodrigue ATANGA",
+          "typePoudre": "MAIS",
+          "typePoudreLibelle": "Maïs",
+          "quantiteDepart": null,
+          "quantiteObtenue": null,
+          "perteKg": null,
+          "tauxPertePct": null,
+          "score": null,
+          "correction": null
+        }
+      ]
+    }
+  ],
+  "classements": {
+    "hebdomadaire": {
+      "referencePPH": "PPH-2026-001-S1",
+      "semaine": "S24-2026",
+      "entries": [
+        {
+          "rang": 1,
+          "machinisteMatricule": "TAN2026007",
+          "machinisteNom": "Rodrigue ATANGA",
+          "totalProduit": 489.0,
+          "scoreMoyen": 97.8,
+          "nbJournees": 2
+        },
+        {
+          "rang": 2,
+          "machinisteMatricule": "TAN2026008",
+          "machinisteNom": "Celestine ONDO",
+          "totalProduit": 486.5,
+          "scoreMoyen": 97.3,
+          "nbJournees": 2
+        }
+      ]
+    }
+  }
+}

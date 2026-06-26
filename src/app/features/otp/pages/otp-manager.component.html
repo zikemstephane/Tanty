@@ -1,0 +1,230 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">
+        <span class="material-icons" style="font-size:2rem;vertical-align:middle;margin-right:0.5rem;color:#C62828;">admin_panel_settings</span>
+        Autorisations OTP
+      </h1>
+      <p class="page-header__subtitle">
+        Générez un code d'autorisation à usage unique pour permettre la modification d'un bon de commande validé
+      </p>
+    </div>
+    <button class="btn btn-ghost"(click)="toggleHistorique()">
+      <span class="material-icons">history</span>
+      {{ showHistorique() ? 'Masquer' : 'Voir' }} l'historique
+    </button>
+  </div>
+
+  <!-- Workflow explainer -->
+  <div class="workflow-banner">
+    <div class="workflow-step">
+      <div class="workflow-step__num">1</div>
+      <div class="workflow-step__content">
+        <div class="workflow-step__title">Demande de modification</div>
+        <div class="workflow-step__desc">Le Chef de Production demande l'autorisation de modifier un BC validé</div>
+      </div>
+    </div>
+    <span class="material-icons workflow-arrow">arrow_forward</span>
+    <div class="workflow-step workflow-step--active">
+      <div class="workflow-step__num workflow-step__num--active">2</div>
+      <div class="workflow-step__content">
+        <div class="workflow-step__title">Génération OTP par le DG</div>
+        <div class="workflow-step__desc">Le Directeur Général génère un code valide 15 min et le transmet au Chef</div>
+      </div>
+    </div>
+    <span class="material-icons workflow-arrow">arrow_forward</span>
+    <div class="workflow-step">
+      <div class="workflow-step__num">3</div>
+      <div class="workflow-step__content">
+        <div class="workflow-step__title">Modification avec OTP</div>
+        <div class="workflow-step__desc">Le Chef saisit le code OTP + motif pour modifier le BC</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="otp-layout">
+
+    <!-- Formulaire génération -->
+    <div class="otp-form-panel">
+      @if (!otpGenere()) {
+        <div class="tanty-card">
+          <h3 class="tanty-card__title" style="margin-bottom:1.5rem;">
+            <span class="material-icons">key</span>
+            Générer un code d'autorisation
+          </h3>
+
+          <form [formGroup]="form" (ngSubmit)="generer()">
+            <div class="form-group">
+              <label class="form-label">Chef de Production destinataire *</label>
+              <select class="form-control" formControlName="matriculeCible">
+                <option value="">-- Sélectionner un Chef --</option>
+                @for (chef of chefs(); track chef.id) {
+                  <option [value]="chef.matricule">
+                    {{ chef.nomComplet }} ({{ chef.matricule }})
+                  </option>
+                }
+              </select>
+              @if (form.get('matriculeCible')?.invalid && form.get('matriculeCible')?.touched) {
+                <span class="form-error"><span class="material-icons">error</span> Obligatoire</span>
+              }
+              <div class="form-hint">
+                <span class="material-icons">info</span>
+                Le code sera associé à ce matricule. Seul ce Chef pourra l'utiliser.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Bon de Commande concerné</label>
+              <select class="form-control" formControlName="referenceBC">
+                <option value="">-- Optionnel --</option>
+                @for (bc of bcsValides(); track bc.id) {
+                  <option [value]="bc.reference">
+                    {{ bc.reference }} — {{ bc.createurNom }}
+                  </option>
+                }
+              </select>
+              <div class="form-hint">
+                <span class="material-icons">info</span>
+                Précisez le BC à modifier pour garder une traçabilité complète.
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Motif d'autorisation *</label>
+              <textarea
+                class="form-control"
+                formControlName="motif"
+                rows="4"
+                placeholder="Expliquez pourquoi vous autorisez cette modification (min. 10 caractères)…"
+              ></textarea>
+              @if (form.get('motif')?.invalid && form.get('motif')?.touched) {
+                <span class="form-error"><span class="material-icons">error</span> Motif obligatoire (min. 10 caractères)</span>
+              }
+            </div>
+
+            <div class="otp-warning">
+              <span class="material-icons">warning</span>
+              <div>
+                <strong>Important :</strong> Ce code sera à usage unique et valide 15 minutes.
+                Transmettez-le uniquement par canal sécurisé (appel direct, SMS professionnel).
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-generate" [disabled]="loading()">
+              @if (loading()) {
+                <div class="spinner spinner-sm"></div> Génération…
+              } @else {
+                <span class="material-icons">generating_tokens</span>
+                Générer le code OTP
+              }
+            </button>
+          </form>
+        </div>
+      } @else {
+        <!-- Code OTP affiché -->
+        <div class="tanty-card otp-result">
+          <div class="otp-result__header">
+            <span class="material-icons otp-result__icon">check_circle</span>
+            <div>
+              <h3>Code OTP généré</h3>
+              <p class="text-sm text-muted">Pour {{ otpGenere()!.matriculeCible }}</p>
+            </div>
+          </div>
+
+          <!-- Le code en grand -->
+          <div class="otp-code-display">
+            <div class="otp-code-display__label">Code à transmettre au Chef de Production</div>
+            <div class="otp-code-display__code">
+              @for (digit of otpGenere()!.code.split(''); track $index) {
+                <span class="otp-digit">{{ digit }}</span>
+              }
+            </div>
+            <button class="btn btn-outline btn-sm" (click)="copierCode()">
+              <span class="material-icons">content_copy</span> Copier
+            </button>
+          </div>
+
+          <!-- Compte à rebours -->
+          <div class="otp-countdown" [class.otp-countdown--urgent]="countdown() < 120">
+            <span class="material-icons">timer</span>
+            <div>
+              <div class="otp-countdown__label">Expire dans</div>
+              <div class="otp-countdown__time">{{ formatCountdown(countdown()) }}</div>
+            </div>
+            <div class="countdown-ring">
+              <svg viewBox="0 0 36 36" class="countdown-svg">
+                <path class="countdown-bg"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path class="countdown-fill"
+                  [style.stroke-dasharray]="(countdown() / (otpGenere()!.validite * 60) * 100) + ' 100'"
+                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- Instructions -->
+          <div class="otp-instructions">
+            <h4>Instructions de transmission</h4>
+            <ol>
+              <li>Appelez directement <strong>{{ getNomChef(otpGenere()!.matriculeCible) }}</strong></li>
+              <li>Transmettez le code à 6 chiffres ci-dessus</li>
+              <li>Le Chef doit l'utiliser dans les <strong>{{ otpGenere()!.validite }} minutes</strong></li>
+              <li>Le code est à <strong>usage unique</strong> — il sera invalidé après utilisation</li>
+            </ol>
+          </div>
+
+          <button class="btn btn-ghost" (click)="reinitialiser()">
+            <span class="material-icons">refresh</span> Générer un nouveau code
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- Historique -->
+    @if (showHistorique()) {
+      <div class="otp-history-panel">
+        <div class="tanty-card">
+          <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+            <span class="material-icons">history</span>
+            Historique des OTP
+          </h3>
+          @if (historique().length === 0) {
+            <p class="text-sm text-muted" style="text-align:center;padding:2rem 0;">Aucun OTP généré</p>
+          } @else {
+            <div class="history-list">
+              @for (otp of historique(); track otp.id) {
+                <div class="history-item">
+                  <div class="history-item__header">
+                    <div>
+                      <div class="font-semibold text-sm">{{ otp.matriculeCible }}</div>
+                      <div class="text-xs text-muted">{{ otp.createdAt | date:'dd/MM/yyyy HH:mm' }}</div>
+                    </div>
+                    <span class="badge {{ getStatutClass(otp) }}">{{ getStatutLabel(otp) }}</span>
+                  </div>
+                  @if (otp.referenceBC) {
+                    <div class="text-xs text-muted">BC : {{ otp.referenceBC }}</div>
+                  }
+                  @if (otp.motif) {
+                    <div class="text-xs history-item__motif">{{ otp.motif }}</div>
+                  }
+                  @if (getStatutLabel(otp) === 'Actif') {
+                    <div class="text-xs text-success font-medium">
+                      Expire à {{ otp.expiresAt | date:'HH:mm' }}
+                    </div>
+                  }
+                  @if (otp.consomme && otp.consommeAt) {
+                    <div class="text-xs text-muted">
+                      Consommé le {{ otp.consommeAt | date:'dd/MM/yyyy HH:mm' }}
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

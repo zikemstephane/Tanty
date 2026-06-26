@@ -1,0 +1,266 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs()" />
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading() && rapport()) {
+    <div class="page-header">
+      <div>
+        <h1 class="page-header__title">Rapport — Semaine {{ rapport()!.numeroSemaine }}/{{ rapport()!.annee }}</h1>
+        <p class="page-header__subtitle">PPH : {{ rapport()!.referencePPH }} · {{ rapport()!.dateDebut }} → {{ rapport()!.dateFin }}</p>
+      </div>
+    </div>
+
+    <!-- KPI Banner -->
+    <div class="kpi-banner">
+      <div class="kpi-b"><div class="kpi-b__label">Quantité prédite</div><div class="kpi-b__val">{{ rapport()!.totalPredite | number }}</div></div>
+      <div class="kpi-sep"></div>
+      <div class="kpi-b"><div class="kpi-b__label">Quantité réalisée</div><div class="kpi-b__val text-success">{{ rapport()!.totalRealisee | number }}</div></div>
+      <div class="kpi-sep"></div>
+      <div class="kpi-b"><div class="kpi-b__label">Taux réalisation</div><div class="kpi-b__val {{ tauxClass(rapport()!.tauxRealisation) }}">{{ rapport()!.tauxRealisation | number:'1.1-1' }}%</div></div>
+      <div class="kpi-sep"></div>
+      <div class="kpi-b"><div class="kpi-b__label">Produits</div><div class="kpi-b__val">{{ rapport()!.lignes.length }}</div></div>
+      <div class="kpi-sep"></div>
+      <div class="kpi-b"><div class="kpi-b__label">Employés</div><div class="kpi-b__val">{{ rapport()!.classementEmployes.length }}</div></div>
+    </div>
+
+    <!-- Onglets -->
+    <div class="tabs">
+      <button class="tab" [class.tab--active]="activeTab()==='employes'" (click)="activeTab.set('employes')">
+        <span class="material-icons">emoji_events</span> Classement employés
+      </button>
+      <button class="tab" [class.tab--active]="activeTab()==='produits'" (click)="activeTab.set('produits')">
+        <span class="material-icons">inventory</span> Réalisation produits
+      </button>
+    </div>
+
+    <div class="rapport-layout" [class.rapport-layout--detail]="detailEmploye() || detailProduit()">
+
+      <!-- ── ONGLET Employés ──────────────────────────────────────────────── -->
+      @if (activeTab() === 'employes') {
+        <div class="main-panel">
+
+          <!-- Podium top 3 -->
+          @if (rapport()!.classementEmployes.length >= 3) {
+            @let emp = rapport()!.classementEmployes;
+            <div class="tanty-card podium-card">
+              <h3 class="tanty-card__title" style="margin-bottom:1.5rem;">
+                <span class="material-icons">emoji_events</span> Podium de la semaine
+              </h3>
+              <div class="podium">
+                <div class="podium-place podium-place--2" (click)="ouvrirDetailEmploye(emp[1])">
+                  <div class="podium-medal">🥈</div>
+                  <div class="podium-name">{{ emp[1].nom }}</div>
+                  <div class="podium-score">{{ emp[1].score | number:'1.1-1' }}</div>
+                  <div class="podium-prod text-xs">{{ emp[1].totalProduction | number }} u</div>
+                  <div class="podium-bar podium-bar--2" [style.height]="(emp[1].totalProduction / maxProduction() * 120) + 'px'"></div>
+                </div>
+                <div class="podium-place podium-place--1" (click)="ouvrirDetailEmploye(emp[0])">
+                  <div class="podium-medal">🥇</div>
+                  <div class="podium-name">{{ emp[0].nom }}</div>
+                  <div class="podium-score">{{ emp[0].score | number:'1.1-1' }}</div>
+                  <div class="podium-prod text-xs">{{ emp[0].totalProduction | number }} u</div>
+                  <div class="podium-bar podium-bar--1" [style.height]="(emp[0].totalProduction / maxProduction() * 120) + 'px'"></div>
+                </div>
+                <div class="podium-place podium-place--3" (click)="ouvrirDetailEmploye(emp[2])">
+                  <div class="podium-medal">🥉</div>
+                  <div class="podium-name">{{ emp[2].nom }}</div>
+                  <div class="podium-score">{{ emp[2].score | number:'1.1-1' }}</div>
+                  <div class="podium-prod text-xs">{{ emp[2].totalProduction | number }} u</div>
+                  <div class="podium-bar podium-bar--3" [style.height]="(emp[2].totalProduction / maxProduction() * 120) + 'px'"></div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Liste complète -->
+          <div class="tanty-card" style="padding:0;overflow:hidden;">
+            <div style="padding:1.25rem 1.5rem 0.75rem;">
+              <h3 class="tanty-card__title">Classement complet — <span class="text-muted text-sm">Cliquez sur un employé pour voir ses réalisations</span></h3>
+            </div>
+            <table class="tanty-table">
+              <thead><tr><th>Rang</th><th>Employé</th><th>Production (unités)</th><th>Graphique</th><th>Score</th><th></th></tr></thead>
+              <tbody>
+                @for (emp of rapport()!.classementEmployes; track emp.rang) {
+                  <tr class="emp-row" (click)="ouvrirDetailEmploye(emp)"
+                      [class.emp-row--selected]="detailEmploye()?.emp?.nom === emp.nom">
+                    <td class="font-bold">{{ getMedal(emp.rang) }}</td>
+                    <td class="font-semibold">{{ emp.nom }}</td>
+                    <td class="font-bold text-success">{{ emp.totalProduction | number }}</td>
+                    <td style="width:200px;">
+                      <div class="progress">
+                        <div class="progress__bar" [style.width]="(emp.totalProduction / maxProduction() * 100) + '%'"
+                             [style.background]="emp.rang===1?'#FFD600':emp.rang===2?'#9E9E9E':'#8D6E63'"></div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="score-chip" [class.score-chip--high]="emp.score>=95">
+                        {{ emp.score | number:'1.1-1' }}
+                      </span>
+                    </td>
+                    <td><span class="material-icons" style="color:#9E9E9E;font-size:18px;">chevron_right</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- ── ONGLET Produits ─────────────────────────────────────────────── -->
+      @if (activeTab() === 'produits') {
+        <div class="main-panel">
+          <div class="tanty-card" style="padding:0;overflow:hidden;">
+            <div style="padding:1.25rem 1.5rem 0.75rem;">
+              <h3 class="tanty-card__title">Réalisation par produit — <span class="text-muted text-sm">Cliquez sur un produit pour voir les participants</span></h3>
+            </div>
+            <table class="tanty-table">
+              <thead>
+                <tr><th>Produit</th><th>Prédit</th><th>Réalisé</th><th>Écart</th><th>Taux</th><th></th></tr>
+              </thead>
+              <tbody>
+                @for (l of rapport()!.lignes; track l.produitCode) {
+                  <tr class="prod-row" (click)="ouvrirDetailProduit(l)"
+                      [class.prod-row--selected]="detailProduit()?.ligne?.produitCode === l.produitCode">
+                    <td>
+                      <div class="font-semibold text-sm">{{ l.produitNom }}</div>
+                      <div class="text-xs text-muted font-mono">{{ l.produitCode }}</div>
+                    </td>
+                    <td>{{ l.quantitePredite | number }}</td>
+                    <td class="font-semibold">{{ l.quantiteRealisee | number }}</td>
+                    <td>
+                      <span class="ecart-val" [class.ecart-val--pos]="l.ecart>0" [class.ecart-val--neg]="l.ecart<0">
+                        {{ l.ecart>0?'+':'' }}{{ l.ecart | number }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="taux-inline">
+                        <div class="progress" style="width:80px;">
+                          <div class="progress__bar" [style.width]="l.tauxRealisation+'%'"
+                               [style.background]="l.tauxRealisation>=90?'#2E7D32':l.tauxRealisation>=70?'#F57F17':'#C62828'"></div>
+                        </div>
+                        <span class="font-semibold {{ tauxClass(l.tauxRealisation) }}">{{ l.tauxRealisation | number:'1.0-0' }}%</span>
+                      </div>
+                    </td>
+                    <td><span class="material-icons" style="color:#9E9E9E;font-size:18px;">chevron_right</span></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- ── PANNEAU DRILL-DOWN ────────────────────────────────────────────── -->
+      @if (detailEmploye() || detailProduit()) {
+        <div class="detail-panel">
+
+          <!-- Détail Employé -->
+          @if (detailEmploye()) {
+            <div class="tanty-card detail-card">
+              <div class="detail-card__header">
+                <div>
+                  <div class="font-bold" style="font-size:1.5rem;">{{ getMedal(detailEmploye()!.emp.rang) }}</div>
+                  <h3 class="detail-card__name">{{ detailEmploye()!.emp.nom }}</h3>
+                  <div class="text-xs text-muted">{{ detailEmploye()!.emp.totalProduction | number }} unités produites</div>
+                </div>
+                <button class="btn btn-ghost btn-icon" (click)="fermerDetail()">
+                  <span class="material-icons">close</span>
+                </button>
+              </div>
+
+              <div class="detail-kpis">
+                <div class="dkpi">
+                  <span class="dkpi__label">Score</span>
+                  <span class="dkpi__val" [class.text-success]="detailEmploye()!.emp.score>=95">
+                    {{ detailEmploye()!.emp.score | number:'1.1-1' }}
+                  </span>
+                </div>
+                <div class="dkpi">
+                  <span class="dkpi__label">Rang</span>
+                  <span class="dkpi__val">#{{ detailEmploye()!.emp.rang }}</span>
+                </div>
+                <div class="dkpi">
+                  <span class="dkpi__label">Production</span>
+                  <span class="dkpi__val text-success">{{ detailEmploye()!.emp.totalProduction | number }}</span>
+                </div>
+              </div>
+
+              <h4 style="font-size:0.875rem;font-weight:600;margin-bottom:0.75rem;">Répartition par produit</h4>
+              @for (l of detailEmploye()!.lignes; track l.produitCode) {
+                <div class="detail-line">
+                  <div class="detail-line__info">
+                    <div class="text-sm font-medium">{{ l.produitNom }}</div>
+                    <div class="text-xs font-mono text-muted">{{ l.produitCode }}</div>
+                  </div>
+                  <div class="detail-line__bar">
+                    <div class="progress" style="flex:1;">
+                      <div class="progress__bar" style="background:#2E7D32;" [style.width]="l.pct+'%'"></div>
+                    </div>
+                    <span class="text-sm font-bold">{{ l.qte | number }}</span>
+                    <span class="text-xs text-muted">({{ l.pct }}%)</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Détail Produit -->
+          @if (detailProduit()) {
+            <div class="tanty-card detail-card">
+              <div class="detail-card__header">
+                <div>
+                  <div class="text-xs text-muted font-mono">{{ detailProduit()!.ligne.produitCode }}</div>
+                  <h3 class="detail-card__name">{{ detailProduit()!.ligne.produitNom }}</h3>
+                  <div class="text-xs text-muted">
+                    {{ detailProduit()!.ligne.quantiteRealisee | number }} unités réalisées
+                    ({{ detailProduit()!.ligne.tauxRealisation | number:'1.0-0' }}%)
+                  </div>
+                </div>
+                <button class="btn btn-ghost btn-icon" (click)="fermerDetail()">
+                  <span class="material-icons">close</span>
+                </button>
+              </div>
+
+              <div class="detail-kpis">
+                <div class="dkpi">
+                  <span class="dkpi__label">Prédit</span>
+                  <span class="dkpi__val">{{ detailProduit()!.ligne.quantitePredite | number }}</span>
+                </div>
+                <div class="dkpi">
+                  <span class="dkpi__label">Réalisé</span>
+                  <span class="dkpi__val text-success">{{ detailProduit()!.ligne.quantiteRealisee | number }}</span>
+                </div>
+                <div class="dkpi">
+                  <span class="dkpi__label">Taux</span>
+                  <span class="dkpi__val {{ tauxClass(detailProduit()!.ligne.tauxRealisation) }}">
+                    {{ detailProduit()!.ligne.tauxRealisation | number:'1.0-0' }}%
+                  </span>
+                </div>
+              </div>
+
+              <h4 style="font-size:0.875rem;font-weight:600;margin-bottom:0.75rem;">Participants à ce produit</h4>
+              @for (p of detailProduit()!.participants; track p.nom) {
+                <div class="participant-line">
+                  <div class="participant-rank">{{ getMedal(p.rang) }}</div>
+                  <div class="participant-info">
+                    <div class="text-sm font-semibold">{{ p.nom }}</div>
+                    <div class="participant-bar">
+                      <div class="progress" style="flex:1;">
+                        <div class="progress__bar"
+                             [style.width]="p.pct+'%'"
+                             [style.background]="p.rang===1?'#FFD600':p.rang===2?'#9E9E9E':'#8D6E63'">
+                        </div>
+                      </div>
+                      <span class="text-sm font-bold">{{ p.quantite | number }}</span>
+                      <span class="text-xs text-muted">({{ p.pct }}%)</span>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

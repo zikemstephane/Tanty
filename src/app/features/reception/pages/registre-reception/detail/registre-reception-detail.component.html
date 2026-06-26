@@ -1,0 +1,368 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs()" />
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading() && registre()) {
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="title-row">
+          <h1 class="page-header__title">{{ registre()!.reference }}</h1>
+          <span class="badge {{ statutClass(registre()!.statut) }} badge--lg">{{ registre()!.statutLibelle }}</span>
+        </div>
+        <p class="page-header__subtitle">
+          PPH : {{ registre()!.referencePPH }} ·
+          Fiche production du {{ registre()!.dateProduction }} ·
+          Reçu le {{ registre()!.dateReception }}
+          @if (registre()!.heureReception) { à {{ registre()!.heureReception }} }
+        </p>
+      </div>
+      <div class="page-header__actions">
+        @if (canCloturer()) {
+          <button class="btn btn-secondary" (click)="showClotureConfirm.set(true)">
+            <span class="material-icons">lock</span> Clôturer
+          </button>
+        }
+        @if (canJustifier()) {
+          <button class="btn btn-primary btn-justify-alert" (click)="showJustifForm.set(true)">
+            <span class="material-icons">rate_review</span>
+            Soumettre une justification
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Alerte si justification requise -->
+    @if (registre()!.statut === 'ECART_SIGNALE' && !registre()!.justificationAgent) {
+      <div class="alert-banner" [class.alert-banner--agent]="isAgentConcerne()">
+        <span class="material-icons">warning</span>
+        <div>
+          @if (isAgentConcerne()) {
+            <strong>Action requise :</strong> Le Gestionnaire de Stock a détecté des écarts entre vos déclarations et les quantités reçues physiquement. Vous devez fournir une justification.
+          } @else {
+            <strong>Écart signalé :</strong> Des différences ont été relevées entre les quantités déclarées par l'agent et les quantités physiquement reçues. En attente de justification de {{ registre()!.agentProductionNom }}.
+          }
+        </div>
+        @if (isAgentConcerne()) {
+          <button class="btn btn-primary btn-sm" (click)="showJustifForm.set(true)">
+            <span class="material-icons">rate_review</span> Justifier
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Si justification déjà fournie -->
+    @if (registre()!.justificationAgent) {
+      <div class="justif-provided">
+        <span class="material-icons">verified</span>
+        <div>
+          <div class="font-semibold text-sm">Justification fournie par {{ registre()!.agentProductionNom }}</div>
+          <div class="text-xs text-muted">{{ registre()!.dateJustification }}</div>
+          <div class="justif-text">{{ registre()!.justificationAgent }}</div>
+        </div>
+      </div>
+    }
+
+    <div class="detail-grid">
+      <!-- Colonne principale -->
+      <div>
+
+        <!-- Acteurs -->
+        <div class="tanty-card acteurs-card">
+          <div class="acteur-col acteur-col--agent">
+            <div class="acteur-col__icon">
+              <span class="material-icons">inventory_2</span>
+            </div>
+            <div class="acteur-col__info">
+              <div class="acteur-col__role">Agent de Production</div>
+              <div class="acteur-col__nom">{{ registre()!.agentProductionNom }}</div>
+              <div class="acteur-col__mat">{{ registre()!.agentProductionMatricule }}</div>
+            </div>
+          </div>
+
+          <div class="acteur-sep">
+            <span class="material-icons">compare_arrows</span>
+          </div>
+
+          <div class="acteur-col acteur-col--stock">
+            <div class="acteur-col__icon">
+              <span class="material-icons">warehouse</span>
+            </div>
+            <div class="acteur-col__info">
+              <div class="acteur-col__role">Gestionnaire de Stock</div>
+              <div class="acteur-col__nom">{{ registre()!.gestionnaireNom }}</div>
+              <div class="acteur-col__mat">{{ registre()!.gestionnaireMatricule }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tableau de comparaison -->
+        <div class="tanty-card" style="padding:0; overflow:hidden; margin-top:1rem;">
+          <div style="padding:1.5rem 1.5rem 0.75rem; display:flex; align-items:center; justify-content:space-between;">
+            <h3 class="tanty-card__title">
+              <span class="material-icons">compare_arrows</span>
+              Comparaison Déclaré / Reçu ({{ registre()!.lignes.length }} produit(s))
+            </h3>
+            @if (registre()!.nbLignesEcart > 0) {
+              <span class="badge badge--annule">{{ registre()!.nbLignesEcart }} écart(s)</span>
+            } @else {
+              <span class="badge badge--valide">Tout conforme</span>
+            }
+          </div>
+
+          <table class="tanty-table">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th class="col-declare">Déclaré (cartons)</th>
+                <th class="col-declare">Déclaré (unités)</th>
+                <th class="col-recu">Reçu (cartons)</th>
+                <th class="col-recu">Reçu (unités)</th>
+                <th>Écart</th>
+                <th>Écart %</th>
+                <th>Statut</th>
+                <th>Observation</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ligne of registre()!.lignes; track ligne.id) {
+                <tr [class.ecart-row]="ligne.statut !== 'CONFORME'">
+                  <td>
+                    <div class="font-semibold text-sm">{{ ligne.produitNom }}</div>
+                    <div class="text-xs text-muted font-mono">{{ ligne.produitCode }}</div>
+                  </td>
+                  <td class="col-declare font-medium">{{ ligne.quantiteDeclareeCartons }}</td>
+                  <td class="col-declare font-medium">{{ ligne.quantiteDeclareeUnites | number }}</td>
+                  <td class="col-recu font-semibold">{{ ligne.quantiteRecueCartons }}</td>
+                  <td class="col-recu font-semibold">{{ ligne.quantiteRecueUnites | number }}</td>
+                  <td>
+                    <span class="ecart-val"
+                          [class.ecart-val--ok]="ligne.ecartUnites === 0"
+                          [class.ecart-val--neg]="ligne.ecartUnites < 0"
+                          [class.ecart-val--pos]="ligne.ecartUnites > 0">
+                      {{ ligne.ecartUnites > 0 ? '+' : '' }}{{ ligne.ecartUnites | number }}
+                    </span>
+                  </td>
+                  <td>
+                    <span [class.text-success]="ligne.ecartPct === 0"
+                          [class.text-error]="ligne.ecartPct < 0"
+                          [class.text-warning]="ligne.ecartPct > 0"
+                          class="font-semibold text-sm">
+                      {{ ligne.ecartPct > 0 ? '+' : '' }}{{ ligne.ecartPct }}%
+                    </span>
+                  </td>
+                  <td>
+                    <span class="badge {{ ligneStatutClass(ligne.statut) }}">
+                      {{ ligneStatutLabel(ligne.statut) }}
+                    </span>
+                  </td>
+                  <td>
+                    @if (ligne.observationGestionnaire) {
+                      <div class="obs-text">{{ ligne.observationGestionnaire }}</div>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Commentaire gestionnaire -->
+        @if (registre()!.commentaireGestionnaire) {
+          <div class="tanty-card" style="margin-top:1rem;">
+            <h3 class="tanty-card__title" style="margin-bottom:0.75rem;">
+              <span class="material-icons">comment</span> Commentaire du Gestionnaire de Stock
+            </h3>
+            <div class="comment-box comment-box--stock">
+              <span class="material-icons">warehouse</span>
+              <p>{{ registre()!.commentaireGestionnaire }}</p>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Colonne latérale : chiffres clés -->
+      <div>
+        <div class="tanty-card stats-side">
+          <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+            <span class="material-icons">analytics</span> Synthèse
+          </h3>
+
+          <div class="conformite-big" [class.conformite-big--ok]="registre()!.tauxConformite >= 99"
+               [class.conformite-big--warn]="registre()!.tauxConformite >= 90 && registre()!.tauxConformite < 99"
+               [class.conformite-big--ko]="registre()!.tauxConformite < 90">
+            <div class="conformite-big__label">Taux de conformité</div>
+            <div class="conformite-big__value">{{ registre()!.tauxConformite | number:'1.0-1' }}%</div>
+            <div class="progress">
+              <div class="progress__bar"
+                   [style.width]="registre()!.tauxConformite + '%'"
+                   [style.background]="registre()!.tauxConformite >= 99 ? '#2E7D32' : registre()!.tauxConformite >= 90 ? '#F57F17' : '#C62828'">
+              </div>
+            </div>
+          </div>
+
+          <div class="kpi-list">
+            <div class="kpi-item-side">
+              <div class="kpi-item-side__label">
+                <span class="dot dot--blue"></span> Total déclaré
+              </div>
+              <span class="kpi-item-side__val">{{ registre()!.totalDeclareeUnites | number }} u</span>
+            </div>
+            <div class="kpi-item-side">
+              <div class="kpi-item-side__label">
+                <span class="dot dot--green"></span> Total reçu
+              </div>
+              <span class="kpi-item-side__val">{{ registre()!.totalRecueUnites | number }} u</span>
+            </div>
+            <div class="kpi-item-side kpi-item-side--ecart">
+              <div class="kpi-item-side__label">
+                <span class="dot" [class.dot--red]="registre()!.totalEcartUnites < 0" [class.dot--orange]="registre()!.totalEcartUnites > 0" [class.dot--green]="registre()!.totalEcartUnites === 0"></span>
+                Écart net
+              </div>
+              <span class="kpi-item-side__val font-bold"
+                    [class.text-success]="registre()!.totalEcartUnites === 0"
+                    [class.text-error]="registre()!.totalEcartUnites < 0"
+                    [class.text-warning]="registre()!.totalEcartUnites > 0">
+                {{ registre()!.totalEcartUnites > 0 ? '+' : '' }}{{ registre()!.totalEcartUnites | number }} u
+              </span>
+            </div>
+            <div class="kpi-item-side">
+              <div class="kpi-item-side__label">Lignes avec écart</div>
+              <span class="kpi-item-side__val" [class.text-error]="registre()!.nbLignesEcart > 0">
+                {{ registre()!.nbLignesEcart }} / {{ registre()!.lignes.length }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Timeline statut -->
+          <div class="timeline-statut">
+            <h4 class="text-xs font-semibold text-muted" style="text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.75rem;">
+              État du dossier
+            </h4>
+            <div class="timeline-item timeline-item--done">
+              <div class="timeline-dot timeline-dot--done"></div>
+              <div>
+                <div class="text-sm font-medium">Fiche déclarée</div>
+                <div class="text-xs text-muted">{{ registre()!.dateProduction }} — {{ registre()!.agentProductionNom }}</div>
+              </div>
+            </div>
+            <div class="timeline-line timeline-line--done"></div>
+            <div class="timeline-item timeline-item--done">
+              <div class="timeline-dot timeline-dot--done"></div>
+              <div>
+                <div class="text-sm font-medium">Réception effectuée</div>
+                <div class="text-xs text-muted">{{ registre()!.dateReception }} — {{ registre()!.gestionnaireNom }}</div>
+              </div>
+            </div>
+            @if (registre()!.nbLignesEcart > 0) {
+              <div class="timeline-line" [class.timeline-line--done]="!!registre()!.justificationAgent"></div>
+              <div class="timeline-item" [class.timeline-item--done]="!!registre()!.justificationAgent" [class.timeline-item--pending]="!registre()!.justificationAgent">
+                <div class="timeline-dot" [class.timeline-dot--done]="!!registre()!.justificationAgent" [class.timeline-dot--pending]="!registre()!.justificationAgent"></div>
+                <div>
+                  <div class="text-sm font-medium">Justification agent</div>
+                  @if (registre()!.justificationAgent) {
+                    <div class="text-xs text-muted">{{ registre()!.dateJustification }}</div>
+                  } @else {
+                    <div class="text-xs text-warning">En attente</div>
+                  }
+                </div>
+              </div>
+            }
+            <div class="timeline-line" [class.timeline-line--done]="registre()!.statut === 'CLOTUREE'"></div>
+            <div class="timeline-item" [class.timeline-item--done]="registre()!.statut === 'CLOTUREE'" [class.timeline-item--pending]="registre()!.statut !== 'CLOTUREE'">
+              <div class="timeline-dot" [class.timeline-dot--done]="registre()!.statut === 'CLOTUREE'" [class.timeline-dot--pending]="registre()!.statut !== 'CLOTUREE'"></div>
+              <div>
+                <div class="text-sm font-medium">Dossier clôturé</div>
+                @if (registre()!.statut !== 'CLOTUREE') {
+                  <div class="text-xs text-muted">En attente</div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Modal justification agent -->
+@if (showJustifForm() && registre()) {
+  <div class="overlay" (click)="showJustifForm.set(false)">
+    <div class="modal modal--justify" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">
+          <span class="material-icons">rate_review</span>
+          Soumettre une justification
+        </h3>
+        <button class="btn btn-ghost btn-icon" (click)="showJustifForm.set(false)">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="modal__body">
+        <!-- Rappel des écarts -->
+        <div class="ecarts-recap">
+          <h4>Écarts à justifier</h4>
+          @for (ligne of registre()!.lignes; track ligne.id) {
+            @if (ligne.statut !== 'CONFORME') {
+              <div class="ecart-recap-item">
+                <div>
+                  <div class="font-medium text-sm">{{ ligne.produitNom }}</div>
+                  <div class="text-xs text-muted">Déclaré : {{ ligne.quantiteDeclareeUnites | number }} u — Reçu : {{ ligne.quantiteRecueUnites | number }} u</div>
+                  @if (ligne.observationGestionnaire) {
+                    <div class="text-xs obs-text-small">📋 Gestionnaire : {{ ligne.observationGestionnaire }}</div>
+                  }
+                </div>
+                <span class="badge badge--annule">{{ ligne.ecartUnites > 0 ? '+' : '' }}{{ ligne.ecartUnites | number }} u</span>
+              </div>
+            }
+          }
+        </div>
+
+        <form [formGroup]="justifForm">
+          <div class="form-group">
+            <label class="form-label">Votre justification * (min. 20 caractères)</label>
+            <textarea
+              class="form-control"
+              formControlName="justificationAgent"
+              rows="6"
+              placeholder="Expliquez les raisons des écarts constatés : erreur de comptage, casse, perte en cours de transfert, produits défectueux retirés, etc.">
+            </textarea>
+            @if (justifForm.get('justificationAgent')?.invalid && justifForm.get('justificationAgent')?.touched) {
+              <span class="form-error">
+                <span class="material-icons">error</span>
+                Justification obligatoire (min. 20 caractères)
+              </span>
+            }
+            <div class="char-count text-xs text-muted" style="text-align:right; margin-top:4px;">
+              {{ justifForm.get('justificationAgent')?.value?.length || 0 }} / 500 caractères
+            </div>
+          </div>
+
+          <div class="justif-note">
+            <span class="material-icons">info</span>
+            Cette justification sera visible par le Gestionnaire de Stock et le Directeur Général. Elle sera archivée définitivement.
+          </div>
+        </form>
+      </div>
+      <div class="modal__footer">
+        <button class="btn btn-ghost" (click)="showJustifForm.set(false)">Annuler</button>
+        <button class="btn btn-primary" (click)="soumettreJustification()" [disabled]="saving()">
+          @if (saving()) { <div class="spinner spinner-sm"></div> }
+          <span class="material-icons">send</span>
+          Soumettre la justification
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-confirm-dialog
+  [visible]="showClotureConfirm()"
+  title="Clôturer le registre"
+  message="Êtes-vous sûr de vouloir clôturer ce registre de réception ? Cette action est irréversible."
+  confirmLabel="Clôturer"
+  (confirm)="cloturer()"
+  (cancel)="showClotureConfirm.set(false)"
+/>

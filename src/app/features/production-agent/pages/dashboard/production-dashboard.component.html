@@ -1,0 +1,109 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Production Agent</h1>
+      <p class="page-header__subtitle">Fiches produit journalières, registres employés et rapports hebdomadaires</p>
+    </div>
+    <div class="page-header__actions">
+      <a routerLink="/production/fiches/nouveau" class="btn btn-primary">
+        <span class="material-icons">add</span> Nouvelle fiche
+      </a>
+      <a routerLink="/production/registres/nouveau" class="btn btn-outline">
+        <span class="material-icons">people</span> Nouveau registre
+      </a>
+    </div>
+  </div>
+
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading()) {
+    <!-- Active PPH banner -->
+    @if (activePPH()) {
+      <div class="active-pph-banner tanty-accent">
+        <div>
+          <span class="font-semibold">PPH actif :</span> {{ activePPH()!.reference }}
+          · Semaine {{ activePPH()!.numeroSemaine }}
+          · {{ activePPH()!.dateDebut }} → {{ activePPH()!.dateFin }}
+        </div>
+        <a [routerLink]="['/pphs', activePPH()!.reference]" class="btn btn-ghost btn-sm">
+          <span class="material-icons">open_in_new</span> Voir le PPH
+        </a>
+      </div>
+    }
+
+    <!-- Quick stats -->
+    <div class="grid grid--3" style="margin: 1.5rem 0;">
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--green"><span class="material-icons">inventory_2</span></div>
+        <span class="stat-card__label">Fiches journalières</span>
+        <span class="stat-card__value">{{ fiches().length }}</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--yellow"><span class="material-icons">people</span></div>
+        <span class="stat-card__label">PPH en cours</span>
+        <span class="stat-card__value">{{ pphs().length }}</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--blue"><span class="material-icons">bar_chart</span></div>
+        <span class="stat-card__label">Production totale</span>
+        {{ totalProduits }}
+      </div>
+    </div>
+
+    <!-- Navigation cards -->
+    <div class="module-nav">
+      <a routerLink="/production/fiches" class="module-nav__card">
+        <span class="material-icons module-nav__icon">inventory_2</span>
+        <div>
+          <div class="module-nav__title">Fiches Info Produit</div>
+          <div class="module-nav__desc">Enregistrez la production journalière par produit</div>
+        </div>
+        <span class="material-icons module-nav__arrow">chevron_right</span>
+      </a>
+      <a routerLink="/production/registres" class="module-nav__card">
+        <span class="material-icons module-nav__icon" style="color: #F57F17;">people</span>
+        <div>
+          <div class="module-nav__title">Registres Journaliers</div>
+          <div class="module-nav__desc">Suivez la production par employé</div>
+        </div>
+        <span class="material-icons module-nav__arrow">chevron_right</span>
+      </a>
+      @if (activePPH()) {
+        <a [routerLink]="['/production/rapports', activePPH()!.reference]" class="module-nav__card">
+          <span class="material-icons module-nav__icon" style="color: #0277BD;">bar_chart</span>
+          <div>
+            <div class="module-nav__title">Rapport Hebdomadaire</div>
+            <div class="module-nav__desc">Consultez le rapport de la semaine</div>
+          </div>
+          <span class="material-icons module-nav__arrow">chevron_right</span>
+        </a>
+      }
+    </div>
+
+    <!-- Recent fiches -->
+    @if (fiches().length > 0) {
+      <div class="tanty-card" style="margin-top: 1.5rem;">
+        <div class="tanty-card__header">
+          <h3 class="tanty-card__title">Fiches récentes</h3>
+          <a routerLink="/production/fiches" class="btn btn-outline btn-sm">Voir toutes</a>
+        </div>
+        <table class="tanty-table">
+          <thead><tr><th>Date</th><th>PPH</th><th>Agent</th><th>Produits</th><th>Total</th><th></th></tr></thead>
+          <tbody>
+            @for (f of fiches().slice(0,5); track f.id) {
+              <tr>
+                <td class="font-medium">{{ f.date }}</td>
+                <td class="text-sm text-muted">{{ f.referencePPH }}</td>
+                <td class="text-sm">{{ f.agentNom }}</td>
+                <td class="text-sm">{{ f.lignes.length }} ligne(s)</td>
+                <td class="font-semibold text-success">{{ f.totalProduit }}</td>
+                <td><a [routerLink]="['/production/fiches', f.id]" class="btn btn-ghost btn-sm"><span class="material-icons">visibility</span></a></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

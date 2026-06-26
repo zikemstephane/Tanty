@@ -1,0 +1,111 @@
+<div class="auth-layout">
+  <!-- Left panel — branding -->
+  <div class="auth-brand">
+    <div class="auth-brand__content">
+      <div class="logo">
+        <span class="logo__text">TANTY</span>
+        <span class="logo__dot"></span>
+      </div>
+      <h1 class="auth-brand__title">Gestion de Production</h1>
+      <p class="auth-brand__subtitle">Plateforme intégrée de suivi, planification et contrôle de la production TANTY.</p>
+      <div class="auth-brand__modules">
+        <div class="module-chip"><span class="material-icons">receipt_long</span> Bons de Commande</div>
+        <div class="module-chip"><span class="material-icons">factory</span> Production Journalière</div>
+        <div class="module-chip"><span class="material-icons">precision_manufacturing</span> Broyage</div>
+        <div class="module-chip"><span class="material-icons">science</span> Dosage</div>
+        <div class="module-chip"><span class="material-icons">bar_chart</span> Rapports Hebdo</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel — form -->
+  <div class="auth-form-panel">
+    <div class="auth-card">
+      <div class="auth-card__header">
+        <div class="logo logo--dark">
+          <span class="logo__text">TANTY</span>
+        </div>
+        <h2 class="auth-card__title">Connexion</h2>
+        <p class="auth-card__subtitle">Connectez-vous avec votre matricule</p>
+      </div>
+
+      <!-- Demo credentials hint -->
+      <div class="demo-hint">
+        <span class="material-icons">info</span>
+        <div>
+          <strong>Démo :</strong> Matricule <code>TAN2026001</code> · MDP <code>Admin1234!</code>
+        </div>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-card__form">
+
+        <!-- Error banner -->
+        @if (errorMessage()) {
+          <div class="form-error-banner">
+            <span class="material-icons">error_outline</span>
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <div class="form-group">
+          <label class="form-label" for="matricule">Matricule</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon">badge</span>
+            <input
+              id="matricule"
+              type="text"
+              class="form-control input-with-icon"
+              formControlName="matricule"
+              placeholder="TAN2026XXX"
+              autocomplete="username"
+            />
+          </div>
+          @if (matricule.invalid && matricule.touched) {
+            <span class="form-error">
+              <span class="material-icons">error</span>
+              Le matricule est obligatoire (min. 5 caractères)
+            </span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="motDePasse">Mot de passe</label>
+          <div class="input-wrapper">
+            <span class="material-icons input-icon">lock</span>
+            <input
+              id="motDePasse"
+              [type]="showPassword() ? 'text' : 'password'"
+              class="form-control input-with-icon input-with-icon-right"
+              formControlName="motDePasse"
+              placeholder="••••••••"
+              autocomplete="current-password"
+            />
+            <button type="button" class="input-toggle" (click)="togglePassword()">
+              <span class="material-icons">{{ showPassword() ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+          @if (motDePasse.invalid && motDePasse.touched) {
+            <span class="form-error">
+              <span class="material-icons">error</span>
+              Mot de passe obligatoire (min. 8 caractères)
+            </span>
+          }
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-submit" [disabled]="loading()">
+          @if (loading()) {
+            <div class="spinner spinner-sm"></div>
+            Connexion en cours…
+          } @else {
+            <span class="material-icons">login</span>
+            Se connecter
+          }
+        </button>
+      </form>
+
+      <div class="auth-card__footer">
+        <p>Pas encore de compte ? <a routerLink="/auth/register">Créer un compte</a></p>
+      </div>
+    </div>
+  </div>
+</div>

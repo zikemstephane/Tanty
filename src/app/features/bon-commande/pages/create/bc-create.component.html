@@ -1,0 +1,119 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Nouveau Bon de Commande</h1>
+      <p class="page-header__subtitle">Définissez la période et les produits à produire</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="create-grid">
+
+      <!-- Left: Period -->
+      <div>
+        <div class="tanty-card">
+          <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+            <span class="material-icons">date_range</span> Période de production
+          </h3>
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="form-label">Date de début *</label>
+              <input type="date" class="form-control" formControlName="dateDebutProduction" />
+              @if (form.get('dateDebutProduction')?.invalid && form.get('dateDebutProduction')?.touched) {
+                <span class="form-error"><span class="material-icons">error</span> Obligatoire</span>
+              }
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date de fin *</label>
+              <input type="date" class="form-control" formControlName="dateFinProduction" />
+              @if (form.get('dateFinProduction')?.invalid && form.get('dateFinProduction')?.touched) {
+                <span class="form-error"><span class="material-icons">error</span> Obligatoire</span>
+              }
+            </div>
+          </div>
+          <div class="info-banner">
+            <span class="material-icons">info</span>
+            Les semaines de production (PPH) seront générées automatiquement lors de la validation.
+          </div>
+        </div>
+
+        <!-- Lines -->
+        <div class="tanty-card" style="margin-top: 1rem;">
+          <div class="lines-header">
+            <h3 class="tanty-card__title">
+              <span class="material-icons">list</span> Lignes de commande
+            </h3>
+            <button type="button" class="btn btn-outline btn-sm" (click)="ajouterLigne()">
+              <span class="material-icons">add</span> Ajouter
+            </button>
+          </div>
+
+          <div formArrayName="lignes" class="lines-list">
+            @for (ligne of lignes.controls; track $index) {
+              <div class="ligne-item" [formGroupName]="$index">
+                <div class="ligne-item__num">{{ $index + 1 }}</div>
+                <div class="ligne-item__fields">
+                  <div class="form-group" style="flex:2">
+                    <label class="form-label">Produit *</label>
+                    <select class="form-control" formControlName="produitId"
+                            (change)="onProduitChange($index)">
+                      <option value="">-- Sélectionner --</option>
+                      @for (p of produits(); track p.id) {
+                        <option [value]="p.id">{{ p.nom }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div class="form-group" style="flex:1">
+                    <label class="form-label">Conditionnement</label>
+                    <input type="text" class="form-control" formControlName="conditionnement" readonly placeholder="Auto" />
+                  </div>
+                  <div class="form-group" style="flex:0 0 120px">
+                    <label class="form-label">Qté Cartons *</label>
+                    <input type="number" class="form-control" formControlName="quantiteCartons" min="1" />
+                  </div>
+                  <button type="button" class="btn btn-ghost btn-icon danger-icon"
+                          (click)="supprimerLigne($index)" [disabled]="lignes.length === 1">
+                    <span class="material-icons">delete</span>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Summary -->
+      <div class="summary-panel">
+        <div class="tanty-card sticky-summary">
+          <h3 class="tanty-card__title" style="margin-bottom:1rem;">
+            <span class="material-icons">summarize</span> Résumé
+          </h3>
+          <div class="summary-lines">
+            @for (ligne of lignes.controls; track $index) {
+              @if (ligne.get('produitId')?.value) {
+                <div class="summary-line">
+                  <span class="text-sm">{{ getNomProduit(ligne.get('produitId')?.value) }}</span>
+                  <span class="font-semibold text-sm">{{ ligne.get('quantiteCartons')?.value }} crt.</span>
+                </div>
+              }
+            }
+          </div>
+          <hr class="divider" />
+          <div class="summary-total">
+            <span>Total lignes</span>
+            <span class="font-bold">{{ lignes.length }}</span>
+          </div>
+          <div class="form-actions">
+            <a routerLink="/bons-de-commande" class="btn btn-ghost">Annuler</a>
+            <button type="submit" class="btn btn-primary" [disabled]="loading()">
+              @if (loading()) { <div class="spinner spinner-sm"></div> }
+              <span class="material-icons">save</span> Créer le BC
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

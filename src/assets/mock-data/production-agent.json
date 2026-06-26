@@ -1,0 +1,137 @@
+{
+  "fiches": [
+    {
+      "id": 1,
+      "referencePPH": "PPH-2026-001-S1",
+      "date": "2026-06-09",
+      "agentMatricule": "TAN2026004",
+      "agentNom": "Bernadette ESSAMA",
+      "totalProduit": 950,
+      "lignes": [
+        {
+          "produitId": "P001", "produitCode": "BSA-25",
+          "produitNom": "REINE BOUILLIE SOJA ARACHIDES",
+          "quantiteCartons": 20, "quantiteUnites": 500, "observation": null
+        },
+        {
+          "produitId": "P006", "produitCode": "TBSA-25",
+          "produitNom": "TANTY BOUILLIE SOJA ARACHIDES",
+          "quantiteCartons": 18, "quantiteUnites": 450, "observation": null
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "referencePPH": "PPH-2026-001-S1",
+      "date": "2026-06-10",
+      "agentMatricule": "TAN2026004",
+      "agentNom": "Bernadette ESSAMA",
+      "totalProduit": 1100,
+      "lignes": [
+        {
+          "produitId": "P001", "produitCode": "BSA-25",
+          "produitNom": "REINE BOUILLIE SOJA ARACHIDES",
+          "quantiteCartons": 22, "quantiteUnites": 550, "observation": null
+        },
+        {
+          "produitId": "P006", "produitCode": "TBSA-25",
+          "produitNom": "TANTY BOUILLIE SOJA ARACHIDES",
+          "quantiteCartons": 22, "quantiteUnites": 550, "observation": null
+        }
+      ]
+    }
+  ],
+  "registres": [
+    {
+      "id": 1,
+      "referencePPH": "PPH-2026-001-S1",
+      "date": "2026-06-09",
+      "agentMatricule": "TAN2026004",
+      "agentNom": "Bernadette ESSAMA",
+      "employes": [
+        {
+          "nom": "MESSI Paul",
+          "produitsTravailles": [
+            {"produitCode": "BSA-25", "produitNom": "REINE BOUILLIE SOJA ARACHIDES",
+             "quantiteRealise": 200, "unite": "sachets"}
+          ],
+          "totalPoints": 200, "observation": null
+        },
+        {
+          "nom": "BONGO Irène",
+          "produitsTravailles": [
+            {"produitCode": "TBSA-25", "produitNom": "TANTY BOUILLIE SOJA ARACHIDES",
+             "quantiteRealise": 300, "unite": "sachets"}
+          ],
+          "totalPoints": 300, "observation": null
+        },
+        {
+          "nom": "TAMBA Jean",
+          "produitsTravailles": [
+            {"produitCode": "BSA-25", "produitNom": "REINE BOUILLIE SOJA ARACHIDES",
+             "quantiteRealise": 250, "unite": "sachets"}
+          ],
+          "totalPoints": 250, "observation": null
+        }
+      ]
+    }
+  ],
+  "rapportsHebdomadaires": [
+    {
+      "referencePPH": "PPH-2026-001-S1",
+      "numeroSemaine": 24,
+      "annee": 2026,
+      "dateDebut": "2026-06-09",
+      "dateFin": "2026-06-15",
+      "totalPredite": 2667,
+      "totalRealisee": 2567,
+      "tauxRealisation": 96.2,
+      "classementEmployes": [
+        {
+          "rang": 1,
+          "nom": "BONGO Irène",
+          "totalProduction": 1890,
+          "score": 98.5
+        },
+        {
+          "rang": 2,
+          "nom": "TAMBA Jean",
+          "totalProduction": 1750,
+          "score": 96.8
+        },
+        {
+          "rang": 3,
+          "nom": "MESSI Paul",
+          "totalProduction": 1400,
+          "score": 94.2
+        }
+      ],
+      "lignes": [
+        {
+          "produitCode": "BSA-25",
+          "produitNom": "REINE BOUILLIE SOJA ARACHIDES",
+          "quantitePredite": 1000,
+          "quantiteRealisee": 950,
+          "tauxRealisation": 95.0,
+          "ecart": -50
+        },
+        {
+          "produitCode": "TBSA-25",
+          "produitNom": "TANTY BOUILLIE SOJA ARACHIDES",
+          "quantitePredite": 667,
+          "quantiteRealisee": 667,
+          "tauxRealisation": 100.0,
+          "ecart": 0
+        },
+        {
+          "produitCode": "MAE-MINI",
+          "produitNom": "MINI A GRIGNOTER ARACHIDES ENROBEES",
+          "quantitePredite": 1000,
+          "quantiteRealisee": 950,
+          "tauxRealisation": 95.0,
+          "ecart": -50
+        }
+      ]
+    }
+  ]
+}

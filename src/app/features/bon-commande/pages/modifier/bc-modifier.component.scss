@@ -1,0 +1,220 @@
+@use '../../../../../styles/variables' as *;
+
+// ── Steps indicator ────────────────────────────────────────────────────────
+.steps-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: $spacing-6;
+  padding: $spacing-4;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $border-radius-lg;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-1;
+
+  &__circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: $tanty-gray-200;
+    color: $tanty-gray-500;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all $transition-base;
+    .material-icons { font-size: 18px; }
+  }
+
+  &__label {
+    font-size: $font-size-xs;
+    font-weight: 500;
+    color: $tanty-gray-500;
+    white-space: nowrap;
+    transition: color $transition-base;
+  }
+
+  &--active {
+    .step__circle { background: $tanty-green; color: $tanty-white; box-shadow: 0 0 0 4px rgba($tanty-green, 0.2); }
+    .step__label  { color: $tanty-green; font-weight: 600; }
+  }
+
+  &--done {
+    .step__circle { background: $color-success; color: $tanty-white; }
+    .step__label  { color: $color-success; }
+  }
+
+  &__line {
+    width: 80px;
+    height: 2px;
+    background: $tanty-gray-200;
+    margin: 0 $spacing-2;
+    margin-bottom: 14px;
+    transition: background $transition-base;
+
+    &--done { background: $color-success; }
+
+    @media (max-width: $bp-sm) { width: 40px; }
+  }
+}
+
+// ── OTP Verify layout ──────────────────────────────────────────────────────
+.otp-verify-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: $spacing-4;
+  align-items: start;
+  @media (max-width: $bp-lg) { grid-template-columns: 1fr; }
+}
+
+.otp-verify-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: $spacing-4;
+
+  &__icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba($tanty-green, 0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid rgba($tanty-green, 0.25);
+
+    .material-icons { font-size: 36px; color: $tanty-green; }
+  }
+
+  h2 { font-size: $font-size-xl; font-weight: 700; }
+}
+
+.otp-how-to {
+  text-align: left;
+  background: $tanty-gray-50;
+  border-radius: $border-radius;
+  padding: $spacing-4;
+  width: 100%;
+
+  h4 {
+    display: flex;
+    align-items: center;
+    gap: $spacing-1;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    margin-bottom: $spacing-3;
+    color: $tanty-gray-700;
+    .material-icons { font-size: 18px; color: $tanty-green; }
+  }
+
+  ol {
+    padding-left: $spacing-4;
+    li { font-size: $font-size-sm; color: $tanty-gray-700; padding: 2px 0; }
+  }
+}
+
+.otp-verify-form { width: 100%; text-align: left; }
+
+.otp-input-wrapper {
+  position: relative;
+}
+
+.otp-input {
+  font-size: $font-size-3xl !important;
+  font-weight: 800 !important;
+  letter-spacing: 12px !important;
+  text-align: center;
+  padding: $spacing-3 $spacing-6 !important;
+  font-family: monospace !important;
+  border-width: 2px !important;
+
+  &:focus { border-color: $tanty-green !important; }
+}
+
+.otp-input-icon {
+  position: absolute;
+  right: $spacing-3;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $tanty-gray-400;
+}
+
+.btn-verify {
+  width: 100%;
+  justify-content: center;
+  padding: $spacing-3;
+  font-size: $font-size-base;
+}
+
+// ── Info card ──────────────────────────────────────────────────────────────
+.bc-info-list { display: flex; flex-direction: column; gap: $spacing-2; margin-bottom: $spacing-4; }
+
+.bc-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-2 0;
+  border-bottom: 1px solid $color-border;
+  font-size: $font-size-sm;
+
+  &__label { color: $tanty-gray-500; }
+  &__value { font-weight: 500; }
+}
+
+.security-note {
+  display: flex;
+  gap: $spacing-2;
+  background: rgba($color-warning, 0.07);
+  border-radius: $border-radius;
+  padding: $spacing-3;
+  font-size: $font-size-xs;
+  color: darken($color-warning, 15%);
+
+  .material-icons { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  p { margin: 0; line-height: 1.5; }
+}
+
+// ── OTP validated banner ───────────────────────────────────────────────────
+.otp-validated-banner {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  background: rgba($color-success, 0.08);
+  border: 1px solid rgba($color-success, 0.25);
+  border-radius: $border-radius-lg;
+  padding: $spacing-3 $spacing-4;
+  margin-bottom: $spacing-4;
+  font-size: $font-size-sm;
+  color: $color-success;
+
+  .material-icons { font-size: 22px; flex-shrink: 0; }
+  strong { color: $color-success; }
+}
+
+// ── Modif layout ───────────────────────────────────────────────────────────
+.create-grid { display: grid; grid-template-columns: 1fr 280px; gap: $spacing-4; align-items: start; @media(max-width:$bp-lg){grid-template-columns:1fr;} }
+.lines-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: $spacing-4; }
+.lines-list   { display: flex; flex-direction: column; gap: $spacing-3; }
+.ligne-item   { display: flex; gap: $spacing-2; align-items: flex-start; border: 1px solid $color-border; border-radius: $border-radius; padding: $spacing-3; }
+.ligne-item__num { width: 26px; height: 26px; border-radius: 50%; background: $tanty-gray-100; display: flex; align-items: center; justify-content: center; font-size: $font-size-xs; font-weight: 600; color: $tanty-gray-600; flex-shrink: 0; margin-top: 24px; }
+.ligne-item__fields { display: flex; flex: 1; gap: $spacing-2; flex-wrap: wrap; align-items: flex-end; }
+.sticky-summary { position: sticky; top: 80px; }
+.summary-lines { display: flex; flex-direction: column; gap: $spacing-2; min-height: 60px; }
+.summary-line { display: flex; align-items: center; justify-content: space-between; padding: $spacing-2 $spacing-3; background: $tanty-gray-50; border-radius: $border-radius; }
+.form-actions { display: flex; gap: $spacing-2; justify-content: flex-end; flex-wrap: wrap; margin-top: $spacing-3; }
+.font-mono { font-family: monospace; }
+
+.modif-motif {
+  display: flex; gap: $spacing-2; align-items: flex-start;
+  background: $tanty-gray-50; padding: $spacing-3; border-radius: $border-radius;
+  font-size: $font-size-sm; margin-bottom: $spacing-3;
+  .material-icons { color: $tanty-gray-400; font-size: 20px; flex-shrink: 0; }
+}

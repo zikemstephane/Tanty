@@ -1,0 +1,70 @@
+@use '../../../../../styles/variables' as *;
+
+.formule-banner {
+  display: flex; gap: $spacing-6; background: rgba($tanty-green,0.06);
+  border: 1px solid rgba($tanty-green,0.2); border-radius: $border-radius-lg;
+  padding: $spacing-4; margin-bottom: $spacing-4; flex-wrap: wrap;
+}
+.formule-item { display: flex; flex-direction: column; gap: 2px; }
+
+.registres-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: $spacing-4;
+}
+
+.registre-card {
+  background: $color-surface; border: 1px solid $color-border;
+  border-radius: $border-radius-lg; padding: $spacing-4;
+  cursor: pointer; transition: all $transition-fast;
+  display: flex; flex-direction: column; gap: $spacing-3;
+
+  &:hover { border-color: $tanty-green; box-shadow: $shadow-md; transform: translateY(-2px); }
+  &--non-conforme { border-color: rgba($color-error,0.3); background: rgba($color-error,0.01); }
+
+  &__header { display: flex; justify-content: space-between; align-items: flex-start; }
+  &__agent  { display: flex; align-items: center; gap: $spacing-1; font-size: $font-size-sm; .material-icons { font-size: 16px; color: $tanty-gray-400; } }
+  &__stats  { display: flex; gap: $spacing-4; }
+  &__action {
+    display: flex; align-items: center; justify-content: center; gap: $spacing-1;
+    padding: $spacing-2; border-radius: $border-radius;
+    background: rgba($tanty-green,0.06); color: $tanty-green;
+    font-size: $font-size-sm; font-weight: 500; transition: $transition-fast;
+    .material-icons { font-size: 16px; }
+    .registre-card:hover & { background: $tanty-green; color: $tanty-white; }
+  }
+}
+
+.rstat { display: flex; flex-direction: column; gap: 2px;
+  &__label { font-size: $font-size-xs; color: $tanty-gray-500; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  &__val   { font-size: $font-size-lg; font-weight: 700; color: $tanty-gray-900; }
+}
+
+.composition-mini { display: flex; gap: $spacing-2; flex-wrap: wrap; }
+.comp-mini {
+  font-size: $font-size-xs; padding: 2px 6px; border-radius: $border-radius-full; font-weight: 600;
+  &--ok { background: rgba($color-success,0.1); color: $color-success; }
+  &--ko { background: rgba($color-error,0.1);   color: $color-error; }
+}
+
+.modal--detail { max-width: 620px; }
+
+.session-detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: $spacing-3; margin-bottom: $spacing-4;
+}
+.sd-item { display: flex; flex-direction: column; gap: 2px;
+  padding: $spacing-2 $spacing-3; background: $tanty-gray-50; border-radius: $border-radius;
+}
+.sd-label { font-size: $font-size-xs; color: $tanty-gray-500; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.sd-val   { font-size: $font-size-sm; color: $tanty-gray-900; font-weight: 500; }
+
+.warning-box {
+  display: flex; align-items: center; gap: $spacing-2;
+  background: rgba($color-warning,0.08); border: 1px solid rgba($color-warning,0.3);
+  padding: $spacing-3; border-radius: $border-radius; font-size: $font-size-sm;
+  color: darken($color-warning,15%); margin-bottom: $spacing-3;
+  .material-icons { font-size: 18px; flex-shrink: 0; }
+}
+
+.text-success { color: $color-success; }
+.text-error   { color: $color-error; }

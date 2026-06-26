@@ -1,0 +1,9 @@
+@use 'variables' as *;
+.create-layout { display: grid; grid-template-columns: 1fr 260px; gap: $spacing-4; align-items: start; @media(max-width:$bp-lg){grid-template-columns:1fr;} }
+.assign-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: $spacing-4; }
+.assign-list   { display: flex; flex-direction: column; gap: $spacing-3; }
+.assign-item   { display: flex; gap: $spacing-2; align-items: flex-end; border: 1px solid $color-border; border-radius: $border-radius; padding: $spacing-3; flex-wrap: wrap;
+  &__num { width: 28px; height: 28px; border-radius: 50%; background: $tanty-green; color: $tanty-white; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: $font-size-xs; flex-shrink: 0; margin-bottom: 2px; }
+}
+.sum-row { display: flex; justify-content: space-between; align-items: center; font-size: $font-size-sm; padding: $spacing-1 0; border-bottom: 1px solid $color-border; }
+.form-actions { display: flex; gap: $spacing-2; justify-content: flex-end; margin-top: $spacing-3; }

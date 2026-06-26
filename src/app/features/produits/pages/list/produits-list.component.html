@@ -1,0 +1,68 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs" />
+  <div class="page-header">
+    <div>
+      <h1 class="page-header__title">Catalogue Produits</h1>
+      <p class="page-header__subtitle">{{ filtered.length }} produit(s) · 4 catégories</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="btn btn-ghost btn-icon" [class.active]="viewMode() === 'grid'" (click)="viewMode.set('grid')"><span class="material-icons">grid_view</span></button>
+      <button class="btn btn-ghost btn-icon" [class.active]="viewMode() === 'table'" (click)="viewMode.set('table')"><span class="material-icons">table_rows</span></button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-bar tanty-card" style="padding: 1rem 1.5rem; margin-bottom: 1.5rem;">
+    <div class="search-box">
+      <span class="material-icons">search</span>
+      <input class="form-control" placeholder="Rechercher par nom ou code…"
+             [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+    </div>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+      @for (c of categories; track c.value) {
+        <button class="btn btn-sm" [class.btn-primary]="filterCat() === c.value" [class.btn-ghost]="filterCat() !== c.value"
+                (click)="filterCat.set(c.value)">{{ c.label }}</button>
+      }
+    </div>
+  </div>
+
+  @if (viewMode() === 'grid') {
+    <div class="produits-grid">
+      @for (p of filtered; track p.id) {
+        <div class="produit-card">
+          <div class="produit-card__header">
+            <span class="badge {{ catClass(p.categorie) }}">{{ getCatLabel(p.categorie) }}</span>
+            <span class="produit-card__code">{{ p.code }}</span>
+          </div>
+          <h4 class="produit-card__nom">{{ p.nom }}</h4>
+          <div class="produit-card__meta">
+            <span class="material-icons">inventory_2</span>
+            <span class="text-sm text-muted">{{ p.conditionnement }}</span>
+          </div>
+          <div class="produit-card__footer">
+            <span class="produit-card__gamme">{{ p.gamme }}</span>
+            <span class="produit-card__prix">{{ p.prixUnitaire | number }} FCFA</span>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="tanty-card" style="padding:0;overflow:hidden;">
+      <table class="tanty-table">
+        <thead><tr><th>Code</th><th>Nom</th><th>Catégorie</th><th>Gamme</th><th>Conditionnement</th><th>Prix unitaire</th></tr></thead>
+        <tbody>
+          @for (p of filtered; track p.id) {
+            <tr>
+              <td class="font-mono text-sm font-semibold">{{ p.code }}</td>
+              <td class="font-medium">{{ p.nom }}</td>
+              <td><span class="badge {{ catClass(p.categorie) }}">{{ getCatLabel(p.categorie) }}</span></td>
+              <td class="text-sm text-muted">{{ p.gamme }}</td>
+              <td class="text-sm text-muted">{{ p.conditionnement }}</td>
+              <td class="font-semibold">{{ p.prixUnitaire | number }} FCFA</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

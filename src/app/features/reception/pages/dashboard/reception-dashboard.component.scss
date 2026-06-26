@@ -1,0 +1,95 @@
+@use '../../../../../styles/variables' as *;
+
+.workflow-card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $border-radius-lg;
+  padding: $spacing-5;
+  margin-bottom: $spacing-4;
+
+  &__title {
+    display: flex; align-items: center; gap: $spacing-2;
+    font-size: $font-size-sm; font-weight: 600; color: $tanty-gray-700;
+    margin-bottom: $spacing-4;
+    .material-icons { color: $color-info; font-size: 18px; }
+  }
+}
+
+.workflow-steps {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  flex-wrap: wrap;
+}
+
+.wf-step {
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: $spacing-1;
+
+  &__icon {
+    width: 48px; height: 48px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    .material-icons { font-size: 22px; }
+
+    &--agent { background: rgba(#1565C0, 0.1); color: #1565C0; }
+    &--stock  { background: rgba($tanty-green, 0.1); color: $tanty-green; }
+    &--check  { background: rgba($color-info, 0.1); color: $color-info; }
+  }
+
+  &__label { font-size: $font-size-xs; font-weight: 600; color: $tanty-gray-800; }
+  &__desc  { font-size: $font-size-xs; color: $tanty-gray-500; line-height: 1.3; }
+}
+
+.wf-arrow {
+  color: $tanty-gray-300;
+  flex-shrink: 0;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: $spacing-1;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  padding: $spacing-1 $spacing-3;
+  border-radius: $border-radius-full;
+  font-size: $font-size-sm;
+  border: 1px solid $color-border;
+  background: transparent;
+  color: $tanty-gray-600;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover { background: $tanty-gray-50; }
+  &--active { background: $tanty-green; color: $tanty-white; border-color: $tanty-green; }
+}
+
+.table-row-link {
+  cursor: pointer;
+  &:hover td { background: rgba($tanty-green, 0.03) !important; }
+}
+
+.text-green { color: $tanty-green; }
+
+.ecart-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: $border-radius-full;
+  font-size: $font-size-xs;
+  font-weight: 700;
+
+  &--ok { background: rgba($color-success, 0.1);  color: $color-success; }
+  &--ko { background: rgba($color-error, 0.12);   color: $color-error; }
+}
+
+.conformite-cell {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+}

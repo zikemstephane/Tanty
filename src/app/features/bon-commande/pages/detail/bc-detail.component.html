@@ -1,0 +1,179 @@
+<div class="page-container">
+  <app-breadcrumb [items]="breadcrumbs()" />
+  <app-page-loader [loading]="loading()" />
+
+  @if (!loading() && bc()) {
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="bc-title-row">
+          <h1 class="page-header__title">{{ bc()!.reference }}</h1>
+          <span class="badge {{ statusClass(bc()!.statut) }} badge--lg">{{ bc()!.statutLibelle }}</span>
+        </div>
+        <p class="page-header__subtitle">
+          Créé le {{ bc()!.dateCreation }} par {{ bc()!.createurNom }}
+          @if (bc()!.dateValidation) {
+            · Validé le {{ bc()!.dateValidation }} par {{ bc()!.validateurNom }}
+          }
+        </p>
+      </div>
+      <div class="page-header__actions">
+        @if (canEdit()) {
+          <a [routerLink]="['/bons-de-commande', bc()!.reference, 'modifier']" class="btn btn-outline">
+            <span class="material-icons">edit</span> Modifier
+          </a>
+        }
+        @if (canEditOTP()) {
+          <a [routerLink]="['/bons-de-commande', bc()!.reference, 'modifier']" class="btn btn-outline btn-otp-modify">
+            <span class="material-icons">key</span> Modifier (OTP requis)
+          </a>
+        }
+        @if (canSubmit()) {
+          <button class="btn btn-outline" (click)="soumettre()">
+            <span class="material-icons">send</span> Soumettre
+          </button>
+        }
+        @if (canValidate()) {
+          <button class="btn btn-secondary" (click)="valider()">
+            <span class="material-icons">check_circle</span> Valider
+          </button>
+        }
+        @if (canDelete()) {
+          <button class="btn btn-danger" (click)="showConfirmDelete.set(true)">
+            <span class="material-icons">delete</span> Supprimer
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <!-- Left column -->
+      <div class="detail-main">
+
+        <!-- Info card -->
+        <div class="tanty-card">
+          <h3 class="tanty-card__title">Informations générales</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-item__label">Période de production</span>
+              <span class="info-item__value">{{ bc()!.dateDebutProduction }} → {{ bc()!.dateFinProduction }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item__label">Nombre de semaines</span>
+              <span class="info-item__value">{{ bc()!.nombreSemaines }} semaine(s)</span>
+            </div>
+            <div class="info-item">
+              <span class="info-item__label">Créateur</span>
+              <span class="info-item__value">{{ bc()!.createurNom }} ({{ bc()!.createurMatricule }})</span>
+            </div>
+            @if (bc()!.validateurNom) {
+              <div class="info-item">
+                <span class="info-item__label">Validateur</span>
+                <span class="info-item__value">{{ bc()!.validateurNom }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Lines table -->
+        <div class="tanty-card" style="padding: 0; overflow: hidden; margin-top: 1rem;">
+          <div style="padding: 1.5rem 1.5rem 1rem;">
+            <h3 class="tanty-card__title">
+              <span class="material-icons">list</span> Lignes de commande ({{ bc()!.lignes.length }})
+            </h3>
+          </div>
+          <table class="tanty-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Produit</th>
+                <th>Catégorie</th>
+                <th>Conditionnement</th>
+                <th>Qté Cartons</th>
+                <th>Qté Unités</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ligne of bc()!.lignes; track ligne.id) {
+                <tr>
+                  <td class="text-muted">{{ ligne.numeroligne }}</td>
+                  <td>
+                    <div class="font-medium">{{ ligne.produitNom }}</div>
+                    <div class="text-xs text-muted">{{ ligne.produitCode }}</div>
+                  </td>
+                  <td><span class="badge badge--info">{{ ligne.categorie }}</span></td>
+                  <td class="text-sm text-muted">{{ ligne.conditionnement }}</td>
+                  <td class="font-semibold">{{ ligne.quantiteCartons }}</td>
+                  <td class="text-muted">{{ ligne.quantiteUnites }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Right column: PPH list -->
+      <div class="detail-side">
+        <div class="tanty-card">
+          <h3 class="tanty-card__title" style="margin-bottom: 1rem;">
+            <span class="material-icons">calendar_today</span> Plans de Production ({{ pphs().length }})
+          </h3>
+          @if (pphs().length === 0) {
+            <p class="text-sm text-muted" style="text-align:center; padding: 1rem 0;">
+              Aucun PPH généré. Validez le BC pour générer les plans.
+            </p>
+          } @else {
+            <div class="pph-cards">
+              @for (pph of pphs(); track pph.id) {
+                <a class="pph-card" [routerLink]="['/pphs', pph.reference]">
+                  <div class="pph-card__top">
+                    <div>
+                      <div class="font-semibold text-sm">{{ pph.reference }}</div>
+                      <div class="text-xs text-muted">Semaine {{ pph.numeroSemaine }}</div>
+                    </div>
+                    <span class="badge {{ pphStatusClass(pph.statut) }}">{{ pph.statutLibelle }}</span>
+                  </div>
+                  <div class="text-xs text-muted">{{ pph.dateDebut }} → {{ pph.dateFin }}</div>
+                  @if (pph.lignes.length > 0) {
+                    <div class="pph-card__taux">
+                      @let taux = pph.lignes[0].tauxRealisation;
+                      <div class="progress">
+                        <div class="progress__bar" [style.width]="taux + '%'" [style.background]="taux >= 90 ? '#2E7D32' : taux >= 70 ? '#F57F17' : '#C62828'"></div>
+                      </div>
+                      <span class="text-xs">{{ taux | number:'1.0-0' }}%</span>
+                    </div>
+                  }
+                </a>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Besoins matières (1er PPH) -->
+        @if (pphs().length > 0 && pphs()[0].besoinsMatieresPremieres) {
+          <div class="tanty-card" style="margin-top: 1rem;">
+            <h3 class="tanty-card__title" style="margin-bottom: 1rem;">
+              <span class="material-icons">science</span> Besoins matières (par semaine)
+            </h3>
+            @let bm = pphs()[0].besoinsMatieresPremieres!;
+            <div class="matieres-list">
+              <div class="matiere-item"><span class="matiere-dot mais"></span> Maïs : <strong>{{ bm.maisKg }} kg</strong></div>
+              <div class="matiere-item"><span class="matiere-dot soja"></span> Soja : <strong>{{ bm.sojaKg }} kg</strong></div>
+              <div class="matiere-item"><span class="matiere-dot arachide"></span> Arachide : <strong>{{ bm.arachideKg }} kg</strong></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
+
+<app-confirm-dialog
+  [visible]="showConfirmDelete()"
+  title="Supprimer le bon de commande"
+  [message]="'Supprimer ' + bc()?.reference + ' ? Action irréversible.'"
+  confirmLabel="Supprimer"
+  [danger]="true"
+  (confirm)="supprimer()"
+  (cancel)="showConfirmDelete.set(false)"
+/>

@@ -1,0 +1,22 @@
+@use '../../../../styles/variables' as *;
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: $font-size-sm;
+  margin-bottom: $spacing-4;
+  flex-wrap: wrap;
+
+  &__item {
+    color: $tanty-gray-500;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: $spacing-1;
+    transition: color $transition-fast;
+    .material-icons { font-size: 16px; }
+    &--current { color: $tanty-gray-900; font-weight: 500; }
+    &:not(.breadcrumb__item--current):hover { color: $tanty-green; }
+  }
+  &__sep { color: $tanty-gray-400; font-size: 16px; }
+}

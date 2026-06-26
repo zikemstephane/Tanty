@@ -1,0 +1,262 @@
+{
+  "produits": [
+    {
+      "id": "P001", "code": "BSA-25", "categorie": "BOUILLIE_SOJA", "gamme": "SACHETS",
+      "nom": "REINE BOUILLIE SOJA ARACHIDES", "conditionnement": "25 sachets x 57g",
+      "poidsUnitaire": 57, "nombreUnites": 25, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 500
+    },
+    {
+      "id": "P002", "code": "BSC-25", "categorie": "BOUILLIE_SOJA", "gamme": "SACHETS",
+      "nom": "REINE BOUILLIE SOJA CLASSIC", "conditionnement": "25 sachets x 57g",
+      "poidsUnitaire": 57, "nombreUnites": 25, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 500
+    },
+    {
+      "id": "P003", "code": "BSLC-25", "categorie": "BOUILLIE_SOJA", "gamme": "SACHETS",
+      "nom": "REINE BOUILLIE SOJA LACTEE CROISSANCE", "conditionnement": "25 sachets x 57g",
+      "poidsUnitaire": 57, "nombreUnites": 25, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 550
+    },
+    {
+      "id": "P004", "code": "BSMC-25", "categorie": "BOUILLIE_SOJA", "gamme": "SACHETS",
+      "nom": "REINE BOUILLIE SOJA MULTI CEREALE", "conditionnement": "25 sachets x 57g",
+      "poidsUnitaire": 57, "nombreUnites": 25, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 550
+    },
+    {
+      "id": "P005", "code": "BSPO-25", "categorie": "BOUILLIE_SOJA", "gamme": "SACHETS",
+      "nom": "REINE BOUILLIE SOJA POISSON", "conditionnement": "25 sachets x 57g",
+      "poidsUnitaire": 57, "nombreUnites": 25, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 550
+    },
+    {
+      "id": "P006", "code": "TBSA-25", "categorie": "BOUILLIE_SOJA", "gamme": "SACHETS",
+      "nom": "TANTY BOUILLIE SOJA ARACHIDES", "conditionnement": "25 sachets x 59g",
+      "poidsUnitaire": 59, "nombreUnites": 25, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 500
+    },
+    {
+      "id": "P007", "code": "TBSL-25", "categorie": "BOUILLIE_SOJA", "gamme": "SACHETS",
+      "nom": "TANTY BOUILLIE SOJA LACTEE", "conditionnement": "25 sachets x 59g",
+      "poidsUnitaire": 59, "nombreUnites": 25, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 500
+    },
+    {
+      "id": "P008", "code": "TBSN-25", "categorie": "BOUILLIE_SOJA", "gamme": "SACHETS",
+      "nom": "TANTY BOUILLIE SOJA NATURE", "conditionnement": "25 sachets x 59g",
+      "poidsUnitaire": 59, "nombreUnites": 25, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 500
+    },
+    {
+      "id": "P009", "code": "TBSPA-25", "categorie": "BOUILLIE_SOJA", "gamme": "SACHETS",
+      "nom": "TANTY BOUILLIE SOJA PARFUME", "conditionnement": "25 sachets x 59g",
+      "poidsUnitaire": 59, "nombreUnites": 25, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 500
+    },
+    {
+      "id": "P010", "code": "TBSPO-25", "categorie": "BOUILLIE_SOJA", "gamme": "SACHETS",
+      "nom": "TANTY BOUILLIE SOJA POISSON", "conditionnement": "25 sachets x 59g",
+      "poidsUnitaire": 59, "nombreUnites": 25, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 550
+    },
+    {
+      "id": "P011", "code": "PRBA-12", "categorie": "BOUILLIE_SOJA", "gamme": "ETUIS",
+      "nom": "PRESTIGE REINE BOUILLIE ARACHIDES", "conditionnement": "12 etuis x 150g",
+      "poidsUnitaire": 150, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1200
+    },
+    {
+      "id": "P012", "code": "PRBC-12", "categorie": "BOUILLIE_SOJA", "gamme": "ETUIS",
+      "nom": "PRESTIGE REINE BOUILLIE CLASSIC", "conditionnement": "12 etuis x 150g",
+      "poidsUnitaire": 150, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1200
+    },
+    {
+      "id": "P013", "code": "PRBLC-12", "categorie": "BOUILLIE_SOJA", "gamme": "ETUIS",
+      "nom": "PRESTIGE REINE BOUILLIE LACTEE CROISSANCE", "conditionnement": "12 etuis x 150g",
+      "poidsUnitaire": 150, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1300
+    },
+    {
+      "id": "P014", "code": "PRBMC-12", "categorie": "BOUILLIE_SOJA", "gamme": "ETUIS",
+      "nom": "PRESTIGE REINE BOUILLIE MULTI CEREALE", "conditionnement": "12 etuis x 150g",
+      "poidsUnitaire": 150, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1300
+    },
+    {
+      "id": "P015", "code": "PRBP-12", "categorie": "BOUILLIE_SOJA", "gamme": "ETUIS",
+      "nom": "PRESTIGE REINE BOUILLIE POISSON", "conditionnement": "12 etuis x 150g",
+      "poidsUnitaire": 150, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1300
+    },
+    {
+      "id": "P016", "code": "PTBA-12", "categorie": "BOUILLIE_SOJA", "gamme": "ETUIS",
+      "nom": "PRESTIGE TANTY BOUILLIE ARACHIDES", "conditionnement": "12 etuis x 150g",
+      "poidsUnitaire": 150, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1200
+    },
+    {
+      "id": "P017", "code": "PTBL-12", "categorie": "BOUILLIE_SOJA", "gamme": "ETUIS",
+      "nom": "PRESTIGE TANTY BOUILLIE LACTEE", "conditionnement": "12 etuis x 150g",
+      "poidsUnitaire": 150, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1200
+    },
+    {
+      "id": "P018", "code": "PTBN-12", "categorie": "BOUILLIE_SOJA", "gamme": "ETUIS",
+      "nom": "PRESTIGE TANTY BOUILLIE NATURE", "conditionnement": "12 etuis x 150g",
+      "poidsUnitaire": 150, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1200
+    },
+    {
+      "id": "P019", "code": "PTBPA-12", "categorie": "BOUILLIE_SOJA", "gamme": "ETUIS",
+      "nom": "PRESTIGE TANTY BOUILLIE PARFUME", "conditionnement": "12 etuis x 150g",
+      "poidsUnitaire": 150, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1200
+    },
+    {
+      "id": "P020", "code": "PTBPO-12", "categorie": "BOUILLIE_SOJA", "gamme": "ETUIS",
+      "nom": "PRESTIGE TANTY BOUILLIE POISSON", "conditionnement": "12 etuis x 150g",
+      "poidsUnitaire": 150, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1300
+    },
+    {
+      "id": "P021", "code": "RCPB-12", "categorie": "BOUILLIE_SOJA", "gamme": "SEAUX",
+      "nom": "REINE COSTARD POWDER 1L BANANE", "conditionnement": "12 seaux x 390g",
+      "poidsUnitaire": 390, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 2500
+    },
+    {
+      "id": "P022", "code": "RCPF-12", "categorie": "BOUILLIE_SOJA", "gamme": "SEAUX",
+      "nom": "REINE COSTARD POWDER 1L FRAISE", "conditionnement": "12 seaux x 390g",
+      "poidsUnitaire": 390, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 2500
+    },
+    {
+      "id": "P023", "code": "RCPFO-12", "categorie": "BOUILLIE_SOJA", "gamme": "SEAUX",
+      "nom": "REINE COSTARD POWDER 1L FRUITS ET OEUFS", "conditionnement": "12 seaux x 390g",
+      "poidsUnitaire": 390, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 2600
+    },
+    {
+      "id": "P024", "code": "RCPLB-12", "categorie": "BOUILLIE_SOJA", "gamme": "SEAUX",
+      "nom": "REINE COSTARD POWDER 1L LACTEE BISCUITE", "conditionnement": "12 seaux x 390g",
+      "poidsUnitaire": 390, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 2600
+    },
+    {
+      "id": "P025", "code": "RCP2B-4", "categorie": "BOUILLIE_SOJA", "gamme": "SEAUX",
+      "nom": "REINE COSTARD POWDER 2L BANANE", "conditionnement": "4 seaux x 880g",
+      "poidsUnitaire": 880, "nombreUnites": 4, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 4500
+    },
+    {
+      "id": "P026", "code": "BV1", "categorie": "BOUILLIE_SOJA", "gamme": "SEAUX",
+      "nom": "BABYVITA 1L", "conditionnement": "12 seaux x 390g",
+      "poidsUnitaire": 390, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 2800
+    },
+    {
+      "id": "P027", "code": "BV2", "categorie": "BOUILLIE_SOJA", "gamme": "SEAUX",
+      "nom": "BABYVITA 2L", "conditionnement": "4 seaux x 880g",
+      "poidsUnitaire": 880, "nombreUnites": 4, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 5000
+    },
+    {
+      "id": "P028", "code": "TC2L", "categorie": "CHOCOLAT", "gamme": "SEAUX",
+      "nom": "TANTY CHOCOLAT 2L", "conditionnement": "4 seaux x 2.2kg",
+      "poidsUnitaire": 2200, "nombreUnites": 4, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 8000
+    },
+    {
+      "id": "P029", "code": "TC5L", "categorie": "CHOCOLAT", "gamme": "SEAUX",
+      "nom": "TANTY CHOCOLAT 5L", "conditionnement": "seau de 4.1kg",
+      "poidsUnitaire": 4100, "nombreUnites": 1, "uniteCarton": "seau",
+      "actif": true, "prixUnitaire": 14000
+    },
+    {
+      "id": "P030", "code": "TC10L", "categorie": "CHOCOLAT", "gamme": "SEAUX",
+      "nom": "TANTY CHOCOLAT 10L", "conditionnement": "seau de 9.2kg",
+      "poidsUnitaire": 9200, "nombreUnites": 1, "uniteCarton": "seau",
+      "actif": true, "prixUnitaire": 28000
+    },
+    {
+      "id": "P031", "code": "TCHAP-12", "categorie": "INGREDIENTS", "gamme": "ETUIS",
+      "nom": "TANTY CHAPELURE", "conditionnement": "12 etuis x 200g",
+      "poidsUnitaire": 200, "nombreUnites": 12, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 800
+    },
+    {
+      "id": "P032", "code": "MAE-MINI", "categorie": "A_GRIGNOTER", "gamme": "MINI",
+      "nom": "MINI A GRIGNOTER ARACHIDES ENROBEES", "conditionnement": "80 sachets x 35g",
+      "poidsUnitaire": 35, "nombreUnites": 80, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 150
+    },
+    {
+      "id": "P033", "code": "CAR-MINI", "categorie": "A_GRIGNOTER", "gamme": "MINI",
+      "nom": "MINI A GRIGNOTER CARAMELS", "conditionnement": "80 sachets x 45g",
+      "poidsUnitaire": 45, "nombreUnites": 80, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 150
+    },
+    {
+      "id": "P034", "code": "CRO-MINI", "categorie": "A_GRIGNOTER", "gamme": "MINI",
+      "nom": "MINI A GRIGNOTER CROQUETTES", "conditionnement": "80 sachets x 30g",
+      "poidsUnitaire": 30, "nombreUnites": 80, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 150
+    },
+    {
+      "id": "P035", "code": "CHIP-MINI", "categorie": "A_GRIGNOTER", "gamme": "MINI",
+      "nom": "MINI A GRIGNOTER CHIPS DE PLANTAINS", "conditionnement": "60 sachets x 35g",
+      "poidsUnitaire": 35, "nombreUnites": 60, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 150
+    },
+    {
+      "id": "P036", "code": "BEI-MINI", "categorie": "A_GRIGNOTER", "gamme": "MINI",
+      "nom": "TANTY BEIGNETS SOUFFLES", "conditionnement": "60 doypack x 36g",
+      "poidsUnitaire": 36, "nombreUnites": 60, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 200
+    },
+    {
+      "id": "P037", "code": "MAE-MOY", "categorie": "A_GRIGNOTER", "gamme": "MOYEN",
+      "nom": "MOYEN A GRIGNOTER ARACHIDES ENROBEES", "conditionnement": "24 doypack x 125g",
+      "poidsUnitaire": 125, "nombreUnites": 24, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 500
+    },
+    {
+      "id": "P038", "code": "CAR-MOY", "categorie": "A_GRIGNOTER", "gamme": "MOYEN",
+      "nom": "MOYEN A GRIGNOTER CARAMELS", "conditionnement": "24 doypack x 136g",
+      "poidsUnitaire": 136, "nombreUnites": 24, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 500
+    },
+    {
+      "id": "P039", "code": "CRO-MOY", "categorie": "A_GRIGNOTER", "gamme": "MOYEN",
+      "nom": "MOYEN A GRIGNOTER CROQUETTES", "conditionnement": "24 doypack x 95g",
+      "poidsUnitaire": 95, "nombreUnites": 24, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 500
+    },
+    {
+      "id": "P040", "code": "CHIP-MOY", "categorie": "A_GRIGNOTER", "gamme": "MOYEN",
+      "nom": "MOYEN A GRIGNOTER CHIPS DE PLANTAINS", "conditionnement": "20 doypack x 100g",
+      "poidsUnitaire": 100, "nombreUnites": 20, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 500
+    },
+    {
+      "id": "P041", "code": "MAE-GRD", "categorie": "A_GRIGNOTER", "gamme": "GRAND",
+      "nom": "GRAND A GRIGNOTER ARACHIDES ENROBEES", "conditionnement": "14 doypack x 273g",
+      "poidsUnitaire": 273, "nombreUnites": 14, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1200
+    },
+    {
+      "id": "P042", "code": "CAR-GRD", "categorie": "A_GRIGNOTER", "gamme": "GRAND",
+      "nom": "GRAND A GRIGNOTER CARAMELS", "conditionnement": "14 doypack x 328g",
+      "poidsUnitaire": 328, "nombreUnites": 14, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1200
+    },
+    {
+      "id": "P043", "code": "CRO-GRD", "categorie": "A_GRIGNOTER", "gamme": "GRAND",
+      "nom": "GRAND A GRIGNOTER CROQUETTES", "conditionnement": "14 doypack x 227g",
+      "poidsUnitaire": 227, "nombreUnites": 14, "uniteCarton": "carton",
+      "actif": true, "prixUnitaire": 1200
+    }
+  ]
+}

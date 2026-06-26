@@ -1,0 +1,18 @@
+@use '../../../../../../styles/variables' as *;
+.reg-layout { display: grid; grid-template-columns: 1fr 260px; gap: $spacing-4; align-items: start; @media(max-width:$bp-lg){grid-template-columns:1fr;} }
+.employe-card {
+  background: $color-surface; border: 1px solid $color-border; border-radius: $border-radius-lg;
+  padding: $spacing-4; margin-bottom: $spacing-3;
+  &__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: $spacing-3; gap: $spacing-2; }
+}
+.employe-num {
+  width: 32px; height: 32px; border-radius: 50%; background: $tanty-green; color: $tanty-white;
+  font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: $font-size-sm;
+}
+.employe-total { display: flex; flex-direction: column; align-items: center; min-width: 48px; }
+.produits-list { display: flex; flex-direction: column; gap: 0; padding-left: $spacing-4; border-left: 2px solid $tanty-gray-100; }
+.prod-line { display: flex; gap: $spacing-2; align-items: flex-end; padding: $spacing-2 0; flex-wrap: wrap; }
+.summary-panel {}
+.sum-item { display: flex; justify-content: space-between; font-size: $font-size-sm; padding: $spacing-2 0; border-bottom: 1px solid $color-border; }
+.text-success { color: $color-success; }
+.form-actions { display: flex; gap: $spacing-2; justify-content: flex-end; margin-top: $spacing-3; }
