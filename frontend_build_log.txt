@@ -1,0 +1,19 @@
+
+> frontend-erp-tanty@0.0.0 build
+> ng build
+
+[33m>[39m Building...
+ERROR ReferenceError: document is not defined
+    at Object.Ki [as useFactory] (file:///c:/Users/User/Downloads/Api_tanty/frontend_erp_tanty_architecture/frontend_erp_tanty_architecture/frontend_erp_tanty/.angular/prerender-root/58567ee8-8eaf-4600-8ddd-7e8e889eab3c/chunk-ZGMLZ63P.mjs:2:11627)
+    at Object.r [as factory] (file:///c:/Users/User/Downloads/Api_tanty/frontend_erp_tanty_architecture/frontend_erp_tanty_architecture/frontend_erp_tanty/.angular/prerender-root/58567ee8-8eaf-4600-8ddd-7e8e889eab3c/chunk-SQGMAJ5C.mjs:8:12057)
+    at bn.hydrate (file:///c:/Users/User/Downloads/Api_tanty/frontend_erp_tanty_architecture/frontend_erp_tanty_architecture/frontend_erp_tanty/.angular/prerender-root/58567ee8-8eaf-4600-8ddd-7e8e889eab3c/chunk-SQGMAJ5C.mjs:8:11200)
+    at bn.get (file:///c:/Users/User/Downloads/Api_tanty/frontend_erp_tanty_architecture/frontend_erp_tanty_architecture/frontend_erp_tanty/.angular/prerender-root/58567ee8-8eaf-4600-8ddd-7e8e889eab3c/chunk-SQGMAJ5C.mjs:8:10320)
+    at bn.get (file:///c:/Users/User/Downloads/Api_tanty/frontend_erp_tanty_architecture/frontend_erp_tanty_architecture/frontend_erp_tanty/.angular/prerender-root/58567ee8-8eaf-4600-8ddd-7e8e889eab3c/chunk-SQGMAJ5C.mjs:8:10404)
+    at Ih (file:///c:/Users/User/Downloads/Api_tanty/frontend_erp_tanty_architecture/frontend_erp_tanty_architecture/frontend_erp_tanty/.angular/prerender-root/58567ee8-8eaf-4600-8ddd-7e8e889eab3c/chunk-SQGMAJ5C.mjs:5:2417)
+    at G (file:///c:/Users/User/Downloads/Api_tanty/frontend_erp_tanty_architecture/frontend_erp_tanty_architecture/frontend_erp_tanty/.angular/prerender-root/58567ee8-8eaf-4600-8ddd-7e8e889eab3c/chunk-SQGMAJ5C.mjs:5:2493)
+    at zi (file:///c:/Users/User/Downloads/Api_tanty/frontend_erp_tanty_architecture/frontend_erp_tanty_architecture/frontend_erp_tanty/.angular/prerender-root/58567ee8-8eaf-4600-8ddd-7e8e889eab3c/chunk-SQGMAJ5C.mjs:5:2923)
+    at Object.r [as factory] (file:///c:/Users/User/Downloads/Api_tanty/frontend_erp_tanty_architecture/frontend_erp_tanty_architecture/frontend_erp_tanty/.angular/prerender-root/58567ee8-8eaf-4600-8ddd-7e8e889eab3c/chunk-SQGMAJ5C.mjs:8:12194)
+    at bn.hydrate (file:///c:/Users/User/Downloads/Api_tanty/frontend_erp_tanty_architecture/frontend_erp_tanty_architecture/frontend_erp_tanty/.angular/prerender-root/58567ee8-8eaf-4600-8ddd-7e8e889eab3c/chunk-SQGMAJ5C.mjs:8:11200)
+[31m×[39m Building... [31m[FAILED: Cannot destructure property 'routes' of '(intermediate value)' as it is undefined.][39m
+[1m[31mAn unhandled exception occurred: Cannot destructure property 'routes' of '(intermediate value)' as it is undefined.
+See "C:\Users\User\AppData\Local\Temp\ng-VCc3BN\angular-errors.log" for further details.[39m[22m
