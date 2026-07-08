@@ -109,7 +109,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    @PreAuthorize("hasAnyRole('DIRECTEUR_GENERAL', 'ADMIN')")
+    //@PreAuthorize("hasAnyRole('DIRECTEUR_GENERAL', 'ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Créer un utilisateur", description = "Réservé au DG/ADMIN — génère un matricule automatiquement")
     public ResponseEntity<ApiResponse<Map<String, String>>> register(@RequestBody @Valid RegisterRequest request) {

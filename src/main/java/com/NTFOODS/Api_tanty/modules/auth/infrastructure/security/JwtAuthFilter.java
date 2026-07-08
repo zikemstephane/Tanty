@@ -7,6 +7,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,9 +30,18 @@ import java.util.Optional;
  * connexion sur un autre appareil régénère cette session et invalide donc
  * automatiquement, sans état supplémentaire à gérer (pas de blacklist),
  * tout jeton émis précédemment.
+ *
+ * IMPORTANT : ce filtre s'exécute sur TOUTES les requêtes, y compris celles
+ * en permitAll() (ex: /api/auth/login), car il est inséré dans la chaîne
+ * avant l'évaluation des règles d'autorisation. Toute exception non
+ * interceptée ici (jeton expiré/mal formé) casserait donc aussi les routes
+ * publiques. Le parsing du jeton est donc entièrement encadré par un
+ * try-catch : un jeton invalide est traité comme une absence de jeton.
  */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final JwtService jwtService;
     private final UtilisateurRepository utilisateurRepository;
@@ -53,8 +64,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
+
+        try {
+            authentifierSiPossible(request, token);
+        } catch (Exception e) {
+            // Jeton expiré, mal formé, signature invalide, etc. : on ne bloque
+            // jamais la requête pour ça. La route publique continue de
+            // fonctionner ; une route protégée sera simplement rejetée plus
+            // loin par Spring Security (401/403) faute d'authentification.
+            log.debug("Jeton JWT invalide ignoré : {}", e.getMessage());
+            SecurityContextHolder.clearContext();
+        }
+
+        filterChain.doFilter(request, response);
+    }
+
+    private void authentifierSiPossible(HttpServletRequest request, String token) {
         if (!jwtService.estValide(token)) {
-            filterChain.doFilter(request, response);
             return;
         }
 
@@ -62,36 +88,38 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String role = jwtService.extraireRole(token);
         String sessionIdToken = jwtService.extraireSessionId(token);
 
-        if (matricule != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // Charge l'agrégat Utilisateur et le place comme principal : c'est ce
-            // qu'attend AuthenticatedUserResolver (et donc tous les use-cases protégés).
-            Optional<Utilisateur> utilisateurOpt = chargerUtilisateur(matricule);
-            if (utilisateurOpt.isPresent()) {
-                Utilisateur utilisateur = utilisateurOpt.get();
-
-                boolean actifEtNonBloque = utilisateur.isActif() && !utilisateur.isCompteBloque();
-                // Règle "Session Unique" : si le jeton porte un sid (jetons émis après
-                // l'introduction de la fonctionnalité), il doit correspondre à la session
-                // active. Un sid absent (anciens tokens) ou une session non initialisée
-                // ne bloque pas — comportement rétro-compatible et fail-open côté lecture,
-                // le contrôle strict des droits restant assuré par les rôles (@PreAuthorize).
-                boolean sessionValide = sessionIdToken == null
-                    || utilisateur.getSessionActuelle() == null
-                    || Objects.equals(sessionIdToken, utilisateur.getSessionActuelle());
-
-                if (actifEtNonBloque && sessionValide) {
-                    var auth = new UsernamePasswordAuthenticationToken(
-                        utilisateur,
-                        null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                    );
-                    auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                }
-            }
+        if (matricule == null || SecurityContextHolder.getContext().getAuthentication() != null) {
+            return;
         }
 
-        filterChain.doFilter(request, response);
+        // Charge l'agrégat Utilisateur et le place comme principal : c'est ce
+        // qu'attend AuthenticatedUserResolver (et donc tous les use-cases protégés).
+        Optional<Utilisateur> utilisateurOpt = chargerUtilisateur(matricule);
+        if (utilisateurOpt.isEmpty()) {
+            return;
+        }
+
+        Utilisateur utilisateur = utilisateurOpt.get();
+
+        boolean actifEtNonBloque = utilisateur.isActif() && !utilisateur.isCompteBloque();
+        // Règle "Session Unique" : si le jeton porte un sid (jetons émis après
+        // l'introduction de la fonctionnalité), il doit correspondre à la session
+        // active. Un sid absent (anciens tokens) ou une session non initialisée
+        // ne bloque pas — comportement rétro-compatible et fail-open côté lecture,
+        // le contrôle strict des droits restant assuré par les rôles (@PreAuthorize).
+        boolean sessionValide = sessionIdToken == null
+            || utilisateur.getSessionActuelle() == null
+            || Objects.equals(sessionIdToken, utilisateur.getSessionActuelle());
+
+        if (actifEtNonBloque && sessionValide) {
+            var auth = new UsernamePasswordAuthenticationToken(
+                utilisateur,
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+            );
+            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        }
     }
 
     private Optional<Utilisateur> chargerUtilisateur(String matricule) {

@@ -36,9 +36,13 @@ public class ClassementMachinistesUseCase {
 
         for (SessionBroyage session : sessions) {
             for (RealisationMachiniste r : session.getRealisations()) {
+                if (r == null || r.getMachinisteMatricule() == null || r.getOperation() == null) {
+                    continue;
+                }
+                String nom = r.getNomMachiniste() != null ? r.getNomMachiniste() : r.getMachinisteMatricule();
                 StatsMachiniste stats = statsParMachiniste.computeIfAbsent(
                     r.getMachinisteMatricule(),
-                    k -> new StatsMachiniste(r.getNomMachiniste())
+                    k -> new StatsMachiniste(nom)
                 );
                 stats.ajouter(session.getDate(), r.getOperation().name(), r.getObjectifKg(), r.getRealiseKg(), r.getPctRealisation());
             }

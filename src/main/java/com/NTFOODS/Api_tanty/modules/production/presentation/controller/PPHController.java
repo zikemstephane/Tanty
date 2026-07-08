@@ -93,7 +93,7 @@ public class PPHController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('CHEF_PRODUCTION', 'RESPONSABLE_SALLE', 'DIRECTEUR_GENERAL', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CHEF_PRODUCTION', 'RESPONSABLE_SALLE', 'CHEF_MACHINISTE', 'DIRECTEUR_GENERAL', 'ADMIN')")
     @Operation(summary = "Lister les PPH (filtre optionnel par statut)")
     public ResponseEntity<ApiResponse<List<PPHResponse>>> lister(@RequestParam(required = false) String statut) {
         var pphs = (statut == null || statut.isBlank())

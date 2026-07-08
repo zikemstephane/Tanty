@@ -71,7 +71,7 @@ public class ExpressionBesoinController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('CHEF_PRODUCTION', 'DIRECTEUR_GENERAL', 'GESTIONNAIRE_STOCK', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CHEF_PRODUCTION', 'RESPONSABLE_SALLE', 'DIRECTEUR_GENERAL', 'GESTIONNAIRE_STOCK', 'ADMIN')")
     @Operation(summary = "Lister les expressions de besoin (filtre optionnel par statut)")
     public ResponseEntity<ApiResponse<List<ExpressionBesoinResponse>>> lister(
             @RequestParam(required = false) StatutBesoin statut) {

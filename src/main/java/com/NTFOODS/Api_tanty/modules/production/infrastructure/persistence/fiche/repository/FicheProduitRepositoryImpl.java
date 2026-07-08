@@ -7,6 +7,7 @@ import com.NTFOODS.Api_tanty.modules.production.infrastructure.persistence.fiche
 import com.NTFOODS.Api_tanty.modules.production.infrastructure.persistence.fiche.jpa.FicheProduitJpaRepository;
 import com.NTFOODS.Api_tanty.modules.production.infrastructure.persistence.fiche.jpa.LigneFicheProduitJpaEntity;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -23,26 +24,31 @@ public class FicheProduitRepositoryImpl implements FicheProduitRepository {
     }
 
     @Override
+    @Transactional
     public FicheProduitJournaliere sauvegarder(FicheProduitJournaliere fiche) {
         return toDomain(jpaRepository.save(toEntity(fiche)));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<FicheProduitJournaliere> trouverParPPHEtDate(String referencePPH, LocalDate date) {
         return jpaRepository.findByReferencePPHAndDate(referencePPH, date).map(this::toDomain);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<FicheProduitJournaliere> listerParPPH(String referencePPH) {
         return jpaRepository.findByReferencePPH(referencePPH).stream().map(this::toDomain).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<FicheProduitJournaliere> listerParPeriode(LocalDate debut, LocalDate fin) {
         return jpaRepository.findByDateBetween(debut, fin).stream().map(this::toDomain).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean existeParPPHEtDate(String referencePPH, LocalDate date) {
         return jpaRepository.existsByReferencePPHAndDate(referencePPH, date);
     }

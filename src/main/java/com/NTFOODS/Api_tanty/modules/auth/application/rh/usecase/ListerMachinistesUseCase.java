@@ -7,6 +7,8 @@ import com.NTFOODS.Api_tanty.modules.auth.domain.utilisateur.enums.Role;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -28,7 +30,10 @@ public class ListerMachinistesUseCase {
     }
 
     public List<EmployeResponse> executer() {
-        return employeRepository.trouverParRoleEtActif(Role.MACHINISTE, true).stream()
+        var rolesMachiniste = EnumSet.of(Role.MACHINISTE, Role.CHEF_MACHINISTE);
+        return employeRepository.trouverTous().stream()
+            .filter(e -> e.isActif() && rolesMachiniste.contains(e.getRole()))
+            .sorted(Comparator.comparing(e -> e.getNomComplet()))
             .map(employeMapper::versResponse)
             .toList();
     }

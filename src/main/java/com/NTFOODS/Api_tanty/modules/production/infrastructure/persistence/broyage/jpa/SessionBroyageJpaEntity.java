@@ -9,8 +9,8 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "sessions_broyage",
@@ -41,10 +41,10 @@ public class SessionBroyageJpaEntity {
     private String matriculeChefMachiniste;
 
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<ObjectifMachinisteJpaEntity> objectifsMachinistes = new ArrayList<>();
+    private Set<ObjectifMachinisteJpaEntity> objectifsMachinistes = new HashSet<>();
 
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<RealisationMachinisteJpaEntity> realisations = new ArrayList<>();
+    private Set<RealisationMachinisteJpaEntity> realisations = new HashSet<>();
 
     @Column(name = "quantite_nette_broyee_kg")
     private Double quantiteNetteBroyeeKg;
@@ -52,8 +52,14 @@ public class SessionBroyageJpaEntity {
     @Column(name = "pertes_kg")
     private Double pertesKg;
 
+    // Corrigé : Double (wrapper) au lieu de double (primitif).
+    // La colonne SQL n'a pas de contrainte NOT NULL et contient déjà des
+    // lignes à NULL en base ; un double primitif ne peut jamais recevoir
+    // NULL, ce qui faisait planter Hibernate au chargement de ces lignes
+    // avec un PropertyAccessException. Un Double gère nativement l'absence
+    // de valeur (aucun dépassement autorisé renseigné pour cette session).
     @Column(name = "depassement_autorise_kg")
-    private double depassementAutoriseKg;
+    private Double depassementAutoriseKg;
 
     @Column(name = "justificatif_non_validation", length = 1000)
     private String justificatifNonValidation;
