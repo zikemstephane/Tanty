@@ -94,11 +94,19 @@ public class ProduitPersistenceMapper {
     }
 
     private CategorieMetier parseCategorieMetier(String valeur) {
-        if (valeur == null || valeur.isBlank()) return CategorieMetier.AUTRE;
+        if (valeur == null || valeur.isBlank()) {
+            throw new IllegalArgumentException("La catégorie métier est obligatoire");
+        }
+        // 1) essaie d'abord comme nom exact de constante (ex: "TANTY_BOUILLIE_DE_SOJA")
         try {
             return CategorieMetier.valueOf(valeur.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            return CategorieMetier.AUTRE;
+        } catch (IllegalArgumentException ignoree) {
+            // 2) repli : essaie comme libellé métier (ex: "TANTY BOUILLIE DE SOJA")
+            //    CategorieMetier n'a que 4 valeurs fixes ; il n'existe pas de
+            //    catégorie "AUTRE" générique — une valeur qui ne correspond à
+            //    aucune des deux formes est une vraie anomalie de donnée à
+            //    corriger, pas un cas à masquer silencieusement.
+            return CategorieMetier.depuisLibelle(valeur);
         }
     }
 

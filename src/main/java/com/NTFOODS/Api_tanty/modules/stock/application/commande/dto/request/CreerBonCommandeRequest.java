@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public record CreerBonCommandeRequest(
-    @NotBlank(message = "Le code fournisseur est obligatoire") String codeFournisseur,
+    String codeFournisseur,
     @NotNull(message = "La date de commande est obligatoire") LocalDate dateCommande,
     LocalDate dateLivraisonPrevue,
     @NotEmpty(message = "Au moins une ligne est requise") @Valid List<LigneRequest> lignes

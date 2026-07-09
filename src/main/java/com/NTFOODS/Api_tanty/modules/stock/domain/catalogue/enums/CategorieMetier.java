@@ -1,46 +1,49 @@
-package com.NTFOODS.Api_tanty.modules.stock.domain.catalogue.enums;
+    package com.NTFOODS.Api_tanty.modules.stock.domain.catalogue.enums;
 
-/**
- * Catégorie métier d'un produit NTFOODS TANTY.
- *
- * Détermine le circuit et les règles de calcul du plan de production.
- */
-public enum CategorieMetier {
+    /**
+     * Catégorie métier d'un produit NTFOODS TANTY.
+     *
+     * Détermine le circuit et les règles de calcul du plan de production.
+     */
+    public enum CategorieMetier {
 
-    TANTY_BOUILLIE_DE_SOJA("TANTY BOUILLIE DE SOJA"),
-    TANTY_CHOCOLAT("TANTY CHOCOLAT"),
-    INGREDIENTS("INGREDIENTS"),
-    TANTY_A_GRIGNOTER("TANTY A GRIGNOTER"),
-    AUTRE("AUTRE");
+        TANTY_BOUILLIE_DE_SOJA("TANTY BOUILLIE DE SOJA"),
+        TANTY_CHOCOLAT("TANTY CHOCOLAT"),
+        INGREDIENTS("INGREDIENTS"),
+        TANTY_A_GRIGNOTER("TANTY A GRIGNOTER");
 
-    private final String libelle;
+        private final String libelle;
 
-    CategorieMetier(String libelle) {
-        this.libelle = libelle;
-    }
-
-    public String getLibelle() {
-        return libelle;
-    }
-
-    public boolean estBouillie() {
-        return this == TANTY_BOUILLIE_DE_SOJA;
-    }
-
-    public boolean estGrignoter() {
-        return this == TANTY_A_GRIGNOTER;
-    }
-
-    public static CategorieMetier depuisLibelle(String valeur) {
-        if (valeur == null || valeur.isBlank()) {
-            return AUTRE;
+        CategorieMetier(String libelle) {
+            this.libelle = libelle;
         }
-        String normalise = valeur.trim().toUpperCase();
+
+        public String getLibelle() {
+            return libelle;
+        }
+
+        public boolean estBouillie() {
+            return this == TANTY_BOUILLIE_DE_SOJA;
+        }
+
+        public boolean estGrignoter() {
+            return this == TANTY_A_GRIGNOTER;
+        }
+
+        public static CategorieMetier depuisLibelle(String valeur) {
+
+        if (valeur == null || valeur.isBlank()) {
+            throw new IllegalArgumentException("La catégorie métier est obligatoire.");
+        }
+
         for (CategorieMetier c : values()) {
-            if (c.libelle.equals(normalise)) {
+            if (c.libelle.equalsIgnoreCase(valeur.trim())) {
                 return c;
             }
         }
-        return AUTRE;
+
+        throw new IllegalArgumentException(
+            "Catégorie métier inconnue : " + valeur
+        );
     }
-}
+    }

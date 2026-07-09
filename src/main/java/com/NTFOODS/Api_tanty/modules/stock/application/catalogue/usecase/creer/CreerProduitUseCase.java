@@ -95,7 +95,9 @@ public class CreerProduitUseCase {
     }
 
     private CategorieMetier parserCategorieMetier(String valeur) {
-        if (valeur == null || valeur.isBlank()) return CategorieMetier.AUTRE;
+        if (valeur == null || valeur.isBlank()) {
+            throw new IllegalArgumentException("La catégorie métier est obligatoire");
+        }
         try {
             return CategorieMetier.valueOf(valeur.trim().toUpperCase());
         } catch (IllegalArgumentException e) {

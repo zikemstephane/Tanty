@@ -35,7 +35,7 @@ public class BonCommande {
     private BonCommande(String numero, String codeFournisseur, LocalDate dateCommande,
                         LocalDate dateLivraisonPrevue, String matriculeCreateur, LocalDateTime dateCreation) {
         this.numero = Objects.requireNonNull(numero, "Le numéro de BC est obligatoire");
-        this.codeFournisseur = Objects.requireNonNull(codeFournisseur, "Le fournisseur est obligatoire");
+        this.codeFournisseur = (codeFournisseur != null) ? codeFournisseur : "NON_DEFINI";
         this.dateCommande = Objects.requireNonNull(dateCommande);
         this.dateLivraisonPrevue = dateLivraisonPrevue;
         this.matriculeCreateur = Objects.requireNonNull(matriculeCreateur);

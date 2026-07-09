@@ -60,7 +60,7 @@ public class Produit {
         this.variete = exigerNonVide(variete, "variété");
         this.designation = exigerNonVide(designation, "désignation");
         this.categorie = Objects.requireNonNull(categorie, "La catégorie est obligatoire");
-        this.categorieMetier = categorieMetier != null ? categorieMetier : CategorieMetier.AUTRE;
+        this.categorieMetier = Objects.requireNonNull(categorieMetier, "La catégorie métier est obligatoire");
         this.dateCreation = dateCreation;
         this.actif = true;
         this.conditionnements = new ArrayList<>();
@@ -70,9 +70,11 @@ public class Produit {
     // ── Factory ──────────────────────────────────────────────────────────────
 
     public static Produit creer(CodeProduit code, String marque, String gamme, String variete,
-                                String designation, CategorieProduit categorie) {
-        return creer(code, marque, gamme, variete, designation, categorie, CategorieMetier.AUTRE);
-    }
+                            String designation, CategorieProduit categorie) {
+    throw new IllegalArgumentException(
+        "La catégorie métier est obligatoire pour créer un produit."
+    );
+}
 
     public static Produit creer(CodeProduit code, String marque, String gamme, String variete,
                                 String designation, CategorieProduit categorie, CategorieMetier categorieMetier) {
@@ -84,41 +86,61 @@ public class Produit {
         return produit;
     }
 
-    public static Produit reconstituer(Long id, CodeProduit code, String marque, String gamme,
-                                       String variete, String designation, CategorieProduit categorie,
-                                       boolean actif, List<Conditionnement> conditionnements,
-                                       LocalDateTime dateCreation, LocalDateTime dateModification,
-                                       Long version,
-                                       Double prixDistributeur, Double prixGrossiste, Double prixDetaillant,
-                                       boolean tva, String conditionnementCommercial, String uniteVenteCommerciale) {
-        return reconstituer(id, code, marque, gamme, variete, designation, categorie, CategorieMetier.AUTRE,
-            actif, conditionnements, dateCreation, dateModification, version,
-            prixDistributeur, prixGrossiste, prixDetaillant, tva, conditionnementCommercial, uniteVenteCommerciale);
+    // NOTE : il existait auparavant DEUX méthodes reconstituer(...) avec une
+    // signature strictement identique (doublon copié-collé), ce qui causait
+    // l'erreur de compilation "method reconstituer(...) is already defined
+    // in class Produit". La version redondante a été supprimée ; celle-ci
+    // est la seule et unique méthode reconstituer(...) désormais.
+    public static Produit reconstituer(
+        Long id,
+        CodeProduit code,
+        String marque,
+        String gamme,
+        String variete,
+        String designation,
+        CategorieProduit categorie,
+        CategorieMetier categorieMetier,
+        boolean actif,
+        List<Conditionnement> conditionnements,
+        LocalDateTime dateCreation,
+        LocalDateTime dateModification,
+        Long version,
+        Double prixDistributeur,
+        Double prixGrossiste,
+        Double prixDetaillant,
+        boolean tva,
+        String conditionnementCommercial,
+        String uniteVenteCommerciale) {
+
+    Produit produit = new Produit(
+        code,
+        marque,
+        gamme,
+        variete,
+        designation,
+        categorie,
+        categorieMetier,
+        dateCreation
+    );
+
+    produit.id = id;
+    produit.actif = actif;
+
+    if (conditionnements != null) {
+        produit.conditionnements.addAll(conditionnements);
     }
 
-    public static Produit reconstituer(Long id, CodeProduit code, String marque, String gamme,
-                                       String variete, String designation, CategorieProduit categorie,
-                                       CategorieMetier categorieMetier,
-                                       boolean actif, List<Conditionnement> conditionnements,
-                                       LocalDateTime dateCreation, LocalDateTime dateModification,
-                                       Long version,
-                                       Double prixDistributeur, Double prixGrossiste, Double prixDetaillant,
-                                       boolean tva, String conditionnementCommercial, String uniteVenteCommerciale) {
-        Produit produit = new Produit(code, marque, gamme, variete, designation, categorie, categorieMetier,
-            dateCreation);
-        produit.id = id;
-        produit.actif = actif;
-        if (conditionnements != null) produit.conditionnements.addAll(conditionnements);
-        produit.dateModification = dateModification;
-        produit.version = version;
-        produit.prixDistributeur = prixDistributeur;
-        produit.prixGrossiste = prixGrossiste;
-        produit.prixDetaillant = prixDetaillant;
-        produit.tva = tva;
-        produit.conditionnementCommercial = conditionnementCommercial;
-        produit.uniteVenteCommerciale = uniteVenteCommerciale;
-        return produit;
-    }
+    produit.dateModification = dateModification;
+    produit.version = version;
+    produit.prixDistributeur = prixDistributeur;
+    produit.prixGrossiste = prixGrossiste;
+    produit.prixDetaillant = prixDetaillant;
+    produit.tva = tva;
+    produit.conditionnementCommercial = conditionnementCommercial;
+    produit.uniteVenteCommerciale = uniteVenteCommerciale;
+
+    return produit;
+}
 
     public void definirPrixCommerciaux(Double prixDistributeur, Double prixGrossiste, Double prixDetaillant,
                                         boolean tva, String conditionnementCommercial, String uniteVenteCommerciale) {
@@ -169,7 +191,10 @@ public class Produit {
 
     public void definirCategorieMetier(CategorieMetier categorieMetier) {
         verifierActif();
-        this.categorieMetier = categorieMetier != null ? categorieMetier : CategorieMetier.AUTRE;
+        if (categorieMetier == null) {
+            throw new IllegalArgumentException("La catégorie métier est obligatoire.");
+        }
+        this.categorieMetier = categorieMetier;
         this.dateModification = LocalDateTime.now();
     }
 

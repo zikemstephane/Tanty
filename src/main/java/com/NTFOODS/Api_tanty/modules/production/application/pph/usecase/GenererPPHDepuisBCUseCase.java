@@ -8,6 +8,8 @@ import com.NTFOODS.Api_tanty.modules.stock.domain.catalogue.model.Produit;
 import com.NTFOODS.Api_tanty.modules.stock.domain.catalogue.repository.ProduitRepository;
 import com.NTFOODS.Api_tanty.modules.stock.domain.commande.model.BonCommande;
 import com.NTFOODS.Api_tanty.shared.kernel.exception.RegleMetierException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 @Transactional
 public class GenererPPHDepuisBCUseCase {
 
+    private static final Logger log = LoggerFactory.getLogger(GenererPPHDepuisBCUseCase.class);
+
     private final PPHRepository pphRepository;
     private final ProduitRepository produitRepository;
     private final PlanificationProductionService planificationService;
@@ -36,20 +40,42 @@ public class GenererPPHDepuisBCUseCase {
     }
 
     public PlanProductionHebdomadaire executer(BonCommande bc, Utilisateur acteur) {
+        log.info("[GENERER-PPH] ▶ Début génération PPH — BC={} lignes={} acteur={}",
+            bc.getNumero(), bc.getLignes().size(), acteur.getMatricule().getValeur());
+
+        // Résolution des produits du catalogue
         Map<String, Produit> produits = bc.getLignes().stream()
             .map(l -> produitRepository.trouverParCode(com.NTFOODS.Api_tanty.modules.stock.domain.catalogue.valueobject.CodeProduit.de(l.getCodeProduit())))
             .filter(java.util.Optional::isPresent)
             .map(java.util.Optional::get)
             .collect(Collectors.toMap(p -> p.getCode().getValeur(), p -> p));
 
+        log.info("[GENERER-PPH] Produits résolus depuis catalogue : {}/{} — codes trouvés : {}",
+            produits.size(), bc.getLignes().size(), produits.keySet());
+
+        if (produits.isEmpty()) {
+            log.warn("[GENERER-PPH] ✗ Aucun produit du BC trouvé dans le catalogue — codes demandés : {}",
+                bc.getLignes().stream().map(l -> l.getCodeProduit()).collect(Collectors.toList()));
+        }
+
+        // Calcul du plan
+        log.info("[GENERER-PPH] Appel PlanificationProductionService.calculer...");
         PlanificationProductionService.ResultatPlanification plan = planificationService.calculer(bc, produits);
+        log.info("[GENERER-PPH] Plan calculé — semaine={} dateDebut={} dateFin={} lignesPPH={} repartitionJours={}",
+            plan.semaine(), plan.dateDebut(), plan.dateFin(),
+            plan.lignesPPH().size(), plan.repartitionJours().size());
 
         if (plan.lignesPPH().isEmpty()) {
+            log.error("[GENERER-PPH] ✗ Aucune ligne PPH générée — BC={} — produits catalogue trouvés={} — vérifier que les codes produits du BC existent dans le catalogue",
+                bc.getNumero(), produits.size());
             throw new RegleMetierException("Aucune ligne de production générable à partir du BC " + bc.getNumero());
         }
 
         String referencePPH = genererReferencePPH(bc.getNumero(), plan.dateDebut());
+        log.info("[GENERER-PPH] Référence PPH générée : {}", referencePPH);
+
         if (pphRepository.trouverParReference(referencePPH).isPresent()) {
+            log.error("[GENERER-PPH] ✗ PPH déjà existant avec la référence {} — doublon évité", referencePPH);
             throw new RegleMetierException("Un PPH existe déjà avec la référence " + referencePPH);
         }
 
@@ -66,7 +92,9 @@ public class GenererPPHDepuisBCUseCase {
             LocalDate.now()
         );
 
-        return pphRepository.sauvegarder(pph);
+        PlanProductionHebdomadaire sauvegarde = pphRepository.sauvegarder(pph);
+        log.info("[GENERER-PPH] ✓ PPH sauvegardé — référence={} id={}", sauvegarde.getReferencePPH(), sauvegarde.getId());
+        return sauvegarde;
     }
 
     private String genererReferencePPH(String referenceBC, LocalDate dateDebut) {

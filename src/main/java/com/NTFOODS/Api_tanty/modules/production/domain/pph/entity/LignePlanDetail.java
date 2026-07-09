@@ -33,7 +33,7 @@ public class LignePlanDetail {
                            LocalDate dateJour, int quantiteJour) {
         this.codeProduit = Objects.requireNonNull(codeProduit);
         this.nomProduit = Objects.requireNonNull(nomProduit);
-        this.categorieMetier = categorieMetier != null ? categorieMetier : "AUTRE";
+        this.categorieMetier = Objects.requireNonNull(categorieMetier);
         this.quantiteCartons = quantiteCartons;
         this.nombreUnitesParConditionnement = nombreUnitesParConditionnement;
         this.poidsUnitaireGrammes = poidsUnitaireGrammes;

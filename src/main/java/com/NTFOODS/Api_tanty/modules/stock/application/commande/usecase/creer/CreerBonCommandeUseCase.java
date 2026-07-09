@@ -39,9 +39,13 @@ public class CreerBonCommandeUseCase {
         if (!BonCommandeSpecification.peutCreer(acteur.getRole())) {
             throw new AccesRefuseException("Le rôle '" + acteur.getRole().getLibelle() + "' ne peut pas créer un BC");
         }
-        String codeFournisseur = request.codeFournisseur().trim().toUpperCase();
-        fournisseurRepository.trouverParCode(codeFournisseur)
-            .orElseThrow(() -> EntiteNonTrouveeException.de("Fournisseur", codeFournisseur));
+        String codeFournisseur = (request.codeFournisseur() == null || request.codeFournisseur().isBlank())
+            ? "NON_DEFINI"
+            : request.codeFournisseur().trim().toUpperCase();
+        if (!"NON_DEFINI".equals(codeFournisseur)) {
+            fournisseurRepository.trouverParCode(codeFournisseur)
+                .orElseThrow(() -> EntiteNonTrouveeException.de("Fournisseur", codeFournisseur));
+        }
 
         String numero = genererNumero(request.dateCommande());
         BonCommande bc = BonCommande.creer(numero, codeFournisseur, request.dateCommande(),
