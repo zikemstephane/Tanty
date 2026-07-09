@@ -169,6 +169,23 @@ public class PlanProductionHebdomadaire {
         this.dateModification = LocalDateTime.now();
     }
 
+    /**
+     * Ajuste manuellement la répartition journalière des ressources.
+     * Permet au Responsable de Salle de corriger les quantités de poudre,
+     * fûts, emballages selon les contraintes opérationnelles réelles.
+     * Autorisé uniquement sur un PPH BROUILLON ou VALIDE.
+     */
+    public void ajusterRepartitionJours(List<RepartitionJournaliere> nouvelleRepartition) {
+        if (statut == StatutPPH.CLOTURE) {
+            throw new IllegalStateException("Impossible d'ajuster la répartition d'un PPH clôturé");
+        }
+        this.repartitionJours.clear();
+        if (nouvelleRepartition != null) {
+            this.repartitionJours.addAll(nouvelleRepartition);
+        }
+        this.dateModification = LocalDateTime.now();
+    }
+
     public void cumulerProductionLigne(String codeProduit, int quantite) {
         if (statut != StatutPPH.EN_COURS) {
             throw new IllegalStateException("La production ne peut être cumulée que pour un PPH EN_COURS");

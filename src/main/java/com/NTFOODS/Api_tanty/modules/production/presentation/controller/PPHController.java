@@ -1,9 +1,11 @@
 package com.NTFOODS.Api_tanty.modules.production.presentation.controller;
 
+import com.NTFOODS.Api_tanty.modules.production.application.pph.dto.request.AjusterRepartitionPPHRequest;
 import com.NTFOODS.Api_tanty.modules.production.application.pph.dto.request.CreerPPHRequest;
 import com.NTFOODS.Api_tanty.modules.production.application.pph.dto.request.ModifierLignesPPHRequest;
 import com.NTFOODS.Api_tanty.modules.production.application.pph.dto.response.PPHResponse;
 import com.NTFOODS.Api_tanty.modules.production.application.pph.mapper.PPHMapper;
+import com.NTFOODS.Api_tanty.modules.production.application.pph.usecase.AjusterRepartitionPPHUseCase;
 import com.NTFOODS.Api_tanty.modules.production.application.pph.usecase.CreerPPHUseCase;
 import com.NTFOODS.Api_tanty.modules.production.application.pph.usecase.ModifierLignePPHUseCase;
 import com.NTFOODS.Api_tanty.modules.production.application.pph.usecase.ValiderPPHUseCase;
@@ -42,16 +44,19 @@ public class PPHController {
     private final CreerPPHUseCase creerPPHUseCase;
     private final ValiderPPHUseCase validerPPHUseCase;
     private final ModifierLignePPHUseCase modifierLignePPHUseCase;
+    private final AjusterRepartitionPPHUseCase ajusterRepartitionPPHUseCase;
     private final AuthenticatedUserResolver userResolver;
 
     public PPHController(PPHRepository pphRepository, PPHMapper pphMapper, CreerPPHUseCase creerPPHUseCase,
                           ValiderPPHUseCase validerPPHUseCase, ModifierLignePPHUseCase modifierLignePPHUseCase,
+                          AjusterRepartitionPPHUseCase ajusterRepartitionPPHUseCase,
                           AuthenticatedUserResolver userResolver) {
         this.pphRepository = pphRepository;
         this.pphMapper = pphMapper;
         this.creerPPHUseCase = creerPPHUseCase;
         this.validerPPHUseCase = validerPPHUseCase;
         this.modifierLignePPHUseCase = modifierLignePPHUseCase;
+        this.ajusterRepartitionPPHUseCase = ajusterRepartitionPPHUseCase;
         this.userResolver = userResolver;
     }
 
@@ -114,6 +119,17 @@ public class PPHController {
             req.lignes().stream().map(l -> new ModifierLignePPHUseCase.LigneModifiable(l.codeProduit(), l.objectifSemaine())).toList(),
             userResolver.getUtilisateurCourant());
         return ResponseEntity.ok(ApiResponse.succes(pphMapper.versResponse(pph), "Lignes modifiées"));
+    }
+
+    @PutMapping("/{reference}/repartition")
+    @PreAuthorize("hasAnyRole('RESPONSABLE_SALLE', 'ADMIN')")
+    @Operation(summary = "Ajuster la répartition journalière des ressources (Responsable de Salle)",
+        description = "Permet de corriger manuellement les quantités de poudre, fûts et emballages par jour.")
+    public ResponseEntity<ApiResponse<PPHResponse>> ajusterRepartition(
+        @PathVariable String reference,
+        @Valid @RequestBody AjusterRepartitionPPHRequest req) {
+        var pph = ajusterRepartitionPPHUseCase.executer(reference, req);
+        return ResponseEntity.ok(ApiResponse.succes(pphMapper.versResponse(pph), "Répartition ajustée"));
     }
 
     @GetMapping("/en-cours")
