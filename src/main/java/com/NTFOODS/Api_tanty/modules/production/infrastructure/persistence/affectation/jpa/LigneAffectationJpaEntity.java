@@ -24,7 +24,7 @@ public class LigneAffectationJpaEntity {
     private AffectationJournaliereJpaEntity affectation;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 40)
     private CodePoste poste;
 
     @Enumerated(EnumType.STRING)

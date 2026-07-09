@@ -10,18 +10,21 @@ import java.util.Map;
 @Service
 public class MatriculeSequenceService {
 
-    private static final Map<Role, String> PREFIXES = Map.of(
-        Role.COMMERCIAL,         "COM",
-        Role.CHEF_PRODUCTION,    "CP",
-        Role.RESPONSABLE_SALLE,   "AP",
-        Role.GESTIONNAIRE_STOCK, "GS",
-        Role.SECRETAIRE,         "SEC",
-        Role.COMPTABLE,          "CPT",
-        Role.CONTROLEUR_GENERAL, "CG",
-        Role.DIRECTEUR_GENERAL,  "DG",
-        Role.DIRECTEUR_COMMERCIAL, "DC",
-        Role.ADMIN,              "ADM"
-    );
+    private static final Map<Role, String> PREFIXES = Map.ofEntries(
+    Map.entry(Role.COMMERCIAL, "COM"),
+    Map.entry(Role.CHEF_PRODUCTION, "CP"),
+    Map.entry(Role.RESPONSABLE_SALLE, "AP"),
+    Map.entry(Role.GESTIONNAIRE_STOCK, "GS"),
+    Map.entry(Role.SECRETAIRE, "SEC"),
+    Map.entry(Role.COMPTABLE, "CPT"),
+    Map.entry(Role.AGENT_PRODUCTION, "AGP"),
+    Map.entry(Role.MACHINISTE, "MCH"),
+    Map.entry(Role.CHEF_MACHINISTE, "CHM"),
+    Map.entry(Role.CONTROLEUR_GENERAL, "CG"),
+    Map.entry(Role.DIRECTEUR_GENERAL, "DG"),
+    Map.entry(Role.DIRECTEUR_COMMERCIAL, "DC"),
+    Map.entry(Role.ADMIN, "ADM")
+);
 
     private final UtilisateurJpaRepository jpaRepository;
 

@@ -85,6 +85,22 @@ public class AffectationJournaliere {
         this.dateModification = LocalDateTime.now();
     }
 
+    /**
+     * Modifie les lignes d'affectation (seulement si l'affectation est en BROUILLON).
+     */
+    public void modifierLignes(List<LigneAffectationPoste> nouvellesLignes) {
+        if (statut == StatutAffectation.VALIDEE) {
+            throw new IllegalStateException(
+                "Affectation verrouillée : impossible de modifier une affectation validée.");
+        }
+        if (nouvellesLignes == null || nouvellesLignes.isEmpty()) {
+            throw new IllegalArgumentException("L'affectation doit comporter au moins un poste");
+        }
+        this.lignes.clear();
+        this.lignes.addAll(nouvellesLignes);
+        this.dateModification = LocalDateTime.now();
+    }
+
     /** Valide l'affectation (les saisies ne peuvent plus être modifiées). */
     public void valider() {
         if (statut == StatutAffectation.VALIDEE) {

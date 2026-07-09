@@ -16,7 +16,7 @@ public class AffectationMapper {
     public AffectationJournaliereResponse versResponse(AffectationJournaliere a) {
         var lignes = a.getLignes().stream()
             .map(l -> new AffectationJournaliereResponse.LigneAffectationResponse(
-                l.getPoste().getCode(), l.getPoste().getLibelle(),
+                l.getPoste().name(), l.getPoste().getLibelle(),
                 l.getPoste().getEffectifReference(), l.getEffectifReel(),
                 l.getDuree().getLibelle(), l.getObjectifAjuste(),
                 l.getPoste().getUnite().getLibelle(), l.getMatriculesEmployes()))
@@ -42,7 +42,7 @@ public class AffectationMapper {
             .toList();
         var details = mapDetails(s.getDetails());
         return new AffectationJournaliereResponse.SaisieRealisationResponse(
-            s.getPoste().getCode(), s.getPoste().getLibelle(),
+            s.getPoste().name(), s.getPoste().getLibelle(),
             s.getQuantiteRealisee(), s.getObjectifAjuste(),
             s.getPctRealisation(), s.getUnite().getLibelle(),
             prods, details, s.getWarnings(), s.getDateEnregistrement());
@@ -62,7 +62,7 @@ public class AffectationMapper {
         AtomicInteger rang = new AtomicInteger(1);
         return postes.stream()
             .map(s -> new AffectationJournaliereResponse.ClassementPosteResponse(
-                rang.getAndIncrement(), s.getPoste().getCode(), s.getPoste().getLibelle(),
+                rang.getAndIncrement(), s.getPoste().name(), s.getPoste().getLibelle(),
                 s.getQuantiteRealisee(), s.getObjectifAjuste(),
                 s.getPctRealisation(), s.getUnite().getLibelle()))
             .toList();

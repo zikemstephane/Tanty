@@ -45,6 +45,6 @@ public class ValiderAffectationUseCase {
 
     private boolean peutValider(Utilisateur u) {
         String role = u.getRole().name();
-        return role.equals("CHEF_PRODUCTION") || role.equals("ADMIN");
+        return role.equals("CHEF_PRODUCTION") || role.equals("RESPONSABLE_SALLE") || role.equals("ADMIN");
     }
 }

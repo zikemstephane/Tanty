@@ -1,6 +1,9 @@
 package com.NTFOODS.Api_tanty.modules.production.presentation.controller;
 
+import com.NTFOODS.Api_tanty.modules.administration.application.utilisateur.dto.response.UtilisateurResponse;
+import com.NTFOODS.Api_tanty.modules.administration.application.utilisateur.usecase.ListerUtilisateursUseCase;
 import com.NTFOODS.Api_tanty.modules.production.application.affectation.dto.request.CreerAffectationJourRequest;
+import com.NTFOODS.Api_tanty.modules.production.application.affectation.dto.request.LigneAffectationRequest;
 import com.NTFOODS.Api_tanty.modules.production.application.affectation.dto.request.SaisirRealisationPosteRequest;
 import com.NTFOODS.Api_tanty.modules.production.application.affectation.dto.response.AffectationJournaliereResponse;
 import com.NTFOODS.Api_tanty.modules.production.application.affectation.dto.response.ClassementExecuteurResponse;
@@ -10,6 +13,7 @@ import com.NTFOODS.Api_tanty.modules.production.application.affectation.mapper.A
 import com.NTFOODS.Api_tanty.modules.production.application.affectation.usecase.ClassementExecuteursHebdomadaireUseCase;
 import com.NTFOODS.Api_tanty.modules.production.application.affectation.usecase.ComparaisonFutsProductionUseCase;
 import com.NTFOODS.Api_tanty.modules.production.application.affectation.usecase.CreerAffectationJourUseCase;
+import com.NTFOODS.Api_tanty.modules.production.application.affectation.usecase.ModifierLignesAffectationUseCase;
 import com.NTFOODS.Api_tanty.modules.production.application.affectation.usecase.RapportHebdomadaireProductionUseCase;
 import com.NTFOODS.Api_tanty.modules.production.application.affectation.usecase.SaisirRealisationPosteUseCase;
 import com.NTFOODS.Api_tanty.modules.production.application.affectation.usecase.ValiderAffectationUseCase;
@@ -39,31 +43,45 @@ public class AffectationController {
     private final CreerAffectationJourUseCase creerUseCase;
     private final SaisirRealisationPosteUseCase saisirUseCase;
     private final ValiderAffectationUseCase validerUseCase;
+    private final ModifierLignesAffectationUseCase modifierLignesUseCase;
     private final ComparaisonFutsProductionUseCase comparaisonFutsProductionUseCase;
     private final ClassementExecuteursHebdomadaireUseCase classementExecuteursUseCase;
     private final RapportHebdomadaireProductionUseCase rapportHebdomadaireUseCase;
     private final AffectationJournaliereRepository repository;
     private final AffectationMapper mapper;
     private final AuthenticatedUserResolver userResolver;
+    private final ListerUtilisateursUseCase listerUtilisateursUseCase;
 
     public AffectationController(CreerAffectationJourUseCase creerUseCase,
                                   SaisirRealisationPosteUseCase saisirUseCase,
                                   ValiderAffectationUseCase validerUseCase,
+                                  ModifierLignesAffectationUseCase modifierLignesUseCase,
                                   ComparaisonFutsProductionUseCase comparaisonFutsProductionUseCase,
                                   ClassementExecuteursHebdomadaireUseCase classementExecuteursUseCase,
                                   RapportHebdomadaireProductionUseCase rapportHebdomadaireUseCase,
                                   AffectationJournaliereRepository repository,
                                   AffectationMapper mapper,
-                                  AuthenticatedUserResolver userResolver) {
+                                  AuthenticatedUserResolver userResolver,
+                                  ListerUtilisateursUseCase listerUtilisateursUseCase) {
         this.creerUseCase = creerUseCase;
         this.saisirUseCase = saisirUseCase;
         this.validerUseCase = validerUseCase;
+        this.modifierLignesUseCase = modifierLignesUseCase;
         this.comparaisonFutsProductionUseCase = comparaisonFutsProductionUseCase;
         this.classementExecuteursUseCase = classementExecuteursUseCase;
         this.rapportHebdomadaireUseCase = rapportHebdomadaireUseCase;
         this.repository = repository;
         this.mapper = mapper;
         this.userResolver = userResolver;
+        this.listerUtilisateursUseCase = listerUtilisateursUseCase;
+    }
+
+    @GetMapping("/agents-production")
+    @PreAuthorize("hasAnyRole('RESPONSABLE_SALLE', 'CHEF_PRODUCTION', 'ADMIN')")
+    @Operation(summary = "Lister les agents de production (pour sélection lors d'une affectation)")
+    public ResponseEntity<ApiResponse<List<UtilisateurResponse>>> listerAgentsProduction() {
+        List<UtilisateurResponse> agents = listerUtilisateursUseCase.executer("AGENT_PRODUCTION");
+        return ResponseEntity.ok(ApiResponse.succes(agents, agents.size() + " agent(s) de production"));
     }
 
     @PostMapping
@@ -86,12 +104,23 @@ public class AffectationController {
     }
 
     @PatchMapping("/{id}/valider")
-    @PreAuthorize("hasAnyRole('CHEF_PRODUCTION', 'ADMIN')")
-    @Operation(summary = "Valider l'affectation journalière (Lock Numérique)",
+    @PreAuthorize("hasAnyRole('RESPONSABLE_SALLE', 'CHEF_PRODUCTION', 'ADMIN')")
+    @Operation(summary = "Confirmer/Valider l'affectation journalière (Lock Numérique)",
         description = "Une fois validée, plus aucune saisie de réalisation n'est possible sur cette journée.")
     public ResponseEntity<ApiResponse<AffectationJournaliereResponse>> valider(@PathVariable Long id) {
         AffectationJournaliereResponse response = validerUseCase.executer(id, userResolver.getUtilisateurCourant());
-        return ResponseEntity.ok(ApiResponse.succes(response, "Affectation validée et verrouillée"));
+        return ResponseEntity.ok(ApiResponse.succes(response, "Affectation confirmée et verrouillée"));
+    }
+
+    @PatchMapping("/{id}/lignes")
+    @PreAuthorize("hasAnyRole('RESPONSABLE_SALLE', 'CHEF_PRODUCTION', 'ADMIN')")
+    @Operation(summary = "Modifier les lignes d'une affectation journalière (Responsable de Salle)",
+        description = "Permet de corriger les postes, employés et durées tant que l'affectation est en BROUILLON.")
+    public ResponseEntity<ApiResponse<AffectationJournaliereResponse>> modifierLignes(
+            @PathVariable Long id,
+            @RequestBody @Valid List<LigneAffectationRequest> lignes) {
+        AffectationJournaliereResponse response = modifierLignesUseCase.executer(id, lignes, userResolver.getUtilisateurCourant());
+        return ResponseEntity.ok(ApiResponse.succes(response, "Lignes d'affectation mises à jour"));
     }
 
     @GetMapping
