@@ -38,16 +38,19 @@ public class SessionDosageJpaEntity {
     @Column(name = "machine_id")
     private List<String> machinesMobilisees;
 
-    @Column(nullable = false)
-    private int nbFutsProduits;
+    @Column
+    private Integer nbFutsProduits;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "integer default 0")
     private int nbFutsCasses;
 
     private String justificationEcart;
 
     @Column(nullable = false)
     private boolean validee;
+
+    @Column(nullable = false)
+    private boolean enPause;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime dateCreation;

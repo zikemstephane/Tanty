@@ -59,6 +59,7 @@ public class GenererRapportHebdomadaireUseCase {
         Map<String, Integer> quantitesParReference = new HashMap<>();
         for (FicheProduitJournaliere fiche : fiches) {
             for (var ligne : fiche.getLignes()) {
+                if (ligne.getCodeProduit() == null) continue;
                 quantitesParReference.merge(ligne.getCodeProduit(), (int) Math.round(ligne.getQuantiteProduite()), Integer::sum);
             }
         }
@@ -66,21 +67,24 @@ public class GenererRapportHebdomadaireUseCase {
         Map<String, Double> pertesParTypePoudre = new HashMap<>();
         Map<String, Double> quantiteBroyeeParTypePoudre = new HashMap<>();
         for (SessionBroyage session : sessionsBroyage) {
+            if (session.getTypePoudre() == null) continue;
+            String typePoudre = session.getTypePoudre().name();
             if (session.getQuantiteNetteBroyeeKg() != null) {
-                quantiteBroyeeParTypePoudre.merge(session.getTypePoudre().name(),
-                    session.getQuantiteNetteBroyeeKg(), Double::sum);
+                quantiteBroyeeParTypePoudre.merge(typePoudre, session.getQuantiteNetteBroyeeKg(), Double::sum);
             }
             if (session.getPertesKg() != null) {
-                pertesParTypePoudre.merge(session.getTypePoudre().name(), session.getPertesKg(), Double::sum);
+                pertesParTypePoudre.merge(typePoudre, session.getPertesKg(), Double::sum);
             }
         }
 
         int totalFutsProduits = sessionsDosage.stream().mapToInt(SessionDosage::getNbFutsProduits).sum();
-        int totalFutsCasses = sessionsDosage.stream().mapToInt(SessionDosage::getNbFutsCasses).sum();
-        int totalFutsNets = totalFutsProduits - totalFutsCasses;
+        int totalFutsNets = totalFutsProduits;
 
-        int totalLotsValides = (int) lots.stream().filter(l -> l.getStatut().name().equals("VALIDATED_BY_STOCK")).count();
-        double totalQuantiteLots = lots.stream().filter(l -> l.getStatut().name().equals("VALIDATED_BY_STOCK"))
+        int totalLotsValides = (int) lots.stream()
+            .filter(l -> l.getStatut() != null && l.getStatut().name().equals("VALIDATED_BY_STOCK"))
+            .count();
+        double totalQuantiteLots = lots.stream()
+            .filter(l -> l.getStatut() != null && l.getStatut().name().equals("VALIDATED_BY_STOCK"))
             .mapToDouble(LotProduitFini::getQuantiteKg).sum();
 
         Map<String, Integer> tauxAvancementParBC = new HashMap<>();
@@ -101,7 +105,7 @@ public class GenererRapportHebdomadaireUseCase {
             debutSemaine, finSemaine,
             quantitesParReference, tauxAvancementParBC,
             pertesParTypePoudre, quantiteBroyeeParTypePoudre,
-            totalFutsProduits, totalFutsCasses, totalFutsNets,
+            totalFutsProduits, totalFutsNets,
             totalLotsValides, totalQuantiteLots,
             fiches.size(), sessionsBroyage.size(), sessionsDosage.size()
         );
@@ -115,7 +119,6 @@ public class GenererRapportHebdomadaireUseCase {
         Map<String, Double> pertesParTypePoudre,
         Map<String, Double> quantiteBroyeeParTypePoudre,
         int totalFutsProduits,
-        int totalFutsCasses,
         int totalFutsNets,
         int totalLotsValides,
         double totalQuantiteLots,

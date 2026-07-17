@@ -46,7 +46,7 @@ public class StatistiquesFutsUseCase {
 
         return new StatistiquesFutsResponse(
             debut, fin, periodeLibelle,
-            courante.futsProduits, courante.futsCasses, courante.futsNets,
+            courante.futsProduits, courante.futsNets,
             courante.mais, courante.soja, courante.arachide,
             new StatistiquesFutsResponse.ComparaisonPeriode(
                 debutPrecedent, finPrecedent, precedente.futsNets, variation
@@ -59,7 +59,6 @@ public class StatistiquesFutsUseCase {
         var sessions = repository.listerParPeriode(debut, fin);
 
         int futsProduits = 0;
-        int futsCasses = 0;
         int futsNets = 0;
         double mais = 0.0;
         double soja = 0.0;
@@ -67,7 +66,6 @@ public class StatistiquesFutsUseCase {
 
         for (SessionDosage s : sessions) {
             futsProduits += s.getNbFutsProduits();
-            futsCasses += s.getNbFutsCasses();
             futsNets += s.getNbFutsNets();
 
             // Prise en compte des matières réelles saisies par l'Agent Doseur.
@@ -89,11 +87,11 @@ public class StatistiquesFutsUseCase {
             }
         }
 
-        return new PeriodeStats(futsProduits, futsCasses, futsNets, mais, soja, arachide, sessions.size());
+        return new PeriodeStats(futsProduits, futsNets, mais, soja, arachide, sessions.size());
     }
 
     private record PeriodeStats(
-        int futsProduits, int futsCasses, int futsNets,
+        int futsProduits, int futsNets,
         double mais, double soja, double arachide,
         int nbSessions
     ) {}

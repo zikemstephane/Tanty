@@ -9130,7 +9130,6 @@ public)
   - `List<MatiereResponse> matieresUtilisees`
   - `List<String> machinesMobilisees`
   - `int nbFutsProduits`
-  - `int nbFutsCasses`
   - `int nbFutsNets`
   - `String justificationEcart`
   - `boolean validee`
@@ -9156,7 +9155,6 @@ public)
   - `LocalDate fin`
   - `String periodeLibelle`
   - `int nbFutsProduits`
-  - `int nbFutsCasses`
   - `int nbFutsNets`
   - `double poudreMaisKg`
   - `double poudreSojaKg`
@@ -9248,7 +9246,6 @@ public)
             : 0.0`
   - `String periodeLibelle = debut + "" + fin`
   - `int futsProduits = 0`
-  - `int futsCasses = 0`
   - `int futsNets = 0`
   - `double mais = 0.0`
   - `double soja = 0.0`
@@ -9258,7 +9255,7 @@ public)
   - `public StatistiquesFutsUseCase(SessionDosageRepository repository)`
   - `public StatistiquesFutsResponse executer(LocalDate debut, LocalDate fin)`
   - `private PeriodeStats calculerPeriode(LocalDate debut, LocalDate fin)`
-  - `private record PeriodeStats(int futsProduits, int futsCasses, int futsNets,
+  - `private record PeriodeStats(int futsProduits, int futsNets,
         double mais, double soja, double arachide,
         int nbSessions)`
 
@@ -9266,7 +9263,6 @@ public)
 
 - **Composants (record) :**
   - `int futsProduits`
-  - `int futsCasses`
   - `int futsNets`
   - `double mais`
   - `double soja`
@@ -9849,7 +9845,7 @@ public)
   - `Map<String, Integer> quantitesParReference = new HashMap<>()`
   - `Map<String, Double> pertesParTypePoudre = new HashMap<>()`
   - `Map<String, Double> quantiteBroyeeParTypePoudre = new HashMap<>()`
-  - `int totalFutsNets = totalFutsProduits - totalFutsCasses`
+  - `int totalFutsNets = totalFutsProduits`
   - `Map<String, Integer> tauxAvancementParBC = new HashMap<>()`
   - `Map<String, List<PlanProductionHebdomadaire>> pphsParBC = new HashMap<>()`
   - `double totalBrut = totalBroye + totalPertes`
@@ -9869,7 +9865,6 @@ public)
         Map<String, Double> pertesParTypePoudre,
         Map<String, Double> quantiteBroyeeParTypePoudre,
         int totalFutsProduits,
-        int totalFutsCasses,
         int totalFutsNets,
         int totalLotsValides,
         double totalQuantiteLots,
@@ -9893,7 +9888,6 @@ public)
   - `Map<String`
   - `Double> quantiteBroyeeParTypePoudre`
   - `int totalFutsProduits`
-  - `int totalFutsCasses`
   - `int totalFutsNets`
   - `int totalLotsValides`
   - `double totalQuantiteLots`
@@ -10505,7 +10499,6 @@ public)
   - `private final List<MatierePremiereUtilisee> matieresUtilisees`
   - `private final List<String> machinesMobilisees`
   - `private int nbFutsProduits`
-  - `private int nbFutsCasses`
   - `private String justificationEcart`
   - `private boolean validee`
   - `private final LocalDateTime dateCreation`
@@ -10522,13 +10515,13 @@ public)
                                               String matriculeAgentDoseur,
                                               List<MatierePremiereUtilisee> matieresUtilisees,
                                               List<String> machinesMobilisees,
-                                              int nbFutsProduits, int nbFutsCasses,
+                                              int nbFutsProduits,
                                               String justificationEcart, boolean validee,
                                               LocalDateTime dateCreation,
                                               LocalDateTime dateModification, Long version)`
   - `public void enregistrerMatiereUtilisee(String typeMatiere, double quantiteKg)`
   - `public void enregistrerMachine(String machineId)`
-  - `public void enregistrerFuts(int nbProduits, int nbCasses)`
+  - `public void enregistrerFuts(int nbProduits)`
   - `public void justifierEcart(String justification)`
   - `public void valider()`
   - `public void cloturer()`
@@ -10543,7 +10536,6 @@ public)
   - `public List<MatierePremiereUtilisee> getMatieresUtilisees()`
   - `public List<String> getMachinesMobilisees()`
   - `public int getNbFutsProduits()`
-  - `public int getNbFutsCasses()`
   - `public String getJustificationEcart()`
   - `public boolean isValidee()`
   - `public LocalDateTime getDateCreation()`
@@ -11478,7 +11470,6 @@ public)
   - `private List<MatierePremiereJpa> matieresUtilisees`
   - `@Column(name = "") private List<String> machinesMobilisees`
   - `@Column(nullable = false) private int nbFutsProduits`
-  - `@Column(nullable = false) private int nbFutsCasses`
   - `private String justificationEcart`
   - `@Column(nullable = false) private boolean validee`
   - `@Column(nullable = false, updatable = false) private LocalDateTime dateCreation`
@@ -22151,7 +22142,7 @@ public)
   - `getMachinistes(): Observable<EmployeBE[]> `
   - `enregistrerMatiereDosage(id: number, typeMatiere: string, quantiteKg: number): Observable<SessionDosageBE> `
   - `enregistrerMachineDosage(id: number, machineId: string): Observable<SessionDosageBE> `
-  - `enregistrerFutsDosage(id: number, nbProduits: number, nbCasses: number): Observable<SessionDosageBE> `
+  - `enregistrerFutsDosage(id: number, nbProduits: number): Observable<SessionDosageBE> `
   - `justifierEcartDosage(id: number, justification: string): Observable<SessionDosageBE> `
   - `validerSessionDosage(id: number): Observable<SessionDosageBE> `
   - `cloturerSessionDosage(id: number): Observable<SessionDosageBE> `

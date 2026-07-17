@@ -244,7 +244,6 @@ public class ProductionSeeder implements DataSeeder {
                 .matieresUtilisees(matieres)
                 .machinesMobilisees(List.of("MELANGEUR-01", "DOSEUR-02"))
                 .nbFutsProduits(25)
-                .nbFutsCasses(1)
                 .justificationEcart(null)
                 .validee(true)
                 .dateCreation(now)

@@ -120,6 +120,20 @@ public class BonCommande {
         return lignes.stream().map(LigneBonCommande::montantLigneHT).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    public void enregistrerProduction(String codeProduit, long quantite) {
+        LigneBonCommande ligne = lignes.stream()
+            .filter(l -> l.getCodeProduit().equalsIgnoreCase(codeProduit))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Produit " + codeProduit + " non trouvé dans le BC"));
+        ligne.enregistrerProduction(quantite);
+        this.dateModification = LocalDateTime.now();
+    }
+
+    public int tauxRealisation() {
+        if (lignes.isEmpty()) return 0;
+        return (int) lignes.stream().mapToInt(LigneBonCommande::tauxRealisation).average().orElse(0);
+    }
+
     private void transitionner(StatutBonCommande cible) {
         if (!statut.peutTransitionnerVers(cible)) {
             throw new RegleMetierException("Transition impossible : " + statut.getLibelle() + " → " + cible.getLibelle());

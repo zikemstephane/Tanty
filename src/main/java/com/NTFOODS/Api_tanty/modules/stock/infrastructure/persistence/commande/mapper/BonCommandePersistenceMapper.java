@@ -33,14 +33,16 @@ public class BonCommandePersistenceMapper {
             .id(l.getId()).bonCommande(parent).codeProduit(l.getCodeProduit())
             .designation(l.getDesignation()).sku(l.getSku())
             .quantiteCommandee(l.getQuantiteCommandee()).quantiteRecue(l.getQuantiteRecue())
-            .prixUnitaireHT(l.getPrixUnitaireHT())
+            .quantiteProduite(l.getQuantiteProduite()).prixUnitaireHT(l.getPrixUnitaireHT())
             .build();
     }
 
     public BonCommande versDomaine(BonCommandeJpaEntity e) {
         List<LigneBonCommande> lignes = e.getLignes().stream()
             .map(l -> LigneBonCommande.reconstituer(l.getId(), l.getCodeProduit(), l.getDesignation(),
-                l.getSku(), l.getQuantiteCommandee(), l.getQuantiteRecue(), l.getPrixUnitaireHT()))
+                l.getSku(), l.getQuantiteCommandee(), l.getQuantiteRecue(),
+                l.getQuantiteProduite() != null ? l.getQuantiteProduite() : 0L,
+                l.getPrixUnitaireHT()))
             .toList();
 
         return BonCommande.reconstituer(e.getId(), e.getNumero(), e.getCodeFournisseur(),

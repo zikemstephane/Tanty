@@ -14,6 +14,7 @@ public class MatriculeSequenceService {
     Map.entry(Role.COMMERCIAL, "COM"),
     Map.entry(Role.CHEF_PRODUCTION, "CP"),
     Map.entry(Role.RESPONSABLE_SALLE, "AP"),
+    Map.entry(Role.AGENT_DOSEUR, "AD"),
     Map.entry(Role.GESTIONNAIRE_STOCK, "GS"),
     Map.entry(Role.SECRETAIRE, "SEC"),
     Map.entry(Role.COMPTABLE, "CPT"),

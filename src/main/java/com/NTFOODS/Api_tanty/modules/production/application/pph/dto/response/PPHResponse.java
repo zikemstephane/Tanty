@@ -17,7 +17,15 @@ public record PPHResponse(
     List<LigneDetailResponse> lignesDetaillees,
     List<RepartitionResponse> repartitionJours
 ) {
-    public record LigneResponse(String codeProduit, String nomProduit, int objectifSemaine, int productionRealisee) {}
+    public record LigneResponse(
+        String codeProduit,
+        String nomProduit,
+        String categorieMetier,
+        int objectifSemaine,
+        int productionRealisee,
+        double quantiteAttendueKg,
+        int quantiteAttendueUnites
+    ) {}
 
     public record LigneDetailResponse(
         String codeProduit,
@@ -36,7 +44,9 @@ public record PPHResponse(
         int sachetsPrevus,
         int couverclesPrevus,
         int scellesPrevus,
-        double poidsTotalGrammes
+        double poidsTotalGrammes,
+        double quantiteAttendueKg,
+        int quantiteAttendueUnites
     ) {}
 
     public record RepartitionResponse(

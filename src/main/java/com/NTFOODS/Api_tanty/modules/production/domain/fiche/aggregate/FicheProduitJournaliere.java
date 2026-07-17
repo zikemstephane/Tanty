@@ -163,6 +163,18 @@ public class FicheProduitJournaliere {
         domainEvents.add(new FicheVerrouilleeEvent(referencePPH, date, matriculeAgentProduction));
     }
 
+    public void definirPredictions(Map<String, Integer> predictionDosage,
+                                   Map<String, Integer> predictionPostes) {
+        if (verrouillee) {
+            throw new IllegalStateException("Fiche verrouillée : impossible de modifier les prédictions");
+        }
+        this.predictionDosage.clear();
+        if (predictionDosage != null) this.predictionDosage.putAll(predictionDosage);
+        this.predictionPostes.clear();
+        if (predictionPostes != null) this.predictionPostes.putAll(predictionPostes);
+        this.dateModification = LocalDateTime.now();
+    }
+
     public void definirJustificationEcart(String justification) {
         if (verrouillee) {
             throw new IllegalStateException("Fiche verrouillée : impossible de modifier la justification d'écart");

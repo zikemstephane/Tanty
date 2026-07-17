@@ -7,6 +7,7 @@ import com.NTFOODS.Api_tanty.modules.production.application.dosage.dto.response.
 import com.NTFOODS.Api_tanty.modules.production.application.dosage.mapper.SessionDosageMapper;
 import com.NTFOODS.Api_tanty.modules.production.application.dosage.service.DocumentsDosageService;
 import com.NTFOODS.Api_tanty.modules.production.application.dosage.service.RegistreDosageExportService;
+import com.NTFOODS.Api_tanty.modules.production.application.dosage.usecase.MettreAJourDosageAutomatiqueUseCase;
 import com.NTFOODS.Api_tanty.modules.production.application.dosage.usecase.PredireProduitFiniDepuisFutsUseCase;
 import com.NTFOODS.Api_tanty.modules.production.application.dosage.usecase.StatistiquesFutsUseCase;
 import com.NTFOODS.Api_tanty.modules.production.domain.dosage.aggregate.SessionDosage;
@@ -32,7 +33,7 @@ import java.util.List;
  *
  * L'Agent Doseur récupère les poudres, vérifie les quantités, procède au dosage-mélange,
  * conditionne en fûts de 50 kg, et enregistre matières utilisées + machines + fûts.
- * Distingue fûts produits et fûts cassés (fûts nets = produits - cassés).
+ * Le nombre de fûts sortis correspond au nombre de fûts produits.
  */
 @RestController
 @RequestMapping("/api/production/dosage")
@@ -44,18 +45,21 @@ public class DosageController {
     private final SessionDosageMapper mapper;
     private final StatistiquesFutsUseCase statistiquesFutsUseCase;
     private final PredireProduitFiniDepuisFutsUseCase predireProduitFiniUseCase;
+    private final MettreAJourDosageAutomatiqueUseCase mettreAJourDosageAutomatiqueUseCase;
     private final RegistreDosageExportService exportService;
     private final DocumentsDosageService documentsService;
 
     public DosageController(SessionDosageRepository repository, SessionDosageMapper mapper,
                            StatistiquesFutsUseCase statistiquesFutsUseCase,
                            PredireProduitFiniDepuisFutsUseCase predireProduitFiniUseCase,
+                           MettreAJourDosageAutomatiqueUseCase mettreAJourDosageAutomatiqueUseCase,
                            RegistreDosageExportService exportService,
                            DocumentsDosageService documentsService) {
         this.repository = repository;
         this.mapper = mapper;
         this.statistiquesFutsUseCase = statistiquesFutsUseCase;
         this.predireProduitFiniUseCase = predireProduitFiniUseCase;
+        this.mettreAJourDosageAutomatiqueUseCase = mettreAJourDosageAutomatiqueUseCase;
         this.exportService = exportService;
         this.documentsService = documentsService;
     }
@@ -92,13 +96,23 @@ public class DosageController {
 
     @PostMapping("/{id}/futs")
     @PreAuthorize("hasAnyRole('AGENT_DOSEUR', 'CHEF_PRODUCTION')")
-    @Operation(summary = "Enregistrer les fûts produits et cassés (fûts nets = produits - cassés)")
+    @Operation(summary = "Enregistrer le nombre de fûts sortis")
     public ResponseEntity<ApiResponse<SessionDosageResponse>> enregistrerFuts(@PathVariable Long id,
-                                                                               @RequestParam int nbProduits,
-                                                                               @RequestParam int nbCasses) {
+                                                                               @RequestParam int nbProduits) {
         SessionDosage session = trouverOuErreur(id);
-        session.enregistrerFuts(nbProduits, nbCasses);
+        session.enregistrerFuts(nbProduits);
         return ResponseEntity.ok(ApiResponse.succes(mapper.versResponse(repository.sauvegarder(session)), "Fûts enregistrés"));
+    }
+
+    @PostMapping("/{id}/dosage-auto")
+    @PreAuthorize("hasAnyRole('AGENT_DOSEUR', 'RESPONSABLE_SALLE', 'CHEF_PRODUCTION', 'ADMIN')")
+    @Operation(summary = "Calculer et mettre à jour automatiquement les matières premières (MAIS/SOJA/ARACHIDE) selon le nombre de fûts et le type de mélange")
+    public ResponseEntity<ApiResponse<SessionDosageResponse>> mettreAJourDosageAutomatique(
+            @PathVariable Long id,
+            @RequestParam int nbFuts,
+            @RequestParam String typeMelange) {
+        SessionDosage session = mettreAJourDosageAutomatiqueUseCase.executer(id, nbFuts, typeMelange);
+        return ResponseEntity.ok(ApiResponse.succes(mapper.versResponse(session), "Dosage automatique appliqué"));
     }
 
     @PostMapping("/{id}/justifier")
@@ -129,6 +143,24 @@ public class DosageController {
         return ResponseEntity.ok(ApiResponse.succes(mapper.versResponse(repository.sauvegarder(session)), "Session clôturée"));
     }
 
+    @PostMapping("/{id}/pause")
+    @PreAuthorize("hasAnyRole('AGENT_DOSEUR', 'CHEF_PRODUCTION')")
+    @Operation(summary = "Mettre la session de dosage en pause")
+    public ResponseEntity<ApiResponse<SessionDosageResponse>> mettreEnPause(@PathVariable Long id) {
+        SessionDosage session = trouverOuErreur(id);
+        session.mettreEnPause();
+        return ResponseEntity.ok(ApiResponse.succes(mapper.versResponse(repository.sauvegarder(session)), "Session mise en pause"));
+    }
+
+    @PostMapping("/{id}/reprendre")
+    @PreAuthorize("hasAnyRole('AGENT_DOSEUR', 'CHEF_PRODUCTION')")
+    @Operation(summary = "Reprendre une session de dosage en pause")
+    public ResponseEntity<ApiResponse<SessionDosageResponse>> reprendre(@PathVariable Long id) {
+        SessionDosage session = trouverOuErreur(id);
+        session.reprendre();
+        return ResponseEntity.ok(ApiResponse.succes(mapper.versResponse(repository.sauvegarder(session)), "Session reprise"));
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('RESPONSABLE_SALLE', 'CHEF_PRODUCTION', 'DIRECTEUR_GENERAL', 'ADMIN')")
     @Operation(summary = "Consulter une session de dosage")
@@ -144,14 +176,14 @@ public class DosageController {
     }
 
     @GetMapping("/date/{date}")
-    @PreAuthorize("hasAnyRole('RESPONSABLE_SALLE', 'CHEF_PRODUCTION', 'DIRECTEUR_GENERAL', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RESPONSABLE_SALLE', 'CHEF_PRODUCTION', 'DIRECTEUR_GENERAL', 'ADMIN','AGENT_DOSEUR')")
     @Operation(summary = "Lister les sessions de dosage par date (Registre Salle de Mélange)")
     public ResponseEntity<ApiResponse<List<SessionDosageResponse>>> listerParDate(@PathVariable String date) {
         return ResponseEntity.ok(ApiResponse.succes(mapper.versResponseList(repository.listerParDate(LocalDate.parse(date))), "Sessions"));
     }
 
     @GetMapping("/periode")
-    @PreAuthorize("hasAnyRole('RESPONSABLE_SALLE', 'CHEF_PRODUCTION', 'DIRECTEUR_GENERAL', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('RESPONSABLE_SALLE', 'CHEF_PRODUCTION', 'DIRECTEUR_GENERAL', 'ADMIN','AGENT_DOSEUR')")
     @Operation(summary = "Lister les sessions de dosage par période")
     public ResponseEntity<ApiResponse<List<SessionDosageResponse>>> listerParPeriode(
             @RequestParam String debut, @RequestParam String fin) {
@@ -170,11 +202,10 @@ public class DosageController {
 
     @GetMapping("/prediction")
     @PreAuthorize("hasAnyRole('AGENT_DOSEUR', 'RESPONSABLE_SALLE', 'CHEF_PRODUCTION', 'DIRECTEUR_GENERAL', 'ADMIN')")
-    @Operation(summary = "Prédire la quantité de produit fini à partir du nombre de fûts nets")
+    @Operation(summary = "Prédire la quantité de produit fini à partir d'une session de dosage")
     public ResponseEntity<ApiResponse<PredictionProduitFiniResponse>> predireProduitFini(
-            @RequestParam int nbFutsNets,
-            @RequestParam(required = false) String codeProduit) {
-        PredictionProduitFiniResponse prediction = predireProduitFiniUseCase.executer(nbFutsNets, codeProduit);
+            @RequestParam Long sessionId) {
+        PredictionProduitFiniResponse prediction = predireProduitFiniUseCase.executer(sessionId);
         return ResponseEntity.ok(ApiResponse.succes(prediction, "Prédiction de produit fini"));
     }
 

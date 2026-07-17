@@ -12,11 +12,12 @@ public record SessionDosageResponse(
     List<MatiereResponse> matieresUtilisees,
     List<String> machinesMobilisees,
     int nbFutsProduits,
-    int nbFutsCasses,
     int nbFutsNets,
+    int nbFutsCasses,
     String justificationEcart,
     boolean validee,
     boolean cloturee,
+    boolean enPause,
     LocalDateTime dateCreation,
     LocalDateTime dateModification
 ) {

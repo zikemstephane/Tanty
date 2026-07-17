@@ -41,6 +41,9 @@ public class LigneBonCommandeJpaEntity {
     @Column(name = "quantite_recue", nullable = false)
     private long quantiteRecue;
 
+    @Column(name = "quantite_produite")
+    private Long quantiteProduite;
+
     @Column(name = "prix_unitaire_ht", precision = 15, scale = 2)
     private BigDecimal prixUnitaireHT;
 }

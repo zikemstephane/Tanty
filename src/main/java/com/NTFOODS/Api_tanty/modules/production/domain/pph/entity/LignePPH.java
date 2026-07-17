@@ -23,6 +23,10 @@ public class LignePPH {
         this.productionRealisee += quantite;
     }
 
+    public void ajusterProduction(int delta) {
+        this.productionRealisee = Math.max(0, this.productionRealisee + delta);
+    }
+
     public void modifierObjectif(int nouvelObjectif) {
         if (nouvelObjectif <= 0) throw new IllegalArgumentException("L'objectif doit être positif");
         this.objectifSemaine = nouvelObjectif;

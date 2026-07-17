@@ -40,8 +40,7 @@ public class RegistreDosageExportService {
             document.add(new Paragraph("Référence PPH : " + s.getReferencePPH()));
             document.add(new Paragraph("Date : " + s.getDate()));
             document.add(new Paragraph("Agent doseur : " + s.getMatriculeAgentDoseur()));
-            document.add(new Paragraph("Fûts produits : " + s.getNbFutsProduits()));
-            document.add(new Paragraph("Fûts cassés : " + s.getNbFutsCasses()));
+            document.add(new Paragraph("Fûts sortis : " + s.getNbFutsProduits()));
             document.add(new Paragraph("Fûts nets : " + s.getNbFutsNets()));
             document.add(new Paragraph("Clôturée : " + (s.isCloturee() ? "Oui" : "Non")));
             if (s.getJustificationEcart() != null) {
@@ -90,9 +89,7 @@ public class RegistreDosageExportService {
             r = sheet.createRow(rowIdx++);
             r.createCell(0).setCellValue("Agent doseur"); r.createCell(1).setCellValue(s.getMatriculeAgentDoseur());
             r = sheet.createRow(rowIdx++);
-            r.createCell(0).setCellValue("Fûts produits"); r.createCell(1).setCellValue(s.getNbFutsProduits());
-            r = sheet.createRow(rowIdx++);
-            r.createCell(0).setCellValue("Fûts cassés"); r.createCell(1).setCellValue(s.getNbFutsCasses());
+            r.createCell(0).setCellValue("Fûts sortis"); r.createCell(1).setCellValue(s.getNbFutsProduits());
             r = sheet.createRow(rowIdx++);
             r.createCell(0).setCellValue("Fûts nets"); r.createCell(1).setCellValue(s.getNbFutsNets());
             r = sheet.createRow(rowIdx++);

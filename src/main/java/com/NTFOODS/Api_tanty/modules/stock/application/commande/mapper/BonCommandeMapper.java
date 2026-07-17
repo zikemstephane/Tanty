@@ -13,14 +13,16 @@ public class BonCommandeMapper {
         var lignes = bc.getLignes().stream()
             .map(l -> new BonCommandeResponse.LigneResponse(
                 l.getId(), l.getCodeProduit(), l.getDesignation(), l.getSku(),
-                l.getQuantiteCommandee(), l.getQuantiteRecue(), l.getPrixUnitaireHT()))
+                l.getQuantiteCommandee(), l.getQuantiteRecue(), l.getQuantiteProduite(),
+                l.tauxRealisation(), l.getPrixUnitaireHT()))
             .toList();
 
         return new BonCommandeResponse(
             bc.getId(), bc.getNumero(), bc.getCodeFournisseur(),
             bc.getStatut().name(), bc.getStatut().getLibelle(),
             bc.getDateCommande(), bc.getDateLivraisonPrevue(), bc.estEnRetard(LocalDate.now()),
-            bc.montantTotalHT(), bc.getMatriculeCreateur(), lignes, bc.getDateCreation()
+            bc.montantTotalHT(), bc.getMatriculeCreateur(), lignes, bc.getDateCreation(),
+            bc.tauxRealisation()
         );
     }
 }

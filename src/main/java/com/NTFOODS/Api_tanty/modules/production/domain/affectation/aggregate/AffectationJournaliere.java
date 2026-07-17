@@ -75,10 +75,6 @@ public class AffectationJournaliere {
      * "LOCK NUMÉRIQUE" (Pilier 1) : refusé une fois l'affectation validée.
      */
     public void saisirRealisation(SaisieRealisationPoste saisie) {
-        if (statut == StatutAffectation.VALIDEE) {
-            throw new IllegalStateException(
-                "Affectation verrouillée : elle a déjà été validée, les saisies ne peuvent plus être modifiées.");
-        }
         Objects.requireNonNull(saisie);
         saisies.removeIf(s -> s.getPoste() == saisie.getPoste());
         saisies.add(saisie);
@@ -101,7 +97,7 @@ public class AffectationJournaliere {
         this.dateModification = LocalDateTime.now();
     }
 
-    /** Valide l'affectation (les saisies ne peuvent plus être modifiées). */
+    /** Valide l'affectation : verrouille le planning (lignes) — les saisies de réalisations restent possibles. */
     public void valider() {
         if (statut == StatutAffectation.VALIDEE) {
             throw new IllegalStateException("L'affectation est déjà validée");

@@ -16,16 +16,19 @@ public class LigneBonCommande {
     private final String sku;                 // conditionnement commandé
     private final long quantiteCommandee;
     private long quantiteRecue;
+    private long quantiteProduite;
     private final BigDecimal prixUnitaireHT;
 
     private LigneBonCommande(String id, String codeProduit, String designation, String sku,
-                            long quantiteCommandee, long quantiteRecue, BigDecimal prixUnitaireHT) {
+                            long quantiteCommandee, long quantiteRecue, long quantiteProduite,
+                            BigDecimal prixUnitaireHT) {
         this.id = id;
         this.codeProduit = codeProduit;
         this.designation = designation;
         this.sku = sku;
         this.quantiteCommandee = quantiteCommandee;
         this.quantiteRecue = quantiteRecue;
+        this.quantiteProduite = quantiteProduite;
         this.prixUnitaireHT = prixUnitaireHT;
     }
 
@@ -34,12 +37,15 @@ public class LigneBonCommande {
         Objects.requireNonNull(codeProduit, "Le code produit est obligatoire");
         if (quantiteCommandee <= 0) throw new IllegalArgumentException("La quantité commandée doit être positive");
         return new LigneBonCommande(UUID.randomUUID().toString(), codeProduit.trim().toUpperCase(),
-            designation, sku, quantiteCommandee, 0L, prixUnitaireHT != null ? prixUnitaireHT : BigDecimal.ZERO);
+            designation, sku, quantiteCommandee, 0L, 0L,
+            prixUnitaireHT != null ? prixUnitaireHT : BigDecimal.ZERO);
     }
 
     public static LigneBonCommande reconstituer(String id, String codeProduit, String designation, String sku,
-                                                long quantiteCommandee, long quantiteRecue, BigDecimal prixUnitaireHT) {
-        return new LigneBonCommande(id, codeProduit, designation, sku, quantiteCommandee, quantiteRecue, prixUnitaireHT);
+                                                long quantiteCommandee, long quantiteRecue, long quantiteProduite,
+                                                BigDecimal prixUnitaireHT) {
+        return new LigneBonCommande(id, codeProduit, designation, sku, quantiteCommandee,
+            quantiteRecue, quantiteProduite, prixUnitaireHT);
     }
 
     void enregistrerReception(long quantite) {
@@ -47,8 +53,18 @@ public class LigneBonCommande {
         this.quantiteRecue += quantite;
     }
 
+    void enregistrerProduction(long quantite) {
+        if (quantite <= 0) throw new IllegalArgumentException("La quantité produite doit être positive");
+        this.quantiteProduite += quantite;
+    }
+
     public boolean estCompletementRecue() {
         return quantiteRecue >= quantiteCommandee;
+    }
+
+    public int tauxRealisation() {
+        if (quantiteCommandee <= 0) return 0;
+        return Math.min(100, (int) ((quantiteProduite * 100.0) / quantiteCommandee));
     }
 
     public BigDecimal montantLigneHT() {
@@ -61,6 +77,7 @@ public class LigneBonCommande {
     public String getSku() { return sku; }
     public long getQuantiteCommandee() { return quantiteCommandee; }
     public long getQuantiteRecue() { return quantiteRecue; }
+    public long getQuantiteProduite() { return quantiteProduite; }
     public BigDecimal getPrixUnitaireHT() { return prixUnitaireHT; }
 
     @Override

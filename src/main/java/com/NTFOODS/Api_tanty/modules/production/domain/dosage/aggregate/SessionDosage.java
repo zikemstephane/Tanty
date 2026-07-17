@@ -11,8 +11,8 @@ import java.util.*;
  * procède au dosage-mélange selon les formules, et conditionne en fûts de 50 kg.
  *
  * Règles métier :
- * - Distingue fûts produits et fûts cassés (fûts nets = produits - cassés)
- * - La prédiction des produits finis est calculée sur les fûts nets uniquement
+ * - Le nombre de fûts sortis correspond au nombre de fûts produits
+ * - La prédiction des produits finis est calculée sur les fûts sortis uniquement
  * - Surproduction autorisée avec justification et traçabilité
  * - Toutes les opérations rattachées au PPH en cours
  * - Contrôle de cohérence : compare fûts prévus vs fûts produits
@@ -33,6 +33,7 @@ public class SessionDosage {
     private int nbFutsCasses;
     private String justificationEcart;
     private boolean validee;
+    private boolean enPause;
     private final LocalDateTime dateCreation;
     private LocalDateTime dateModification;
     private Long version;
@@ -48,6 +49,7 @@ public class SessionDosage {
         this.nbFutsProduits = 0;
         this.nbFutsCasses = 0;
         this.validee = false;
+        this.enPause = false;
         this.version = 0L;
     }
 
@@ -59,8 +61,10 @@ public class SessionDosage {
                                               String matriculeAgentDoseur,
                                               List<MatierePremiereUtilisee> matieresUtilisees,
                                               List<String> machinesMobilisees,
-                                              int nbFutsProduits, int nbFutsCasses,
+                                              int nbFutsProduits,
+                                              int nbFutsCasses,
                                               String justificationEcart, boolean validee,
+                                              boolean enPause,
                                               LocalDateTime dateCreation,
                                               LocalDateTime dateModification, Long version) {
         SessionDosage s = new SessionDosage(referencePPH, date, matriculeAgentDoseur, dateCreation);
@@ -71,46 +75,70 @@ public class SessionDosage {
         s.nbFutsCasses = nbFutsCasses;
         s.justificationEcart = justificationEcart;
         s.validee = validee;
+        s.enPause = enPause;
         s.dateModification = dateModification;
         s.version = version;
         return s;
     }
 
-    public void enregistrerMatiereUtilisee(String typeMatiere, double quantiteKg) {
+    private void verifierModifiable() {
         if (validee) throw new IllegalStateException("Session validée — modification impossible");
+        if (enPause) throw new IllegalStateException("Session en pause — reprise nécessaire avant modification");
+    }
+
+    public void enregistrerMatiereUtilisee(String typeMatiere, double quantiteKg) {
+        verifierModifiable();
         if (quantiteKg < 0) throw new IllegalArgumentException("La quantité ne peut pas être négative");
         matieresUtilisees.add(new MatierePremiereUtilisee(typeMatiere, quantiteKg));
         this.dateModification = LocalDateTime.now();
     }
 
+    public void definirMatiereUtilisee(String typeMatiere, double quantiteKg) {
+        verifierModifiable();
+        if (quantiteKg < 0) throw new IllegalArgumentException("La quantité ne peut pas être négative");
+        matieresUtilisees.removeIf(m -> m.getTypeMatiere().equalsIgnoreCase(typeMatiere));
+        matieresUtilisees.add(new MatierePremiereUtilisee(typeMatiere, quantiteKg));
+        this.dateModification = LocalDateTime.now();
+    }
+
     public void enregistrerMachine(String machineId) {
-        if (validee) throw new IllegalStateException("Session validée — modification impossible");
+        verifierModifiable();
         if (!machinesMobilisees.contains(machineId)) {
             machinesMobilisees.add(machineId);
             this.dateModification = LocalDateTime.now();
         }
     }
 
-    public void enregistrerFuts(int nbProduits, int nbCasses) {
-        if (validee) throw new IllegalStateException("Session validée — modification impossible");
-        if (nbProduits < 0) throw new IllegalArgumentException("Le nombre de fûts produits ne peut pas être négatif");
-        if (nbCasses < 0) throw new IllegalArgumentException("Le nombre de fûts cassés ne peut pas être négatif");
-        if (nbCasses > nbProduits) {
-            throw new IllegalArgumentException("Les fûts cassés ne peuvent pas dépasser les fûts produits");
-        }
+    public void enregistrerFuts(int nbProduits) {
+        verifierModifiable();
+        if (nbProduits < 0) throw new IllegalArgumentException("Le nombre de fûts ne peut pas être négatif");
         this.nbFutsProduits = nbProduits;
-        this.nbFutsCasses = nbCasses;
         this.dateModification = LocalDateTime.now();
     }
 
     public void justifierEcart(String justification) {
-        if (validee) throw new IllegalStateException("Session validée — modification impossible");
+        verifierModifiable();
         this.justificationEcart = Objects.requireNonNull(justification);
+        this.dateModification = LocalDateTime.now();
+    }
+
+    public void mettreEnPause() {
+        if (validee) throw new IllegalStateException("Session validée — mise en pause impossible");
+        if (enPause) throw new IllegalStateException("Session déjà en pause");
+        this.enPause = true;
+        this.dateModification = LocalDateTime.now();
+    }
+
+    public void reprendre() {
+        if (validee) throw new IllegalStateException("Session validée — reprise impossible");
+        if (!enPause) throw new IllegalStateException("La session n'est pas en pause");
+        this.enPause = false;
         this.dateModification = LocalDateTime.now();
     }
 
     public void valider() {
         if (validee) throw new IllegalStateException("Session déjà validée");
+        if (enPause) throw new IllegalStateException("Session en pause — reprise nécessaire avant validation");
         if (nbFutsProduits == 0 && matieresUtilisees.isEmpty()) {
             throw new IllegalStateException("La session doit contenir au moins des matières ou des fûts");
         }
@@ -123,15 +151,25 @@ public class SessionDosage {
      * Dans le workflow TANTY, clôturer équivaut à valider définitivement la session.
      */
     public void cloturer() {
-        valider();
+        if (!validee) {
+            valider();
+        }
     }
 
     public boolean isCloturee() {
         return validee;
     }
 
+    public boolean isEnPause() {
+        return enPause;
+    }
+
     public int getNbFutsNets() {
-        return nbFutsProduits - nbFutsCasses;
+        return nbFutsProduits;
+    }
+
+    public int getNbFutsCasses() {
+        return nbFutsCasses;
     }
 
     public boolean aEcartAvecPrevision(int nbFutsPrevus) {
@@ -149,7 +187,6 @@ public class SessionDosage {
     public List<MatierePremiereUtilisee> getMatieresUtilisees() { return Collections.unmodifiableList(matieresUtilisees); }
     public List<String> getMachinesMobilisees() { return Collections.unmodifiableList(machinesMobilisees); }
     public int getNbFutsProduits() { return nbFutsProduits; }
-    public int getNbFutsCasses() { return nbFutsCasses; }
     public String getJustificationEcart() { return justificationEcart; }
     public boolean isValidee() { return validee; }
     public LocalDateTime getDateCreation() { return dateCreation; }

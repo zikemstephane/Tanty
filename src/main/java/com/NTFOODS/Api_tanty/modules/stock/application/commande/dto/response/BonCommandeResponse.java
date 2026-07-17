@@ -17,7 +17,8 @@ public record BonCommandeResponse(
     BigDecimal montantTotalHT,
     String matriculeCreateur,
     List<LigneResponse> lignes,
-    LocalDateTime dateCreation
+    LocalDateTime dateCreation,
+    int tauxRealisation
 ) {
     public record LigneResponse(
         String id,
@@ -26,6 +27,8 @@ public record BonCommandeResponse(
         String sku,
         long quantiteCommandee,
         long quantiteRecue,
+        long quantiteProduite,
+        int tauxRealisation,
         BigDecimal prixUnitaireHT
     ) {}
 }

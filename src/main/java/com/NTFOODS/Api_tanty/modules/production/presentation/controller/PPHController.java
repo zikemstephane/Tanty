@@ -98,7 +98,7 @@ public class PPHController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('CHEF_PRODUCTION', 'RESPONSABLE_SALLE', 'CHEF_MACHINISTE', 'DIRECTEUR_GENERAL', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CHEF_PRODUCTION', 'RESPONSABLE_SALLE', 'CHEF_MACHINISTE','AGENT_DOSEUR', 'DIRECTEUR_GENERAL', 'ADMIN')")
     @Operation(summary = "Lister les PPH (filtre optionnel par statut)")
     public ResponseEntity<ApiResponse<List<PPHResponse>>> lister(@RequestParam(required = false) String statut) {
         var pphs = (statut == null || statut.isBlank())
@@ -133,7 +133,7 @@ public class PPHController {
     }
 
     @GetMapping("/en-cours")
-    @PreAuthorize("hasAnyRole('CHEF_PRODUCTION', 'RESPONSABLE_SALLE', 'DIRECTEUR_GENERAL', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CHEF_PRODUCTION', 'RESPONSABLE_SALLE', 'DIRECTEUR_GENERAL', 'AGENT_DOSEUR', 'ADMIN')")
     @Operation(summary = "Obtenir le PPH en cours")
     public ResponseEntity<ApiResponse<PPHResponse>> enCours() {
         return pphRepository.trouverEnCours()
@@ -142,7 +142,7 @@ public class PPHController {
     }
 
     @GetMapping("/{reference}")
-    @PreAuthorize("hasAnyRole('CHEF_PRODUCTION', 'RESPONSABLE_SALLE', 'DIRECTEUR_GENERAL', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('CHEF_PRODUCTION', 'RESPONSABLE_SALLE', 'DIRECTEUR_GENERAL', 'AGENT_DOSEUR', 'ADMIN')")
     @Operation(summary = "Consulter un PPH par référence")
     public ResponseEntity<ApiResponse<PPHResponse>> consulter(@PathVariable String reference) {
         return pphRepository.trouverParReference(reference)

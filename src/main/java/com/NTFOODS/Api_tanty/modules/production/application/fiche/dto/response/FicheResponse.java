@@ -12,10 +12,12 @@ public record FicheResponse(
     String matriculeAgentProduction,
     String justificationEcart,
     boolean verrouillee,
+    int nbFutsProduits,
     Map<String, Integer> predictionDosage,
     Map<String, Integer> predictionPostes,
     List<LigneResponse> lignes
 ) {
     public record LigneResponse(String codeProduit, String nomProduit, double quantiteProduite,
-                                 Integer quantitePrediteDosage, Integer quantitePreditePostes, Integer ecart) {}
+                                 Integer quantitePrediteDosage, Integer quantitePreditePostes, Integer ecart,
+                                 Integer tauxAvancement) {}
 }

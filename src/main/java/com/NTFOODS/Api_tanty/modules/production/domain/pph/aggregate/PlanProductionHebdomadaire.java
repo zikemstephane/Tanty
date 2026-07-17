@@ -198,6 +198,18 @@ public class PlanProductionHebdomadaire {
         this.dateModification = LocalDateTime.now();
     }
 
+    public void ajusterProductionLigne(String codeProduit, int delta) {
+        if (statut != StatutPPH.EN_COURS) {
+            throw new IllegalStateException("La production ne peut être ajustée que pour un PPH EN_COURS");
+        }
+        lignes.stream()
+            .filter(l -> l.getCodeProduit().equals(codeProduit))
+            .findFirst()
+            .orElseThrow(() -> new IllegalArgumentException("Produit " + codeProduit + " non trouvé dans le PPH"))
+            .ajusterProduction(delta);
+        this.dateModification = LocalDateTime.now();
+    }
+
     public int tauxAvancementGlobal() {
         if (lignes.isEmpty()) return 0;
         return (int) lignes.stream().mapToInt(LignePPH::tauxAvancement).average().orElse(0);

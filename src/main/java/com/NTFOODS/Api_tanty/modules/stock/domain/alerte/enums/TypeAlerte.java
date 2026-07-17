@@ -18,7 +18,8 @@ public enum TypeAlerte {
     STOCK_MOBILE_RUPTURE("Commercial en rupture de stock", Role.GESTIONNAIRE_STOCK, "Préparer une dotation urgente", PrioriteAlerte.CRITIQUE),
     ROTATION_LENTE("Rotation lente — stock dormant", Role.GESTIONNAIRE_STOCK, "Analyser les produits à rotation lente", PrioriteAlerte.BASSE),
     ANOMALIE_VENTES("Anomalie dans les ventes", Role.DIRECTEUR_COMMERCIAL, "Consulter l'historique des ventes", PrioriteAlerte.MOYENNE),
-    NOUVELLE_DOTATION("Nouvelle demande de dotation", Role.GESTIONNAIRE_STOCK, "Consulter et approuver/modifier", PrioriteAlerte.MOYENNE);
+    NOUVELLE_DOTATION("Nouvelle demande de dotation", Role.GESTIONNAIRE_STOCK, "Consulter et approuver/modifier", PrioriteAlerte.MOYENNE),
+    EXPRESSION_DE_BESOIN("Expression de besoin production", Role.GESTIONNAIRE_STOCK, "Consulter et traiter le besoin", PrioriteAlerte.HAUTE);
 
     private final String libelle;
     private final Role destinataire;

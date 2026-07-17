@@ -4,9 +4,11 @@ import com.NTFOODS.Api_tanty.modules.auth.domain.utilisateur.aggregate.Utilisate
 import com.NTFOODS.Api_tanty.modules.production.application.fiche.dto.request.ModifierFicheRequest;
 import com.NTFOODS.Api_tanty.modules.production.application.fiche.dto.response.FicheResponse;
 import com.NTFOODS.Api_tanty.modules.production.application.fiche.mapper.FicheMapper;
+import com.NTFOODS.Api_tanty.modules.production.application.lot.service.DeclarationLotDepuisFicheService;
 import com.NTFOODS.Api_tanty.modules.production.domain.fiche.aggregate.FicheProduitJournaliere;
 import com.NTFOODS.Api_tanty.modules.production.domain.fiche.entity.LigneFicheProduit;
 import com.NTFOODS.Api_tanty.modules.production.domain.fiche.repository.FicheProduitRepository;
+import com.NTFOODS.Api_tanty.modules.production.domain.fiche.service.CalculateurPredictionsFiche;
 import com.NTFOODS.Api_tanty.modules.production.domain.fiche.specification.FicheSpecification;
 import com.NTFOODS.Api_tanty.modules.production.domain.pph.aggregate.PlanProductionHebdomadaire;
 import com.NTFOODS.Api_tanty.modules.production.domain.pph.repository.PPHRepository;
@@ -32,12 +34,17 @@ public class ModifierFicheUseCase {
     private final FicheProduitRepository ficheRepository;
     private final PPHRepository pphRepository;
     private final FicheMapper ficheMapper;
+    private final CalculateurPredictionsFiche calculateurPredictions;
+    private final DeclarationLotDepuisFicheService declarationLotService;
 
     public ModifierFicheUseCase(FicheProduitRepository ficheRepository, PPHRepository pphRepository,
-                                 FicheMapper ficheMapper) {
+                                 FicheMapper ficheMapper, CalculateurPredictionsFiche calculateurPredictions,
+                                 DeclarationLotDepuisFicheService declarationLotService) {
         this.ficheRepository = ficheRepository;
         this.pphRepository = pphRepository;
         this.ficheMapper = ficheMapper;
+        this.calculateurPredictions = calculateurPredictions;
+        this.declarationLotService = declarationLotService;
     }
 
     public FicheResponse executer(String referencePPH, LocalDate date, ModifierFicheRequest request,
@@ -55,18 +62,36 @@ public class ModifierFicheUseCase {
                 "Aucune correction n'est plus possible.");
         }
 
+        java.util.Map<String, Integer> anciennesQuantites = new java.util.HashMap<>(fiche.getProduitsRealises());
+
         java.util.List<LigneFicheProduit> nouvellesLignes = request.lignes().stream()
             .map(l -> new LigneFicheProduit(l.codeProduit(), l.nomProduit(), l.quantiteProduite()))
             .toList();
 
         fiche.modifierLignes(nouvellesLignes);
 
-        // NOTE : le cumul du PPH (PlanProductionHebdomadaire.productionRealisee) n'est PAS
-        // recalculé ici. LignePPH.cumulerProduction() refuse les deltas négatifs, ce qui
-        // empêcherait de corriger une quantité à la baisse. Une correction propre nécessite
-        // une méthode dédiée côté PPH (ex: ajusterProduction(codeProduit, delta)) — à ajouter
-        // si des corrections de fiches avant verrouillage s'avèrent fréquentes en pratique.
+        PlanProductionHebdomadaire pph = pphRepository.trouverParReference(referencePPH)
+            .orElseThrow(() -> EntiteNonTrouveeException.de("PPH", referencePPH));
+        var predictions = calculateurPredictions.calculer(fiche, pph);
+        fiche.definirPredictions(predictions.predictionDosage(), predictions.predictionPostes());
 
-        return ficheMapper.versResponse(ficheRepository.sauvegarder(fiche));
+        for (LigneFicheProduit ligne : nouvellesLignes) {
+            try {
+                int nouvelle = (int) Math.round(ligne.getQuantiteProduite());
+                int ancienne = anciennesQuantites.getOrDefault(ligne.getCodeProduit(), 0);
+                int delta = nouvelle - ancienne;
+                if (delta != 0) {
+                    pph.ajusterProductionLigne(ligne.getCodeProduit(), delta);
+                }
+            } catch (IllegalArgumentException | IllegalStateException ignored) {
+                // Produit de la fiche non présent dans le PPH ou PPH non EN_COURS — toléré
+            }
+        }
+        pphRepository.sauvegarder(pph);
+
+        FicheProduitJournaliere saved = ficheRepository.sauvegarder(fiche);
+        declarationLotService.declarerLots(saved, acteur.getMatricule().getValeur());
+
+        return ficheMapper.versResponse(saved);
     }
 }

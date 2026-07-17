@@ -15,8 +15,8 @@ public class SessionDosageMapper {
             .toList();
         return new SessionDosageResponse(s.getId(), s.getReferencePPH(), s.getDate(),
             s.getMatriculeAgentDoseur(), matieres, s.getMachinesMobilisees(),
-            s.getNbFutsProduits(), s.getNbFutsCasses(), s.getNbFutsNets(),
-            s.getJustificationEcart(), s.isValidee(), s.isCloturee(),
+            s.getNbFutsProduits(), s.getNbFutsNets(), s.getNbFutsCasses(),
+            s.getJustificationEcart(), s.isValidee(), s.isCloturee(), s.isEnPause(),
             s.getDateCreation(), s.getDateModification());
     }
 

@@ -5,6 +5,7 @@ import com.NTFOODS.Api_tanty.modules.production.domain.dosage.repository.Session
 import com.NTFOODS.Api_tanty.modules.production.infrastructure.persistence.dosage.jpa.SessionDosageJpaEntity;
 import com.NTFOODS.Api_tanty.modules.production.infrastructure.persistence.dosage.jpa.SessionDosageJpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,36 +21,43 @@ public class SessionDosageRepositoryImpl implements SessionDosageRepository {
     }
 
     @Override
+    @Transactional
     public SessionDosage sauvegarder(SessionDosage session) {
         return toDomain(jpaRepository.save(toEntity(session)));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<SessionDosage> trouverParId(Long id) {
         return jpaRepository.findById(id).map(this::toDomain);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<SessionDosage> trouverParPPHEtDate(String referencePPH, LocalDate date) {
         return jpaRepository.findByReferencePPHAndDate(referencePPH, date).map(this::toDomain);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SessionDosage> listerParPPH(String referencePPH) {
         return jpaRepository.findByReferencePPH(referencePPH).stream().map(this::toDomain).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SessionDosage> listerParDate(LocalDate date) {
         return jpaRepository.findByDate(date).stream().map(this::toDomain).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SessionDosage> listerParPeriode(LocalDate debut, LocalDate fin) {
         return jpaRepository.findByDateBetween(debut, fin).stream().map(this::toDomain).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<SessionDosage> listerTous() {
         return jpaRepository.findAll().stream().map(this::toDomain).toList();
     }
@@ -64,7 +72,7 @@ public class SessionDosageRepositoryImpl implements SessionDosageRepository {
             .matriculeAgentDoseur(s.getMatriculeAgentDoseur())
             .matieresUtilisees(matieres).machinesMobilisees(s.getMachinesMobilisees())
             .nbFutsProduits(s.getNbFutsProduits()).nbFutsCasses(s.getNbFutsCasses())
-            .justificationEcart(s.getJustificationEcart()).validee(s.isValidee())
+            .justificationEcart(s.getJustificationEcart()).validee(s.isValidee()).enPause(s.isEnPause())
             .dateCreation(s.getDateCreation()).dateModification(s.getDateModification())
             .version(s.getVersion()).build();
     }
@@ -75,7 +83,7 @@ public class SessionDosageRepositoryImpl implements SessionDosageRepository {
             .toList();
         SessionDosage s = SessionDosage.reconstituer(e.getId(), e.getReferencePPH(), e.getDate(),
             e.getMatriculeAgentDoseur(), matieres, e.getMachinesMobilisees(),
-            e.getNbFutsProduits(), e.getNbFutsCasses(), e.getJustificationEcart(), e.isValidee(),
+            e.getNbFutsProduits(), e.getNbFutsCasses(), e.getJustificationEcart(), e.isValidee(), e.isEnPause(),
             e.getDateCreation(), e.getDateModification(), e.getVersion());
         return s;
     }

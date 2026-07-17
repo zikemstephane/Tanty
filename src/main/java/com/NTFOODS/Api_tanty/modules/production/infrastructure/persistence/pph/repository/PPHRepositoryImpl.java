@@ -101,19 +101,25 @@ public class PPHRepositoryImpl implements PPHRepository {
     }
 
     private PlanProductionHebdomadaire toDomain(PPHJpaEntity e) {
-        List<LignePPH> lignes = e.getLignes().stream()
+        List<LignePPHJpaEntity> lignesEntities = e.getLignes();
+        if (lignesEntities == null) lignesEntities = List.of();
+        List<LignePPH> lignes = lignesEntities.stream()
             .map(l -> {
                 LignePPH ligne = new LignePPH(l.getCodeProduit(), l.getNomProduit(), l.getObjectifSemaine());
                 if (l.getProductionRealisee() > 0) ligne.cumulerProduction(l.getProductionRealisee());
                 return ligne;
             }).toList();
-        List<LignePlanDetail> details = e.getLignesDetaillees().stream()
+        List<LignePlanDetailJpaEntity> detailsEntities = e.getLignesDetaillees();
+        if (detailsEntities == null) detailsEntities = List.of();
+        List<LignePlanDetail> details = detailsEntities.stream()
             .map(l -> new LignePlanDetail(
                 l.getCodeProduit(), l.getNomProduit(), l.getCategorieMetier(),
                 l.getQuantiteCartons(), l.getNombreUnites(), l.getPoidsUnitaireGrammes(),
                 parseRecette(l.getRecette()), l.getDateJour(), l.getQuantiteJour()
             )).toList();
-        List<RepartitionJournaliere> repartition = e.getRepartitionJours().stream()
+        List<RepartitionJourJpaEntity> repartitionEntities = e.getRepartitionJours();
+        if (repartitionEntities == null) repartitionEntities = List.of();
+        List<RepartitionJournaliere> repartition = repartitionEntities.stream()
             .map(r -> new RepartitionJournaliere(
                 r.getDateJour(), List.of(),
                 r.getPoudreMaisKg(), r.getPoudreSojaKg(), r.getPoudreArachideKg(),

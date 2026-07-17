@@ -10,7 +10,6 @@ public record StatistiquesFutsResponse(
     LocalDate fin,
     String periodeLibelle,
     int nbFutsProduits,
-    int nbFutsCasses,
     int nbFutsNets,
     double poudreMaisKg,
     double poudreSojaKg,

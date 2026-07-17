@@ -4,9 +4,11 @@ import com.NTFOODS.Api_tanty.modules.auth.domain.utilisateur.aggregate.Utilisate
 import com.NTFOODS.Api_tanty.modules.production.application.fiche.dto.request.EnregistrerFicheRequest;
 import com.NTFOODS.Api_tanty.modules.production.application.fiche.dto.response.FicheResponse;
 import com.NTFOODS.Api_tanty.modules.production.application.fiche.mapper.FicheMapper;
+import com.NTFOODS.Api_tanty.modules.production.application.lot.service.DeclarationLotDepuisFicheService;
 import com.NTFOODS.Api_tanty.modules.production.domain.fiche.aggregate.FicheProduitJournaliere;
 import com.NTFOODS.Api_tanty.modules.production.domain.fiche.entity.LigneFicheProduit;
 import com.NTFOODS.Api_tanty.modules.production.domain.fiche.repository.FicheProduitRepository;
+import com.NTFOODS.Api_tanty.modules.production.domain.fiche.service.CalculateurPredictionsFiche;
 import com.NTFOODS.Api_tanty.modules.production.domain.fiche.specification.FicheSpecification;
 import com.NTFOODS.Api_tanty.modules.production.domain.pph.aggregate.PlanProductionHebdomadaire;
 import com.NTFOODS.Api_tanty.modules.production.domain.pph.repository.PPHRepository;
@@ -30,13 +32,19 @@ public class EnregistrerFicheUseCase {
     private final PPHRepository pphRepository;
     private final FicheMapper ficheMapper;
     private final EventPublisher eventPublisher;
+    private final CalculateurPredictionsFiche calculateurPredictions;
+    private final DeclarationLotDepuisFicheService declarationLotService;
 
     public EnregistrerFicheUseCase(FicheProduitRepository ficheRepository, PPHRepository pphRepository,
-                                   FicheMapper ficheMapper, EventPublisher eventPublisher) {
+                                   FicheMapper ficheMapper, EventPublisher eventPublisher,
+                                   CalculateurPredictionsFiche calculateurPredictions,
+                                   DeclarationLotDepuisFicheService declarationLotService) {
         this.ficheRepository = ficheRepository;
         this.pphRepository = pphRepository;
         this.ficheMapper = ficheMapper;
         this.eventPublisher = eventPublisher;
+        this.calculateurPredictions = calculateurPredictions;
+        this.declarationLotService = declarationLotService;
     }
 
     public FicheResponse executer(EnregistrerFicheRequest req, Utilisateur acteur) {
@@ -58,6 +66,9 @@ public class EnregistrerFicheUseCase {
             req.referencePPH(), req.semaine(), req.date(), req.matriculeAgentProduction(), lignes,
             req.predictionDosage(), req.predictionPostes());
 
+        var predictions = calculateurPredictions.calculer(fiche, pph);
+        fiche.definirPredictions(predictions.predictionDosage(), predictions.predictionPostes());
+
         for (LigneFicheProduit ligne : lignes) {
             try {
                 pph.cumulerProductionLigne(ligne.getCodeProduit(), (int) Math.round(ligne.getQuantiteProduite()));
@@ -68,8 +79,11 @@ public class EnregistrerFicheUseCase {
         pphRepository.sauvegarder(pph);
 
         FicheProduitJournaliere saved = ficheRepository.sauvegarder(fiche);
-        fiche.getDomainEvents().forEach(eventPublisher::publish);
-        fiche.clearDomainEvents();
+        saved.getDomainEvents().forEach(eventPublisher::publish);
+        saved.clearDomainEvents();
+
+        declarationLotService.declarerLots(saved, acteur.getMatricule().getValeur());
+
         return ficheMapper.versResponse(saved);
     }
 }
