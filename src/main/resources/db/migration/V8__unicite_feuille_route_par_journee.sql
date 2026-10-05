@@ -1,0 +1,31 @@
+-- ═══════════════════════════════════════════════════════════════════════════
+-- V8 — Une seule feuille de route par commercial et par journée
+-- ═══════════════════════════════════════════════════════════════════════════
+--
+-- Le passage du commercial chez un client — visa ou non-visa — est désormais
+-- rejouable après une saisie hors ligne. Le terminal ne peut pas désigner la
+-- tournée par le numéro que le serveur lui attribue : hors ligne, ce numéro
+-- n'existe pas encore. Il la désigne donc par ce qu'il sait déjà, et qui ne
+-- dépend d'aucun aller-retour : le matricule du commercial et la date du jour.
+--
+-- Cette clé naturelle n'a de sens que si elle désigne une seule tournée. Rien ne
+-- l'imposait jusqu'ici : `listerParCommercialEtDate` renvoie une liste, et deux
+-- feuilles de route pour un même commercial le même jour auraient rendu le
+-- rattachement arbitraire — un client visé dans l'une des deux, au hasard de
+-- l'ordre de lecture. C'est exactement le défaut qui avait réparti le stock d'un
+-- commercial sur deux entrepôts mobiles (cf. V6) ; l'index le ferme d'avance
+-- plutôt qu'après coup.
+--
+-- Vérifié avant écriture : `feuills_route` ne contient aucune ligne, et donc
+-- aucun doublon à traiter. La table a été vidée par V6, l'historique commercial
+-- qu'elle portait étant fictif.
+--
+-- Le use case conserve malgré tout sa garde sur le cas ambigu : elle documente
+-- ce sur quoi la clé naturelle repose, et couvre une base restaurée d'avant
+-- cette migration.
+--
+-- Idempotence : IF NOT EXISTS.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_feuille_route_par_commercial_et_journee
+    ON feuills_route (matricule_commercial, date);

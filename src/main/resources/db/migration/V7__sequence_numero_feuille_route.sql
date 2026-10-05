@@ -1,0 +1,21 @@
+-- ═══════════════════════════════════════════════════════════════════════════
+-- V7 — Séquence de numérotation des feuilles de route
+-- ═══════════════════════════════════════════════════════════════════════════
+--
+-- La planification d'une tournée numérotait avec un `AtomicLong` statique porté
+-- par le contrôleur. Ce compteur repartait de zéro à chaque démarrage du serveur :
+-- deux feuilles de route créées le même jour de part et d'autre d'un redémarrage
+-- recevaient le même numéro. Avec plusieurs instances, la collision devenait
+-- immédiate.
+--
+-- La séquence PostgreSQL n'a pas ce défaut : `nextval` est atomique, ne recule
+-- jamais — pas même après un rollback — et reste correcte quel que soit le nombre
+-- d'instances. C'est le mécanisme déjà employé pour les ventes, les précommandes,
+-- les constats d'invendus et les mouvements de stock.
+--
+-- Aucune entité JPA ne déclare cette séquence : Hibernate ne la créerait pas.
+--
+-- Idempotence : IF NOT EXISTS.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+CREATE SEQUENCE IF NOT EXISTS seq_numero_feuille_route START WITH 1 INCREMENT BY 1;
