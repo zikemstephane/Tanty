@@ -1,0 +1,404 @@
+<!-- ═══ BANDEAU ═══ -->
+<header class="db-hero">
+  <div class="db-hero-gauche">
+    <div class="db-hero-ico"><i class="fa-solid fa-industry"></i></div>
+    <div>
+      <div class="db-hero-kicker">Production · {{ aujourdhui | date:'EEEE dd MMMM yyyy' }}</div>
+      <h1 class="db-hero-titre">Tableau de bord</h1>
+      <p class="db-hero-sous">
+        @if (periodeSemaine(); as p) { Semaine du {{ p.debut | date:'dd/MM' }} au {{ p.fin | date:'dd/MM/yyyy' }} }
+        @if (semaineAffichee()) { · plan {{ semaineAffichee() }} }
+        @if (derniereMaj(); as d) { · mis à jour à {{ d | date:'HH:mm' }} }
+      </p>
+    </div>
+  </div>
+  <div class="db-actions">
+    <a routerLink="/production/saisie" class="db-bouton db-bouton-verre"><i class="fa-solid fa-pen-to-square"></i> Registres</a>
+    <a routerLink="/production/lots" class="db-bouton db-bouton-verre"><i class="fa-solid fa-box"></i> Lots</a>
+    <a routerLink="/production/besoins" class="db-bouton db-bouton-verre"><i class="fa-solid fa-triangle-exclamation"></i> Besoins</a>
+    <a routerLink="/production/rapports" class="db-bouton db-bouton-verre"><i class="fa-solid fa-file-lines"></i> Rapports</a>
+    <button class="db-bouton db-bouton-blanc" (click)="showCreerOF.set(true)"><i class="fa-solid fa-plus"></i> Nouvel OF</button>
+  </div>
+</header>
+
+@if (erreur()) {
+  <div class="db-alerte" role="alert">
+    <i class="fa-solid fa-triangle-exclamation"></i><span>{{ erreur() }}</span>
+    <button class="db-bouton db-bouton-petit db-bouton-rouge" (click)="chargerDonnees()">Réessayer</button>
+  </div>
+}
+
+@if (loading() && !dashboard()) {
+  <div class="db-squelette"></div>
+  <div class="db-squelette db-squelette-court"></div>
+} @else {
+
+<!-- ═══ INDICATEURS DE LA SEMAINE ═══ -->
+<section class="db-kpis">
+  <div class="db-kpi db-kpi-principal">
+    <span class="db-kpi-lbl">Production validée (semaine)</span>
+    <span class="db-kpi-val">{{ dashboard()?.quantiteKgSemaine ?? 0 | number:'1.0-1' }}<small> kg</small></span>
+    <span class="db-kpi-meta">{{ dashboard()?.unitesSemaine ?? 0 }} unité(s) · lots validés par le stock cette semaine (date de validation)</span>
+  </div>
+  <div class="db-kpi" [class.db-kpi-alerte]="nbLotsDeclares() > 0">
+    <span class="db-kpi-lbl">Lots en attente</span>
+    <span class="db-kpi-val">{{ nbLotsDeclares() }}</span>
+    <span class="db-kpi-meta">{{ nbLotsValides() }} validé(s) · {{ nbLotsRejetes() }} rejeté(s)</span>
+  </div>
+  <div class="db-kpi">
+    <span class="db-kpi-lbl">Fiches enregistrées (semaine)</span>
+    <span class="db-kpi-val">{{ fichesSemaine() }}</span>
+    <span class="db-kpi-meta">fiches de production journalières</span>
+  </div>
+  <div class="db-kpi">
+    <span class="db-kpi-lbl">Ordres de fabrication</span>
+    <span class="db-kpi-val">{{ ofEnCours() }}<small> en cours</small></span>
+    <span class="db-kpi-meta">{{ ofPlanifies() }} planifié(s) · {{ ofHonores() }} honoré(s)</span>
+  </div>
+  <div class="db-kpi">
+    <span class="db-kpi-lbl">Avancement du plan</span>
+    <span class="db-kpi-val">{{ tauxAvancementPPH() }} %</span>
+    <div class="db-barre"><div class="db-barre-fill" [class.db-fill-ok]="tauxAvancementPPH() >= 100" [style.width.%]="tauxAvancementPPH()"></div></div>
+    <span class="db-kpi-meta">{{ pphEnCoursReference() ?? 'aucun plan en cours' }}</span>
+  </div>
+  <div class="db-kpi">
+    <span class="db-kpi-lbl">Taux de charge des OF</span>
+    <span class="db-kpi-val">{{ tauxCharge() }} %</span>
+    <div class="db-barre"><div class="db-barre-fill" [class.db-fill-ok]="tauxCharge() >= 100" [style.width.%]="tauxCharge()"></div></div>
+    <span class="db-kpi-meta">produit sur demandé, OF non annulés</span>
+  </div>
+</section>
+
+<!-- ═══ PLAN EN COURS ET LOTS RÉCENTS ═══ -->
+<div class="db-deux">
+  <section class="db-carte">
+    <header class="db-carte-tete">
+      <h2><i class="fa-solid fa-calendar-week"></i> Plan en cours</h2>
+      <a routerLink="/production/plan" class="db-lien">Voir le plan <i class="fa-solid fa-arrow-right"></i></a>
+    </header>
+    @if (pphEnCours(); as p) {
+      <p class="db-note"><span class="db-code mono">{{ p.referencePPH }}</span> · {{ p.semaine }} · {{ p.dateDebut | date:'dd/MM' }} au {{ p.dateFin | date:'dd/MM' }}</p>
+      <ul class="db-liste">
+        @for (ligne of p.lignes; track ligne.codeProduit) {
+          <li>
+            <div class="db-liste-tete">
+              <span class="db-nom">{{ ligne.nomProduit }} <span class="db-muet mono">{{ ligne.codeProduit }}</span></span>
+              <span class="mono db-pct" [ngClass]="'db-teinte-' + teinte(progression(ligne.productionRealisee, ligne.objectifSemaine))">
+                {{ ligne.productionRealisee }} / {{ ligne.objectifSemaine }}
+              </span>
+            </div>
+            <div class="db-barre"><div class="db-barre-fill" [class.db-fill-ok]="progression(ligne.productionRealisee, ligne.objectifSemaine) >= 100"
+                 [style.width.%]="progression(ligne.productionRealisee, ligne.objectifSemaine)"></div></div>
+          </li>
+        } @empty {
+          <li class="db-vide-court">Aucune ligne de production planifiée.</li>
+        }
+      </ul>
+    } @else {
+      <div class="db-vide">
+        <i class="fa-solid fa-calendar-xmark"></i>
+        <h3>Aucun plan en cours</h3>
+        <p>Un plan passe en cours lorsqu'il est démarré depuis la page des plans.</p>
+      </div>
+    }
+  </section>
+
+  <section class="db-carte">
+    <header class="db-carte-tete">
+      <h2><i class="fa-solid fa-boxes-packing"></i> Derniers lots</h2>
+      <a routerLink="/production/lots" class="db-lien">Tous les lots <i class="fa-solid fa-arrow-right"></i></a>
+    </header>
+    @if (lotsRecents().length) {
+      <ul class="db-lots">
+        @for (l of lotsRecents(); track l.id) {
+          <li>
+            <div class="db-lot-infos">
+              <span class="db-code mono">{{ l.id }}</span>
+              <span class="db-nom">{{ l.designationProduit }}</span>
+              <span class="db-muet">{{ l.dateProduction | date:'dd/MM/yyyy' }} · {{ l.declaredQuantityKg }} kg</span>
+            </div>
+            <span class="db-statut" [class]="'db-statut ' + classeStatutLot(l.statut)">{{ libelleStatutLot(l.statut) }}</span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <div class="db-vide">
+        <i class="fa-solid fa-box-open"></i>
+        <h3>Aucun lot déclaré</h3>
+        <p>Les lots déclarés par la production apparaîtront ici.</p>
+      </div>
+    }
+  </section>
+</div>
+
+<!-- ═══ ORDRES DE FABRICATION ═══ -->
+<section class="db-carte">
+  <header class="db-carte-tete">
+    <h2><i class="fa-solid fa-clipboard-list"></i> Ordres de fabrication</h2>
+    <div class="db-pastilles">
+      <span class="db-pastille db-pastille-attente">{{ ofEnCours() }} en cours</span>
+      <span class="db-pastille db-pastille-neutre">{{ ofPlanifies() }} planifié(s)</span>
+      <span class="db-pastille db-pastille-ok">{{ ofHonores() }} honoré(s)</span>
+    </div>
+  </header>
+  <div class="tbl-wrap">
+    <table class="db-table">
+      <thead>
+        <tr>
+          <th>OF</th><th>PPH</th><th>Produit</th><th class="num">Demandé</th><th class="num">Réalisé</th>
+          <th>Avancement</th><th>Échéance</th><th>Statut</th><th class="db-col-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (o of ordres(); track o.idOF) {
+          <tr>
+            <td><span class="db-code mono">{{ o.idOF }}</span></td>
+            <td class="mono db-muet">{{ o.referencePPH }}</td>
+            <td>
+              <div class="db-produit"><span class="db-nom">{{ o.designationProduit }}</span><span class="db-muet mono">{{ o.codeProduit }}</span></div>
+            </td>
+            <td class="num mono">{{ o.qteDemandee }}</td>
+            <td class="num mono">{{ o.qteRealisee }}</td>
+            <td>
+              <div class="db-progres">
+                <div class="db-barre"><div class="db-barre-fill" [class.db-fill-ok]="progression(o.qteRealisee, o.qteDemandee) >= 100"
+                     [style.width.%]="progression(o.qteRealisee, o.qteDemandee)"></div></div>
+                <span class="mono db-pct-court">{{ progression(o.qteRealisee, o.qteDemandee) }} %</span>
+              </div>
+            </td>
+            <td class="mono">{{ o.dateButoir ? (o.dateButoir | date:'dd/MM/yyyy') : '—' }}</td>
+            <td><span class="db-statut" [class]="'db-statut ' + classeStatutOF(o.statut)">{{ libelleStatutOF(o.statut) }}</span></td>
+            <td class="db-col-actions">
+              <div class="db-actions-ligne">
+                <button class="db-bouton db-bouton-petit db-bouton-contour" (click)="voirDetailOF(o.idOF)">Détail</button>
+                @if (o.statut === 'PLANIFIE') {
+                  <button class="db-bouton db-bouton-petit db-bouton-primaire" (click)="demarrerOF(o.idOF)">Démarrer</button>
+                }
+                @if (o.statut === 'EN_COURS') {
+                  <button class="db-bouton db-bouton-petit db-bouton-primaire" (click)="ouvrirProduire(o.idOF)">Produire</button>
+                }
+                @if (o.statut !== 'HONORE' && o.statut !== 'ANNULE') {
+                  <button class="db-bouton db-bouton-petit db-bouton-contour-rouge" (click)="annulerOF(o.idOF)">Annuler</button>
+                }
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="9">
+            <div class="db-vide"><i class="fa-solid fa-inbox"></i><h3>Aucun ordre de fabrication</h3><p>Créez un OF à partir d'un plan de production.</p></div>
+          </td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ STATISTIQUES ═══ -->
+<section class="db-stats-entete">
+  <h2><i class="fa-solid fa-chart-line"></i> Tendances sur 4 semaines</h2>
+  <span class="db-note">calculées à partir des rapports hebdomadaires</span>
+</section>
+
+@if (erreurStats()) {
+  <div class="db-alerte" role="alert"><i class="fa-solid fa-triangle-exclamation"></i><span>{{ erreurStats() }}</span>
+    <button class="db-bouton db-bouton-petit db-bouton-rouge" (click)="chargerDonnees()">Réessayer</button>
+  </div>
+}
+
+@if (chargementStats()) {
+  <div class="db-squelette db-squelette-court"></div>
+} @else {
+
+  @if (comparaisonSemaineNvsN1(); as comp) {
+    <section class="db-kpis db-kpis-3">
+      <div class="db-kpi">
+        <span class="db-kpi-lbl">Production — semaine en cours</span>
+        <span class="db-kpi-val">{{ comp.actuelle | number:'1.0-1' }}<small> kg</small></span>
+        <span class="db-kpi-meta">semaine précédente : {{ comp.precedente | number:'1.0-1' }} kg</span>
+      </div>
+      <div class="db-kpi" [class.db-kpi-hausse]="(comp.variation ?? 0) >= 0" [class.db-kpi-baisse]="(comp.variation ?? 0) < 0">
+        <span class="db-kpi-lbl">Variation semaine / semaine précédente</span>
+        <span class="db-kpi-val">
+          @if (comp.variation === null) { n.d. } @else { {{ comp.variation > 0 ? '+' : '' }}{{ comp.variation }} % }
+        </span>
+        <span class="db-kpi-meta">{{ comp.variation === null ? 'pas de production la semaine précédente' : 'comparaison automatique' }}</span>
+      </div>
+      <div class="db-kpi">
+        <span class="db-kpi-lbl">Fûts nets (semaine)</span>
+        <span class="db-kpi-val">{{ rapportSemaineCourante()?.totalFutsNets ?? 0 }}</span>
+        <span class="db-kpi-meta">{{ pphs().length }} plan(s) au total</span>
+      </div>
+    </section>
+  }
+
+  <div class="db-deux">
+    <section class="db-carte">
+      <header class="db-carte-tete"><h2><i class="fa-solid fa-chart-line"></i> Production validée (kg)</h2></header>
+      <app-mini-chart type="line" [labels]="labelsEvolution()" [series]="serieEvolutionProductionKg()" [height]="220" />
+    </section>
+    <section class="db-carte">
+      <header class="db-carte-tete"><h2><i class="fa-solid fa-triangle-exclamation"></i> Taux de pertes (%)</h2></header>
+      <app-mini-chart type="line" [labels]="labelsEvolution()" [series]="serieEvolutionPertes()" [height]="220" />
+    </section>
+  </div>
+
+  <div class="db-deux">
+    <section class="db-carte">
+      <header class="db-carte-tete"><h2><i class="fa-solid fa-bottle-droplet"></i> Fûts sortis et nets</h2></header>
+      <app-mini-chart type="bar" [labels]="labelsEvolution()" [series]="serieFuts()" [height]="220" />
+    </section>
+    <section class="db-carte">
+      <header class="db-carte-tete"><h2><i class="fa-solid fa-percent"></i> Avancement par bon de commande</h2><span class="db-note">semaine en cours</span></header>
+      @if (labelsAvancementBC().length) {
+        <app-mini-chart type="bar" [labels]="labelsAvancementBC()" [series]="serieAvancementBC()" [height]="220" />
+      } @else { <p class="db-vide-court">Aucun bon de commande actif cette semaine.</p> }
+    </section>
+  </div>
+
+  <div class="db-deux">
+    <section class="db-carte">
+      <header class="db-carte-tete"><h2><i class="fa-solid fa-chart-pie"></i> Production par référence</h2><span class="db-note">unités, semaine en cours</span></header>
+      @if (donutProduits().length) {
+        <app-donut-chart title="" unit="unités" [data]="donutProduits()" />
+      } @else { <p class="db-vide-court">Aucune fiche de production cette semaine.</p> }
+    </section>
+    <section class="db-carte">
+      <header class="db-carte-tete"><h2><i class="fa-solid fa-chart-pie"></i> Pertes par type de poudre</h2><span class="db-note">kg, semaine en cours</span></header>
+      @if (donutPertes().length) {
+        <app-donut-chart title="" unit="kg" [data]="donutPertes()" />
+      } @else { <p class="db-vide-court">Aucune perte enregistrée cette semaine.</p> }
+    </section>
+  </div>
+
+  <div class="db-deux">
+    <section class="db-carte">
+      <header class="db-carte-tete"><h2><i class="fa-solid fa-ranking-star"></i> Postes (semaine)</h2></header>
+      <div class="tbl-wrap">
+        <table class="db-table">
+          <thead><tr><th>Rang</th><th>Employé</th><th class="num">Quantité</th><th class="num">Taux</th></tr></thead>
+          <tbody>
+            @for (c of classementExecuteurs(); track c.matriculeEmploye) {
+              <tr>
+                <td class="mono">#{{ c.rang }}</td>
+                <td class="db-nom">{{ c.nomEmploye }}</td>
+                <td class="num mono">{{ c.quantiteTotaleRealisee | number:'1.0-1' }} {{ c.unite }}</td>
+                <td class="num"><span class="db-pastille" [class.db-pastille-ok]="c.tauxRealisationMoyen >= 80" [class.db-pastille-erreur]="c.tauxRealisationMoyen < 80">{{ c.tauxRealisationMoyen | number:'1.1-1' }} %</span></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="4"><p class="db-vide-court">Aucune affectation classée cette semaine.</p></td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="db-carte">
+      <header class="db-carte-tete"><h2><i class="fa-solid fa-ranking-star"></i> Machinistes (semaine)</h2></header>
+      <div class="tbl-wrap">
+        <table class="db-table">
+          <thead><tr><th>Rang</th><th>Machiniste</th><th class="num">Productivité</th><th class="num">Efficacité</th></tr></thead>
+          <tbody>
+            @for (c of (classementMachinistes()?.classements ?? []); track c.machinisteMatricule) {
+              <tr>
+                <td class="mono">#{{ c.rang }}</td>
+                <td class="db-nom">{{ c.nomMachiniste }}</td>
+                <td class="num mono">{{ c.productiviteKg | number:'1.1-1' }} kg</td>
+                <td class="num"><span class="db-pastille" [class.db-pastille-ok]="c.efficacite >= 80" [class.db-pastille-erreur]="c.efficacite < 80">{{ c.efficacite | number:'1.1-1' }} %</span></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="4"><p class="db-vide-court">Aucun broyage classé cette semaine.</p></td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+}
+
+}
+
+<!-- ═══ FENÊTRE : NOUVEL OF ═══ -->
+@if (showCreerOF()) {
+<div class="db-voile" (click)="showCreerOF.set(false)">
+  <div class="db-fenetre" role="dialog" aria-modal="true" aria-label="Nouvel ordre de fabrication" (click)="$event.stopPropagation()">
+    <header class="db-fenetre-tete">
+      <div>
+        <div class="db-hero-kicker">Production</div>
+        <h2 class="db-fenetre-titre">Nouvel ordre de fabrication</h2>
+      </div>
+      <button class="db-icone" aria-label="Fermer" (click)="showCreerOF.set(false)"><i class="fa-solid fa-xmark"></i></button>
+    </header>
+    <div class="db-fenetre-corps">
+      <div class="db-grille">
+        <label class="db-champ"><span class="db-etiquette">N° OF</span><input class="db-input" [(ngModel)]="nouveauOF.idOF" name="ofId" placeholder="OF-2026-001"></label>
+        <label class="db-champ">
+          <span class="db-etiquette">PPH</span>
+          <select class="db-input" [(ngModel)]="nouveauOF.referencePPH" name="ofPph">
+            <option value="">— Choisir —</option>
+            @for (p of pphs(); track p.id) { <option [value]="p.referencePPH">{{ p.referencePPH }} ({{ p.referenceBC ?? '—' }})</option> }
+          </select>
+        </label>
+        <label class="db-champ"><span class="db-etiquette">Code produit</span><input class="db-input" [(ngModel)]="nouveauOF.codeProduit" name="ofCode"></label>
+        <label class="db-champ"><span class="db-etiquette">Désignation</span><input class="db-input" [(ngModel)]="nouveauOF.designationProduit" name="ofDesig"></label>
+        <label class="db-champ"><span class="db-etiquette">Quantité demandée</span><input type="number" class="db-input db-droite" min="1" [(ngModel)]="nouveauOF.qteDemandee" name="ofQte"></label>
+        <label class="db-champ"><span class="db-etiquette">Date butoir</span><input type="date" class="db-input" [(ngModel)]="nouveauOF.dateButoir" name="ofButoir"></label>
+      </div>
+    </div>
+    <footer class="db-fenetre-pied">
+      <button class="db-bouton db-bouton-contour" (click)="showCreerOF.set(false)">Annuler</button>
+      <button class="db-bouton db-bouton-primaire" (click)="creerOF()">Créer l'OF</button>
+    </footer>
+  </div>
+</div>
+}
+
+<!-- ═══ FENÊTRE : DÉTAIL D'UN OF ═══ -->
+@if (ofDetail(); as o) {
+<div class="db-voile" (click)="ofDetail.set(null)">
+  <div class="db-fenetre db-fenetre-etroite" role="dialog" aria-modal="true" aria-label="Détail de l'OF" (click)="$event.stopPropagation()">
+    <header class="db-fenetre-tete">
+      <div>
+        <div class="db-hero-kicker">Ordre de fabrication</div>
+        <h2 class="db-fenetre-titre mono">{{ o.idOF }}</h2>
+      </div>
+      <button class="db-icone" aria-label="Fermer" (click)="ofDetail.set(null)"><i class="fa-solid fa-xmark"></i></button>
+    </header>
+    <div class="db-fenetre-corps">
+      <dl class="db-fiches">
+        <div><dt>PPH</dt><dd class="mono">{{ o.referencePPH }}</dd></div>
+        <div><dt>Produit</dt><dd>{{ o.designationProduit }} <span class="db-muet mono">({{ o.codeProduit }})</span></dd></div>
+        <div><dt>Demandé</dt><dd class="mono">{{ o.qteDemandee }}</dd></div>
+        <div><dt>Réalisé</dt><dd class="mono">{{ o.qteRealisee }}</dd></div>
+        <div><dt>Date butoir</dt><dd>{{ o.dateButoir ? (o.dateButoir | date:'dd/MM/yyyy') : '—' }}</dd></div>
+        <div><dt>Statut</dt><dd><span class="db-statut" [class]="'db-statut ' + classeStatutOF(o.statut)">{{ libelleStatutOF(o.statut) }}</span></dd></div>
+      </dl>
+    </div>
+    <footer class="db-fenetre-pied">
+      <button class="db-bouton db-bouton-primaire" (click)="ofDetail.set(null)">Fermer</button>
+    </footer>
+  </div>
+</div>
+}
+
+<!-- ═══ FENÊTRE : PRODUIRE SUR UN OF ═══ -->
+@if (showProduireOF(); as idOF) {
+<div class="db-voile" (click)="showProduireOF.set(null)">
+  <div class="db-fenetre db-fenetre-etroite" role="dialog" aria-modal="true" aria-label="Enregistrer la production" (click)="$event.stopPropagation()">
+    <header class="db-fenetre-tete">
+      <div>
+        <div class="db-hero-kicker">Ordre de fabrication {{ idOF }}</div>
+        <h2 class="db-fenetre-titre">Enregistrer la production</h2>
+      </div>
+      <button class="db-icone" aria-label="Fermer" (click)="showProduireOF.set(null)"><i class="fa-solid fa-xmark"></i></button>
+    </header>
+    <div class="db-fenetre-corps">
+      <label class="db-champ"><span class="db-etiquette">Quantité produite</span>
+        <input type="number" class="db-input db-droite" min="1" [(ngModel)]="quantiteProduire" name="produit">
+      </label>
+    </div>
+    <footer class="db-fenetre-pied">
+      <button class="db-bouton db-bouton-contour" (click)="showProduireOF.set(null)">Annuler</button>
+      <button class="db-bouton db-bouton-primaire" (click)="produireOF(idOF)" [disabled]="quantiteProduire <= 0">Enregistrer</button>
+    </footer>
+  </div>
+</div>
+}

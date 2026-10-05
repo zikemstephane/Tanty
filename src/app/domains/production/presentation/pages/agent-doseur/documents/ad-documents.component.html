@@ -1,0 +1,114 @@
+<header class="dc-hero">
+  <div class="dc-hero-gauche">
+    <i class="fa-solid fa-download dc-hero-ico"></i>
+    <div>
+      <div class="dc-hero-kicker">Agent doseur</div>
+      <h1 class="dc-hero-titre">Documents de dosage</h1>
+      <p class="dc-hero-sous">Registres et pack documents d'une session, et export CSV de la période.</p>
+    </div>
+  </div>
+  <button class="dc-bouton" (click)="charger()" [disabled]="chargement()">
+    <i class="fa-solid fa-rotate" [class.dc-tourne]="chargement()"></i> Actualiser
+  </button>
+</header>
+
+@if (sessionExpiree()) {
+  <div class="dc-alerte dc-alerte-erreur">
+    <i class="fa-solid fa-lock"></i>
+    <span>{{ erreur() }}</span>
+    <a routerLink="/auth/login" class="dc-lien">Se reconnecter</a>
+  </div>
+} @else if (erreur()) {
+  <div class="dc-alerte dc-alerte-erreur"><i class="fa-solid fa-circle-exclamation"></i><span>{{ erreur() }}</span></div>
+}
+@if (erreurAction()) {
+  <div class="dc-alerte dc-alerte-erreur"><i class="fa-solid fa-circle-exclamation"></i><span>{{ erreurAction() }}</span></div>
+}
+@if (messageAction()) {
+  <div class="dc-alerte dc-alerte-succes"><i class="fa-solid fa-circle-check"></i><span>{{ messageAction() }}</span></div>
+}
+
+<section class="dc-carte">
+  <div class="dc-carte-entete">
+    <h2 class="dc-carte-titre"><i class="fa-solid fa-book"></i> Registre et documents d'une session</h2>
+    <div class="dc-presets">
+      <button class="dc-preset" [class.dc-preset-actif]="presetChoisi() === 'JOUR'" (click)="choisirPreset('JOUR')">Aujourd'hui</button>
+      <button class="dc-preset" [class.dc-preset-actif]="presetChoisi() === 'SEMAINE'" (click)="choisirPreset('SEMAINE')">7 jours</button>
+    </div>
+  </div>
+
+  <div class="dc-periode">
+    <label class="dc-champ">
+      <span class="dc-champ-lbl">Du</span>
+      <input type="date" class="dc-input" [ngModel]="debut()" (ngModelChange)="debut.set($event); presetChoisi.set('')">
+    </label>
+    <label class="dc-champ">
+      <span class="dc-champ-lbl">Au</span>
+      <input type="date" class="dc-input" [ngModel]="fin()" (ngModelChange)="fin.set($event); presetChoisi.set('')">
+    </label>
+    <button class="dc-bouton dc-bouton-primaire" (click)="charger()" [disabled]="chargement()">
+      <i class="fa-solid fa-magnifying-glass"></i> Afficher les sessions
+    </button>
+  </div>
+
+  @if (chargement()) {
+    <div class="dc-squelette"></div>
+  } @else if (sessionsTriees().length === 0) {
+    <p class="dc-vide"><i class="fa-solid fa-inbox"></i> Aucune session de dosage sur cette période.</p>
+  } @else {
+    <div class="dc-champ dc-champ-large">
+      <span class="dc-champ-lbl">Session</span>
+      <select class="dc-input" [ngModel]="sessionId()" (ngModelChange)="selectionner($event)">
+        @for (s of sessionsTriees(); track s.id) {
+          <option [ngValue]="s.id">{{ s.date | date:'dd/MM/yyyy' }} · {{ s.referencePPH }} · {{ libelleStatut(s) }} · {{ s.nbFutsProduits }} fûts</option>
+        }
+      </select>
+    </div>
+
+    @if (selection(); as s) {
+      <div class="dc-session">
+        <div class="dc-session-infos">
+          <div><span class="dc-info-lbl">PPH</span><span class="dc-code">{{ s.referencePPH }}</span></div>
+          <div><span class="dc-info-lbl">Agent</span><strong>{{ s.matriculeAgentDoseur }}</strong></div>
+          <div><span class="dc-info-lbl">Fûts produits</span><strong>{{ s.nbFutsProduits }}</strong></div>
+          <div><span class="dc-info-lbl">Fûts cassés</span><strong>{{ s.nbFutsCasses }}</strong></div>
+          <div><span class="dc-info-lbl">Matières</span><strong>{{ sommeMatieres(s) | number:'1.1-1' }} kg</strong></div>
+          <div><span class="dc-info-lbl">Statut</span><strong>{{ libelleStatut(s) }}</strong></div>
+        </div>
+
+        <div class="dc-actions">
+          <button class="dc-action" [disabled]="action() !== ''" (click)="telecharger('pdf')">
+            @if (action() === 'registre-pdf') { <i class="fa-solid fa-spinner dc-tourne"></i> } @else { <i class="fa-solid fa-file-pdf"></i> }
+            <span>Registre PDF</span>
+          </button>
+          <button class="dc-action" [disabled]="action() !== ''" (click)="telecharger('excel')">
+            @if (action() === 'registre-excel') { <i class="fa-solid fa-spinner dc-tourne"></i> } @else { <i class="fa-solid fa-file-excel"></i> }
+            <span>Registre Excel</span>
+          </button>
+          <button class="dc-action" [disabled]="action() !== ''" (click)="telechargerZip()">
+            @if (action() === 'zip') { <i class="fa-solid fa-spinner dc-tourne"></i> } @else { <i class="fa-solid fa-file-zipper"></i> }
+            <span>Tous les documents (ZIP)</span>
+          </button>
+        </div>
+      </div>
+    }
+  }
+</section>
+
+<section class="dc-carte">
+  <div class="dc-carte-entete">
+    <h2 class="dc-carte-titre"><i class="fa-solid fa-file-csv"></i> Export CSV de la période</h2>
+    <span class="dc-meta">Du {{ debut() | date:'dd/MM/yyyy' }} au {{ fin() | date:'dd/MM/yyyy' }}</span>
+  </div>
+  <p class="dc-texte">
+    Une ligne par session (date, PPH, agent, statut, fûts, matières, justification d'écart), suivie des totaux de la période,
+    des fûts nets, des sessions non estimées et des matières par type. Les rapports hebdomadaires et mensuels du module
+    stock ne sont pas accessibles à ce rôle : cet export les remplace.
+  </p>
+  <div>
+    <button class="dc-bouton dc-bouton-primaire" [disabled]="action() !== '' || chargement()" (click)="exporterCsv()">
+      @if (action() === 'csv') { <i class="fa-solid fa-spinner dc-tourne"></i> } @else { <i class="fa-solid fa-download"></i> }
+      Télécharger le CSV de la période
+    </button>
+  </div>
+</section>

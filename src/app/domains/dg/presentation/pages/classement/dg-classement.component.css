@@ -1,0 +1,37 @@
+.kpi-grid-3 { grid-template-columns: repeat(3, 1fr) !important; }
+.card { padding: var(--sp-4); }
+.card-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-3); }
+.card-title { font-weight: 700; color: var(--n700); font-size: .92rem; display: flex; align-items: center; gap: .5rem; }
+.card-title i { color: var(--g); }
+.rank-badge { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .82rem; background: var(--n200); color: var(--n600); }
+.rk-g { background: var(--y); color: var(--y-d); }
+.rk-s { background: var(--n300); color: var(--n600); }
+.rk-b { background: var(--o); color: var(--w); }
+.com-cell { display: flex; align-items: center; gap: .6rem; }
+.com-av { width: 36px; height: 36px; border-radius: 50%; background: var(--g); color: var(--w); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .75rem; flex-shrink: 0; }
+.com-name { font-weight: 600; font-size: .88rem; color: var(--n800); }
+.com-tel { font-size: .72rem; color: var(--n500); }
+.zone-chip { background: var(--n100); color: var(--n600); padding: 2px 8px; border-radius: 99px; font-size: .75rem; font-weight: 600; }
+.taux-chip { padding: 3px 10px; border-radius: 99px; font-size: .8rem; font-weight: 700; }
+.taux-ok { background: var(--s-gh); color: var(--s); }
+.taux-warn { background: var(--o-gh); color: var(--o); }
+.progress-cell { min-width: 120px; }
+.prog-bar-wrap { height: 8px; background: var(--n200); border-radius: 99px; overflow: hidden; }
+.prog-bar { height: 100%; background: var(--r); border-radius: 99px; transition: width .5s ease; }
+.prog-ok { background: var(--g); }
+.row-winner { background: var(--s-gh) !important; }
+.tfoot-total td { font-weight: 700; border-top: 2px solid var(--n200); background: var(--n50); }
+.text-success { color: var(--s) !important; }
+.mono { font-variant-numeric: tabular-nums; }
+.fw-bold { font-weight: 700; }
+
+@media (max-width:767px) {
+  .card { padding:14px; }
+  .card-hd { flex-direction:column;align-items:flex-start;gap:8px; }
+  .filter-row { flex-direction:column;align-items:flex-start;width:100%;gap:6px; }
+  .form-grid { grid-template-columns:1fr; }
+  .form-actions { flex-direction:column;gap:8px; }
+  .form-actions .btn { width:100%;justify-content:center; }
+  .modal-overlay { align-items:flex-end;padding:0; }
+  .modal-box { width:100%;max-width:100%;border-radius:var(--r-lg) var(--r-lg) 0 0; }
+}

@@ -1,0 +1,163 @@
+<div class="cmd">
+
+<header class="cmd-hero">
+  <div class="cmd-hero-gauche">
+    <i class="fa-solid fa-gauge-high cmd-hero-ico"></i>
+    <div>
+      <div class="cmd-hero-kicker">Chef machiniste · {{ aujourdhui | date:'EEEE dd MMMM' }}</div>
+      <h1 class="cmd-hero-titre">Atelier de broyage</h1>
+      <p class="cmd-hero-sous">
+        Vue d'ensemble de la journée et des 30 derniers jours.
+        @if (derniereMaj(); as d) { Mis à jour à {{ d | date:'HH:mm' }}. }
+      </p>
+    </div>
+  </div>
+  <div class="cmd-actions">
+    <button class="cmd-bouton" (click)="charger()" [disabled]="chargement()">
+      <i class="fa-solid fa-rotate" [class.cmd-tourne]="chargement()"></i> Actualiser
+    </button>
+    <a routerLink="/production/chef-machiniste/realisations" class="cmd-bouton cmd-bouton-blanc">
+      <i class="fa-solid fa-pen-to-square"></i> Saisir une réalisation
+    </a>
+  </div>
+</header>
+
+@if (sessionExpiree()) {
+  <div class="cmd-alerte">
+    <i class="fa-solid fa-lock"></i>
+    <span>Votre session a été fermée, probablement parce que ce compte a été ouvert ailleurs.</span>
+    <a routerLink="/auth/login" class="cmd-lien">Se reconnecter</a>
+  </div>
+} @else if (erreurs().length > 0) {
+  <div class="cmd-alerte">
+    <i class="fa-solid fa-circle-exclamation"></i>
+    <span>Données non chargées : {{ erreurs().join(', ') }}.</span>
+    <button class="cmd-lien" (click)="charger()">Réessayer</button>
+  </div>
+}
+
+@for (a of alertes(); track a.texte) {
+  <div class="cmd-alerte cmd-alerte-{{ a.type }}">
+    <i class="fa-solid" [class.fa-triangle-exclamation]="a.type !== 'info'" [class.fa-circle-info]="a.type === 'info'"></i>
+    <span>{{ a.texte }}</span>
+  </div>
+}
+
+@if (chargement()) {
+  <div class="cmd-squelette"></div>
+  <div class="cmd-squelette cmd-squelette-haut"></div>
+} @else {
+
+  <!-- Aujourd'hui -->
+  <h2 class="cmd-section"><i class="fa-solid fa-calendar-day"></i> Aujourd'hui</h2>
+  <section class="cmd-kpis">
+    <div class="cmd-kpi cmd-kpi-principal">
+      <span class="cmd-lbl">Poudre broyée</span>
+      <strong class="cmd-grand">{{ jour()?.realise | number:'1.1-1' }} kg</strong>
+      <span class="cmd-muet">sur {{ jour()?.objectif | number:'1.0-0' }} kg d'objectif</span>
+    </div>
+    <div class="cmd-kpi">
+      <span class="cmd-lbl">Taux de réalisation</span>
+      <strong class="cmd-grand">{{ libelleTaux(jour()?.taux ?? null) }}</strong>
+      <span class="cmd-muet">seuil de validation : 85 %</span>
+    </div>
+    <div class="cmd-kpi" [class.cmd-kpi-alerte]="(jour()?.pctPertes ?? 0) > 5">
+      <span class="cmd-lbl">Pertes</span>
+      <strong class="cmd-grand">{{ jour()?.pertes | number:'1.1-1' }} kg</strong>
+      <span class="cmd-muet">{{ libelleTaux(jour()?.pctPertes ?? null) }} du broyé</span>
+    </div>
+    <div class="cmd-kpi">
+      <span class="cmd-lbl">Sessions</span>
+      <strong class="cmd-grand">{{ jour()?.nbValidees ?? 0 }} / {{ jour()?.nbSessions ?? 0 }}</strong>
+      <span class="cmd-muet">journées validées · {{ jour()?.nbClotures ?? 0 }} clôturée(s)</span>
+    </div>
+    <div class="cmd-kpi">
+      <span class="cmd-lbl">Machinistes actifs</span>
+      <strong class="cmd-grand">{{ jour()?.machinistes ?? 0 }}</strong>
+      <span class="cmd-muet">ayant saisi une réalisation</span>
+    </div>
+  </section>
+
+  <!-- 30 derniers jours -->
+  <h2 class="cmd-section"><i class="fa-solid fa-chart-column"></i> 30 derniers jours</h2>
+  <section class="cmd-kpis">
+    <div class="cmd-kpi">
+      <span class="cmd-lbl">Production</span>
+      <strong class="cmd-moyen">{{ periode()?.realise | number:'1.0-0' }} kg</strong>
+      <span class="cmd-muet">{{ periode()?.nbSessions ?? 0 }} session(s)</span>
+    </div>
+    <div class="cmd-kpi">
+      <span class="cmd-lbl">Taux global</span>
+      <strong class="cmd-moyen">{{ libelleTaux(periode()?.taux ?? null) }}</strong>
+      <span class="cmd-muet">réalisé ÷ objectif</span>
+    </div>
+    <div class="cmd-kpi">
+      <span class="cmd-lbl">Pertes</span>
+      <strong class="cmd-moyen">{{ libelleTaux(periode()?.pctPertes ?? null) }}</strong>
+      <span class="cmd-muet">{{ periode()?.pertes | number:'1.1-1' }} kg perdus</span>
+    </div>
+    <div class="cmd-kpi">
+      <span class="cmd-lbl">Journées validées</span>
+      <strong class="cmd-moyen">{{ periode()?.nbValidees ?? 0 }} / {{ periode()?.nbSessions ?? 0 }}</strong>
+      <span class="cmd-muet">à 85 % ou justifiées</span>
+    </div>
+  </section>
+
+  <div class="cmd-deux">
+    <section class="cmd-carte">
+      <h3 class="cmd-titre">Activité des 7 derniers jours</h3>
+      @if (sept().length === 0) {
+        <p class="cmd-vide">Aucune donnée de broyage.</p>
+      } @else {
+        <app-mini-chart type="bar" [labels]="labels7()" [series]="serieActivite()" [height]="240" />
+      }
+    </section>
+    <section class="cmd-carte">
+      <h3 class="cmd-titre">Poudre broyée par type (30 jours)</h3>
+      @if (donutPoudres().length === 0) {
+        <p class="cmd-vide">Aucune poudre broyée sur 30 jours.</p>
+      } @else {
+        <app-donut-chart title="" unit="kg" [data]="donutPoudres()" />
+      }
+    </section>
+  </div>
+
+  <div class="cmd-deux">
+    <section class="cmd-carte">
+      <div class="cmd-carte-entete">
+        <h3 class="cmd-titre">Machinistes de la semaine</h3>
+        <a routerLink="/production/chef-machiniste/classements" class="cmd-lien-court">Classement complet</a>
+      </div>
+      @if (top5().length === 0) {
+        <p class="cmd-vide">Aucun classement pour cette semaine.</p>
+      } @else {
+        <ol class="cmd-classement">
+          @for (c of top5(); track c.machinisteMatricule) {
+            <li>
+              <span class="cmd-rang" [class.cmd-rang-or]="c.rang === 1">{{ c.rang }}</span>
+              <span class="cmd-nom">{{ c.nomMachiniste }}</span>
+              <span class="cmd-muet">{{ (c.efficacite * 100) | number:'1.0-1' }} % d'efficacité</span>
+              <strong>{{ c.productiviteKg | number:'1.1-1' }} kg</strong>
+            </li>
+          }
+        </ol>
+      }
+    </section>
+
+    <section class="cmd-carte">
+      <h3 class="cmd-titre">Plan en cours</h3>
+      @if (apercu()?.planEnCours; as ref) {
+        <div class="cmd-plan">
+          <span class="cmd-code">{{ ref }}</span>
+          <span class="cmd-muet">plan démarré par le chef de production</span>
+        </div>
+      } @else {
+        <p class="cmd-vide">Aucun plan en cours.</p>
+      }
+      <p class="cmd-muet">{{ apercu()?.plansValides ?? 0 }} plan(s) validé(s) en attente de démarrage.</p>
+      <a routerLink="/production/chef-machiniste/plans" class="cmd-lien-court">Voir les plans</a>
+    </section>
+  </div>
+}
+
+</div>

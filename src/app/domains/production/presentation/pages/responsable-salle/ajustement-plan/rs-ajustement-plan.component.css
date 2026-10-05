@@ -1,0 +1,218 @@
+:host { display: block; }
+
+/* Espacement vertical explicite entre les sections */
+.aj { display: flex; flex-direction: column; gap: 18px; width: 100%; }
+
+/* ── Bandeau ── */
+.aj-hero {
+  display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap;
+  padding: 20px 24px; border-radius: 16px; color: #fff;
+  background: linear-gradient(135deg, var(--g, #14532D), var(--g-m, #1E7A42));
+}
+.aj-hero-gauche { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.aj-hero-ico {
+  width: 46px; height: 46px; border-radius: 13px; display: grid; place-items: center;
+  background: rgba(255,255,255,.16); font-size: 19px; flex-shrink: 0;
+}
+.aj-hero-kicker { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; opacity: .85; }
+.aj-hero-titre { margin: 2px 0 2px; font-size: 22px; font-weight: 800; }
+.aj-hero-sous { margin: 0; font-size: 13px; opacity: .88; }
+.aj-hero-choix { display: flex; align-items: flex-end; gap: 8px; min-width: 0; }
+.aj-champ { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.aj-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: rgba(255,255,255,.85); }
+.aj-select {
+  min-width: 300px; max-width: 420px; padding: 10px 12px; border-radius: 10px; font-size: 14px;
+  border: 1px solid rgba(255,255,255,.35); background: #fff; color: var(--n900, #111827);
+}
+.aj-select:focus { outline: none; box-shadow: 0 0 0 3px rgba(255,255,255,.35); }
+.aj-bouton-icone {
+  width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
+  border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.14); color: #fff;
+}
+.aj-bouton-icone:hover { background: rgba(255,255,255,.24); }
+
+/* ── Alertes ── */
+.aj-alerte {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px;
+  font-size: 13px; font-weight: 600;
+}
+.aj-alerte span { flex: 1; min-width: 0; }
+.aj-alerte-ok { background: var(--g-gh, #E6F2EC); color: var(--g, #14532D); border: 1px solid var(--g-pale, #B8E0C7); }
+.aj-alerte-erreur { background: var(--r-gh, #FDECEA); color: var(--r-d, #B71C1C); border: 1px solid var(--r, #C62828); }
+.aj-fermer { background: none; border: none; cursor: pointer; color: inherit; opacity: .7; padding: 2px 4px; }
+.aj-fermer:hover { opacity: 1; }
+
+/* ── Parcours du plan ── */
+.aj-parcours {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px;
+  background: var(--w, #fff); border: 1px solid var(--n200, #E5E7EB); border-radius: 16px; padding: 12px;
+}
+.aj-etape {
+  display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 12px;
+  font-size: 13px; font-weight: 700; color: var(--n500, #6B7280);
+}
+.aj-etape-num {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;
+  background: var(--n100, #F4F6F8); font-size: 12px; font-weight: 800;
+}
+.aj-etape-faite { color: var(--g, #14532D); }
+.aj-etape-faite .aj-etape-num { background: var(--g-gh, #E6F2EC); color: var(--g, #14532D); }
+.aj-etape-active { background: var(--y-gh, #FFF8E1); color: var(--y-d, #C49200); }
+.aj-etape-active .aj-etape-num { background: var(--y, #F6B60B); color: #fff; }
+
+/* ── Fiche du plan ── */
+.aj-fiche {
+  background: var(--w, #fff); border: 1px solid var(--n200, #E5E7EB); border-radius: 16px;
+  padding: 18px 20px; display: flex; flex-direction: column; gap: 14px;
+}
+.aj-fiche-tete { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.aj-fiche-tete > div { display: flex; flex-direction: column; gap: 4px; }
+.aj-titre-plan { margin: 4px 0 0; font-size: 18px; font-weight: 800; color: var(--n900, #111827); }
+.aj-muet { font-size: 12px; color: var(--n500, #6B7280); }
+.aj-code {
+  display: inline-block; align-self: flex-start; padding: 2px 9px; border-radius: 6px; font-size: 11px; font-weight: 700;
+  background: var(--g-gh, #E6F2EC); color: var(--g, #14532D);
+}
+.aj-badge { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.aj-badge-brouillon { background: var(--n200, #E5E7EB); color: var(--n700, #374151); }
+.aj-badge-valide { background: var(--b-gh, #E3F2FD); color: var(--b-d, #1565C0); }
+.aj-badge-encours { background: var(--y-gh, #FFF8E1); color: var(--y-d, #C49200); }
+.aj-badge-cloture { background: var(--g-gh, #E6F2EC); color: var(--g, #14532D); }
+.aj-chiffres { margin: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+.aj-chiffres > div { background: var(--n100, #F4F6F8); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.aj-chiffres dt { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--n500, #6B7280); }
+.aj-chiffres dd { margin: 0; font-size: 14px; font-weight: 800; color: var(--n900, #111827); font-variant-numeric: tabular-nums; }
+
+/* ── Cartes numérotées ── */
+.aj-carte {
+  background: var(--w, #fff); border: 1px solid var(--n200, #E5E7EB); border-radius: 16px; overflow: hidden;
+  display: flex; flex-direction: column; min-width: 0;
+}
+.aj-carte-tete {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 16px 20px; border-bottom: 1px solid var(--n100, #F4F6F8);
+}
+.aj-titre { display: flex; align-items: center; gap: 12px; }
+.aj-titre h3 { margin: 0; font-size: 15px; font-weight: 800; color: var(--n900, #111827); }
+.aj-titre > div { display: flex; flex-direction: column; gap: 2px; }
+.aj-numero {
+  width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; flex-shrink: 0;
+  background: var(--g, #14532D); color: #fff; font-size: 13px; font-weight: 800;
+}
+.aj-carte-pied {
+  display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 14px 20px; border-top: 1px solid var(--n100, #F4F6F8); background: var(--n50, #FAFBFC);
+}
+.aj-non-enregistre { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--y-d, #C49200); }
+
+/* ── Tableaux ── */
+.aj-table-wrap { overflow-x: auto; }
+.aj-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.aj-table th {
+  text-align: left; padding: 10px 14px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--n500, #6B7280); background: var(--n100, #F4F6F8); white-space: nowrap;
+}
+.aj-table td { padding: 10px 14px; border-top: 1px solid var(--n100, #F4F6F8); vertical-align: middle; }
+.aj-table tbody tr:hover td { background: #FAFBFC; }
+.aj-num { text-align: right !important; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.aj-colonne-jour { position: sticky; left: 0; background: var(--w, #fff); z-index: 1; min-width: 110px; }
+.aj-table th.aj-colonne-jour { background: var(--n100, #F4F6F8); }
+.aj-nom { font-weight: 600; color: var(--n800, #1F2937); margin-top: 4px; }
+.aj-vide { margin: 0; padding: 18px 20px; font-size: 13px; color: var(--n500, #6B7280); }
+.aj-vide-cellule { text-align: center; color: var(--n500, #6B7280); padding: 14px !important; }
+
+/* Saisie quantité */
+.aj-saisie {
+  width: 96px; padding: 7px 9px; border-radius: 9px; font-size: 13px; font-weight: 700; text-align: right;
+  border: 1px solid var(--n200, #E5E7EB); background: var(--w, #fff); color: var(--n900, #111827);
+  font-variant-numeric: tabular-nums;
+}
+.aj-saisie:focus { outline: none; border-color: var(--g, #14532D); box-shadow: 0 0 0 3px rgba(20,83,45,.12); }
+.aj-saisie:disabled { background: var(--n100, #F4F6F8); color: var(--n500, #6B7280); border-color: transparent; }
+.aj-repere { margin-top: 4px; font-size: 11px; color: var(--n500, #6B7280); white-space: nowrap; text-align: right; }
+.aj-repere-ecart { color: var(--y-d, #C49200); font-weight: 700; }
+.aj-futs {
+  display: inline-block; padding: 6px 10px; border-radius: 9px; font-weight: 800; color: var(--g, #14532D);
+  background: var(--g-gh, #E6F2EC);
+}
+
+/* Barre de progression */
+.aj-barre { height: 8px; width: 140px; border-radius: 999px; background: var(--n100, #F4F6F8); overflow: hidden; }
+.aj-barre-fill { height: 100%; border-radius: 999px; background: var(--b, #1E88E5); }
+.aj-barre-ok { background: var(--g, #14532D); }
+.aj-barre-retard { background: var(--r, #C62828); }
+
+/* ── Matières : une carte par matière ── */
+.aj-matieres { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; padding: 16px 20px 20px; }
+.aj-matiere {
+  border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px; border: 1px solid transparent;
+}
+.aj-matiere-tete { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+.aj-grand { font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--n900, #111827); }
+.aj-grand small { font-size: 13px; font-weight: 600; color: var(--n500, #6B7280); }
+.aj-matiere-ligne { display: flex; justify-content: space-between; font-size: 12px; color: var(--n600, #4B5563); font-variant-numeric: tabular-nums; }
+.aj-matiere-ligne span:last-child { font-weight: 700; }
+.aj-ecart { color: var(--y-d, #C49200); }
+
+/* Quatre couleurs de matière, cohérentes entre cartes et en-têtes de tableau */
+.aj-mat-0 { background: #FFF8E1; border-color: #F6E3A0; color: #8A6D00; }
+.aj-mat-1 { background: #EEF6E9; border-color: #C9E2B8; color: #3B6E1E; }
+.aj-mat-2 { background: #F3EDE7; border-color: #DCC9B6; color: #6D4C41; }
+.aj-mat-3 { background: #E8F1FB; border-color: #B9D5F0; color: #1565C0; }
+th.aj-mat-entete { color: inherit; }
+th.aj-mat-0 { background: #FFF8E1; color: #8A6D00; }
+th.aj-mat-1 { background: #EEF6E9; color: #3B6E1E; }
+th.aj-mat-2 { background: #F3EDE7; color: #6D4C41; }
+th.aj-mat-3 { background: #E8F1FB; color: #1565C0; }
+
+/* ── Barre d'actions ── */
+.aj-actions {
+  position: sticky; bottom: 12px; z-index: 50;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 14px 18px; border-radius: 16px; background: rgba(255,255,255,.96);
+  border: 1px solid var(--n200, #E5E7EB); box-shadow: 0 10px 30px rgba(0,0,0,.12);
+  backdrop-filter: blur(8px);
+}
+.aj-actions-info { margin: 0; display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--n600, #4B5563); line-height: 1.45; flex: 1; min-width: 240px; }
+.aj-actions-info i { color: var(--g, #14532D); margin-top: 2px; }
+.aj-actions-boutons { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Boutons ── */
+.aj-bouton {
+  display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 10px;
+  font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; border: 1px solid transparent;
+}
+.aj-bouton:disabled { opacity: .45; cursor: not-allowed; }
+.aj-bouton-primaire { background: var(--g, #14532D); color: #fff; }
+.aj-bouton-primaire:hover:not(:disabled) { background: var(--g-m, #1E7A42); }
+.aj-bouton-secondaire { background: var(--w, #fff); color: var(--g, #14532D); border-color: var(--n200, #E5E7EB); }
+.aj-bouton-secondaire:hover:not(:disabled) { background: var(--g-gh, #E6F2EC); }
+.aj-bouton-danger { background: var(--r, #C62828); color: #fff; }
+.aj-bouton-danger:hover:not(:disabled) { background: var(--r-d, #B71C1C); }
+.aj-tourne { animation: aj-tourne .8s linear infinite; }
+@keyframes aj-tourne { to { transform: rotate(360deg); } }
+
+/* ── Vide / squelettes ── */
+.aj-vide-plan {
+  display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 32px 20px;
+}
+.aj-vide i { font-size: 30px; color: var(--n300, #D1D5DB); }
+.aj-squelette { height: 120px; border-radius: 16px; background: var(--n100, #F4F6F8); animation: aj-pulse 1.2s ease-in-out infinite; }
+.aj-squelette-haut { height: 300px; }
+@keyframes aj-pulse { 50% { opacity: .55; } }
+
+@media (max-width: 1100px) {
+  .aj-parcours { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .aj-chiffres { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .aj-hero-choix { width: 100%; }
+  .aj-select { min-width: 0; width: 100%; }
+  .aj-chiffres { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .aj-actions { position: static; }
+}
+@media (max-width: 480px) {
+  .aj-hero { padding: 16px; }
+  .aj-hero-titre { font-size: 19px; }
+  .aj-parcours { grid-template-columns: 1fr; }
+}

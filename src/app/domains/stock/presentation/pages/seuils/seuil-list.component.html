@@ -1,0 +1,341 @@
+<div class="page animate-fadeInUp">
+  <!-- HEADER -->
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-icon"><i class="fa-solid fa-sliders"></i></div>
+      <div>
+        <h1 class="ph-title">Gestion des Seuils de Stock</h1>
+        <p class="ph-sub">Définir les points de réapprovisionnement et stocks de sécurité</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-opt" [class.to-on]="activeTab()==='CENTRAL'" (click)="switchTab('CENTRAL')">
+      <i class="fa-solid fa-warehouse"></i> Stock Central
+    </button>
+    <button class="tab-opt" [class.to-on]="activeTab()==='BUFFER'" (click)="switchTab('BUFFER')">
+      <i class="fa-solid fa-layer-group"></i> Stock Tampon
+    </button>
+  </div>
+
+  @if (successMsg()) {
+    <div class="banner banner-success animate-fadeIn"><i class="fa-solid fa-circle-check"></i><span>{{ successMsg() }}</span></div>
+  }
+  @if (errorMsg()) {
+    <div class="banner banner-danger animate-fadeIn"><i class="fa-solid fa-triangle-exclamation"></i><span>{{ errorMsg() }}</span></div>
+  }
+
+  @if (loading()) {
+    <div class="loading-state"><div class="spinner spinner-lg"></div><p>Chargement…</p></div>
+  } @else {
+
+    <!-- KPI CARDS -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-ico kpi-n"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <div><span class="kpi-val">{{ totalItems }}</span><span class="kpi-lbl">Produits</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-ico kpi-r"><i class="fa-solid fa-circle-exclamation"></i></div>
+        <div><span class="kpi-val">{{ criticalCount }}</span><span class="kpi-lbl">Critique</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-ico kpi-o"><i class="fa-solid fa-arrow-down"></i></div>
+        <div><span class="kpi-val">{{ lowCount }}</span><span class="kpi-lbl">Faible</span></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-ico kpi-g"><i class="fa-solid fa-circle-check"></i></div>
+        <div><span class="kpi-val">{{ normalCount }}</span><span class="kpi-lbl">Normal</span></div>
+      </div>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="card filter-card">
+      <div class="filter-row">
+        <div class="form-group filter-group-item">
+          <select class="form-control" [(ngModel)]="currentSelectedLocationId" (ngModelChange)="onLocationChange()">
+            @for (loc of currentLocations; track loc.id) {
+              <option [value]="loc.id">{{ loc.name }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group filter-group-item">
+          <input type="text" class="form-control" placeholder="Rechercher un produit…" [(ngModel)]="searchTerm">
+        </div>
+        @if (isDG()) {
+          <button class="btn btn-outline btn-sm" (click)="openBatchModal()">
+            <i class="fa-solid fa-layer-group"></i> Seuils par défaut
+          </button>
+          <button class="btn btn-primary btn-sm" (click)="openCreateModal()">
+            <i class="fa-solid fa-plus"></i> Nouveau seuil
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card">
+      <div class="card-header">
+        <div class="sec-head">
+          <span class="sh-ico sh-g"><i class="fa-solid fa-list-check"></i></span>
+          <div>
+            <h3>{{ activeTab() === 'CENTRAL' ? 'Stock Central' : 'Stock Tampon' }} — Seuils par produit</h3>
+            <p class="sec-sub">{{ currentItems.length }} produit(s) affiché(s)</p>
+          </div>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        @if (currentItems.length === 0) {
+          <div class="empty-state">
+            <i class="fa-solid fa-inbox"></i>
+            <p>Aucun produit trouvé pour cet emplacement.</p>
+          </div>
+        } @else {
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Stock actuel</th>
+                <th>Min (sécurité)</th>
+                <th>Max (surstock)</th>
+                <th>Réappro</th>
+                <th>Qté réappro</th>
+                <th>Niveau</th>
+                @if (isDG()) { <th style="text-align:right">Actions</th> }
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of currentItems; track item.id) {
+                <tr>
+                  <td>
+                    <div class="prod-cell">
+                      <span class="prod-name">{{ item.productName }}</span>
+                      <span class="prod-sku">{{ item.productSku }}</span>
+                      @if (item.notes) { <span class="prod-notes">{{ item.notes }}</span> }
+                    </div>
+                  </td>
+                  <td>
+                    <span class="qty-current">{{ item.quantity | number }}</span>
+                    <span class="qty-unit">{{ item.unit || 'unités' }}</span>
+                  </td>
+                  <td>{{ (item.minimumThreshold || item.safetyStock || 0) | number }} <span class="qty-unit">{{ item.unit || '' }}</span></td>
+                  <td>{{ (item.maximumThreshold || 0) | number }} <span class="qty-unit">{{ item.unit || '' }}</span></td>
+                  <td>{{ (item.reorderThreshold || item.reorderPoint || 0) | number }} <span class="qty-unit">{{ item.unit || '' }}</span></td>
+                  <td>{{ (item.reorderQuantity || 0) | number }} <span class="qty-unit">{{ item.unit || '' }}</span></td>
+                  <td>
+                    @if (item.alertLevel === 'CRITIQUE') {
+                      <span class="badge badge-danger">CRITIQUE</span>
+                    } @else if (item.alertLevel === 'FAIBLE') {
+                      <span class="badge badge-warning">FAIBLE</span>
+                    } @else {
+                      <span class="badge badge-success">NORMAL</span>
+                    }
+                  </td>
+                  @if (isDG()) {
+                    <td class="actions-cell">
+                      <button class="btn btn-ghost btn-sm" (click)="openEditModal(item)">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                      </button>
+                      @if (item.thresholdId) {
+                        <button class="btn btn-ghost btn-sm btn-delete" (click)="deleteThreshold(item)">
+                          <i class="fa-solid fa-trash"></i>
+                        </button>
+                      }
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+
+    @if (!isDG()) {
+      <div class="banner banner-primary" style="margin-top:8px">
+        <i class="fa-solid fa-lock"></i>
+        <span>Vous êtes en mode consultation. Seuls le DG et les administrateurs peuvent modifier les seuils.</span>
+      </div>
+    }
+  }
+
+  <!-- MODAL: Édition individuelle -->
+  @if (showEditModal()) {
+    <div class="modal-overlay animate-fadeIn" (click)="closeEditModal()">
+      <div class="modal-box animate-fadeInUp modal-box-md" (click)="$event.stopPropagation()">
+        <div class="modal-header modal-header-warning">
+          <div class="modal-title"><i class="fa-solid fa-sliders"></i> Modifier les seuils</div>
+          <button class="modal-close" (click)="closeEditModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          @if (editingItem(); as item) {
+            <div class="modal-info-box">
+              <div class="modal-info-name">{{ item.productName }}</div>
+              <div class="modal-info-sku">{{ item.productSku }}</div>
+              <div class="modal-info-stock">Stock actuel: {{ item.quantity | number }} {{ item.unit || 'unités' }}</div>
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Seuil minimum (sécurité) <span class="req">*</span></label>
+                <input type="number" class="form-control" min="0" [(ngModel)]="editMinimum">
+                <p class="form-hint">Alerte critique si stock ≤ ce seuil (en {{ editingItem()?.unit || 'unités' }})</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Seuil maximum (surstock)</label>
+                <input type="number" class="form-control" min="0" [(ngModel)]="editMaximum">
+                <p class="form-hint">Alerte surstock si stock > ce seuil (en {{ editingItem()?.unit || 'unités' }})</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Seuil de réappro <span class="req">*</span></label>
+                <input type="number" class="form-control" min="0" [(ngModel)]="editReorder">
+                <p class="form-hint">Déclenche une suggestion de commande (en {{ editingItem()?.unit || 'unités' }})</p>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Quantité à réappro</label>
+                <input type="number" class="form-control" min="0" [(ngModel)]="editReorderQty">
+                <p class="form-hint">Quantité suggérée lors du réappro (en {{ editingItem()?.unit || 'unités' }})</p>
+              </div>
+            </div>
+            <div class="form-group form-group-mt">
+              <label class="form-label">Notes</label>
+              <textarea class="form-control" rows="2" [(ngModel)]="editNotes" placeholder="Notes optionnelles…"></textarea>
+            </div>
+            @if (editMinimum > 0 && editReorder > 0 && editMinimum >= editReorder) {
+              <div class="banner banner-warning banner-mt"><i class="fa-solid fa-triangle-exclamation"></i><span>Le seuil minimum devrait être inférieur au seuil de réapprovisionnement.</span></div>
+            }
+          }
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" (click)="closeEditModal()">Annuler</button>
+          <button class="btn btn-primary" [disabled]="saving()" (click)="saveThreshold()">
+            @if (saving()) { <div class="spinner spinner-sm"></div> Enregistrement… }
+            @else { <i class="fa-solid fa-floppy-disk"></i> Enregistrer }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: Création de seuil -->
+  @if (showCreateModal()) {
+    <div class="modal-overlay animate-fadeIn" (click)="closeCreateModal()">
+      <div class="modal-box animate-fadeInUp modal-box-md" (click)="$event.stopPropagation()">
+        <div class="modal-header modal-header-warning">
+          <div class="modal-title"><i class="fa-solid fa-plus-circle"></i> Nouveau seuil</div>
+          <button class="modal-close" (click)="closeCreateModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group form-group-mb">
+            <label class="form-label">Produit <span class="req">*</span></label>
+            <input type="text" class="form-control" placeholder="Rechercher par SKU ou nom…"
+                   [(ngModel)]="createProductSearch" (ngModelChange)="searchProducts()">
+            @if (createSelectedProductId && createProductSearch === createSelectedProductName) {
+              <div class="product-selected">
+                <i class="fa-solid fa-check-circle"></i> {{ createSelectedProductName }} ({{ createSelectedProductSku }})
+              </div>
+            } @else if (filteredProducts().length > 0) {
+              <div class="product-list">
+                @for (p of filteredProducts(); track p.id) {
+                  <div class="product-list-item" (click)="selectProduct(p)">
+                    <span class="product-list-name">{{ p.designation || p.sku }}</span>
+                    <span class="product-list-sku">{{ p.sku }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Seuil minimum (sécurité) <span class="req">*</span></label>
+              <input type="number" class="form-control" min="0" [(ngModel)]="createMinimum">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Seuil maximum (surstock)</label>
+              <input type="number" class="form-control" min="0" [(ngModel)]="createMaximum">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Seuil de réappro <span class="req">*</span></label>
+              <input type="number" class="form-control" min="0" [(ngModel)]="createReorder">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Quantité à réappro</label>
+              <input type="number" class="form-control" min="0" [(ngModel)]="createReorderQty">
+            </div>
+          </div>
+          <div class="form-group form-group-mt">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" rows="2" [(ngModel)]="createNotes" placeholder="Notes optionnelles…"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" (click)="closeCreateModal()">Annuler</button>
+          <button class="btn btn-primary" [disabled]="saving() || !createSelectedProductId" (click)="saveCreateThreshold()">
+            @if (saving()) { <div class="spinner spinner-sm"></div> Création… }
+            @else { <i class="fa-solid fa-check"></i> Créer le seuil }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: Confirmation suppression -->
+  @if (showDeleteModal()) {
+    <div class="modal-overlay animate-fadeIn" (click)="closeDeleteModal()">
+      <div class="modal-box animate-fadeInUp modal-box-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header modal-header-danger">
+          <div class="modal-title"><i class="fa-solid fa-trash"></i> Confirmer la suppression</div>
+          <button class="modal-close" (click)="closeDeleteModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          @if (deleteTarget(); as item) {
+            <p class="modal-confirm-text">
+              Voulez-vous vraiment supprimer les seuils pour <strong>{{ item.productName }}</strong> (<span class="mono-code">{{ item.productSku }}</span>) ?
+            </p>
+            <p class="modal-confirm-hint">Cette action est irréversible. Les seuils de réapprovisionnement et de sécurité seront réinitialisés.</p>
+          }
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" (click)="closeDeleteModal()">Annuler</button>
+          <button class="btn btn-danger" (click)="confirmDeleteThreshold()">
+            <i class="fa-solid fa-trash"></i> Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL: Seuils par défaut (batch) -->
+  @if (showBatchModal()) {
+    <div class="modal-overlay animate-fadeIn" (click)="closeBatchModal()">
+      <div class="modal-box animate-fadeInUp modal-box-sm" (click)="$event.stopPropagation()">
+        <div class="modal-header modal-header-warning">
+          <div class="modal-title"><i class="fa-solid fa-layer-group"></i> Seuils par défaut</div>
+          <button class="modal-close" (click)="closeBatchModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="banner banner-warning banner-mb">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Cette action appliquera les mêmes seuils à <strong>tous les produits</strong> de l'emplacement sélectionné ({{ activeTab() === 'CENTRAL' ? 'Stock Central' : 'Stock Tampon' }}).</span>
+          </div>
+          <div class="form-group form-group-mb">
+            <label class="form-label">Point de réapprovisionnement par défaut <span class="req">*</span></label>
+            <input type="number" class="form-control" min="0" [(ngModel)]="batchReorderPoint">
+          </div>
+          <div class="form-group form-group-mb">
+            <label class="form-label">Stock de sécurité par défaut <span class="req">*</span></label>
+            <input type="number" class="form-control" min="0" [(ngModel)]="batchSafetyStock">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" (click)="closeBatchModal()">Annuler</button>
+          <button class="btn btn-primary" [disabled]="saving()" (click)="saveBatchThresholds()">
+            @if (saving()) { <div class="spinner spinner-sm"></div> Application… }
+            @else { <i class="fa-solid fa-check"></i> Appliquer à tous }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

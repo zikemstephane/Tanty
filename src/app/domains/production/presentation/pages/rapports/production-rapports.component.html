@@ -1,0 +1,252 @@
+<!-- ═══ BANDEAU ═══ -->
+<header class="rp-hero">
+  <div class="rp-hero-gauche">
+    <div class="rp-hero-ico"><i class="fa-solid fa-file-lines"></i></div>
+    <div>
+      <div class="rp-hero-kicker">Production</div>
+      <h1 class="rp-hero-titre">Rapports de production</h1>
+      <p class="rp-hero-sous">Bilans sur une période, comparatif par bon de commande et export des lots</p>
+    </div>
+  </div>
+</header>
+
+@if (notification(); as n) {
+  <div class="rp-notif" [class.rp-notif-erreur]="n.type === 'erreur'" role="status" aria-live="polite">
+    <i class="fa-solid" [class.fa-circle-check]="n.type === 'ok'" [class.fa-triangle-exclamation]="n.type === 'erreur'"></i>
+    <span>{{ n.texte }}</span>
+    <button class="rp-icone" aria-label="Fermer" (click)="notification.set(null)"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+}
+
+<!-- ═══ ONGLETS ═══ -->
+<nav class="rp-onglets" role="tablist" aria-label="Type de rapport">
+  <button class="rp-onglet" role="tab" [attr.aria-selected]="onglet() === 'hebdomadaire'" [class.rp-onglet-actif]="onglet() === 'hebdomadaire'" (click)="onglet.set('hebdomadaire')">
+    <i class="fa-solid fa-calendar-week"></i> Bilan de production
+  </button>
+  <button class="rp-onglet" role="tab" [attr.aria-selected]="onglet() === 'comparatif'" [class.rp-onglet-actif]="onglet() === 'comparatif'" (click)="onglet.set('comparatif')">
+    <i class="fa-solid fa-scale-balanced"></i> Comparatif par BC
+  </button>
+  <button class="rp-onglet" role="tab" [attr.aria-selected]="onglet() === 'export'" [class.rp-onglet-actif]="onglet() === 'export'" (click)="onglet.set('export')">
+    <i class="fa-solid fa-file-arrow-down"></i> Export des lots
+  </button>
+</nav>
+
+<!-- ═══ PÉRIODE ═══ -->
+@if (onglet() !== 'comparatif') {
+  <section class="rp-periode">
+    <div class="rp-presets" role="group" aria-label="Période rapide">
+      @for (p of presets; track p.code) {
+        <button class="rp-preset" [class.rp-preset-actif]="presetActif() === p.code" (click)="choisirPreset(p.code)">{{ p.libelle }}</button>
+      }
+    </div>
+    <div class="rp-dates">
+      <label class="rp-champ">
+        <span class="rp-etiquette">Du</span>
+        <input type="date" class="rp-input" [value]="debut()" [max]="fin()" (change)="majPeriode('debut', $any($event.target).value)">
+      </label>
+      <label class="rp-champ">
+        <span class="rp-etiquette">Au</span>
+        <input type="date" class="rp-input" [value]="fin()" [min]="debut()" [max]="aujourdhui" (change)="majPeriode('fin', $any($event.target).value)">
+      </label>
+    </div>
+    @if (messagePeriode()) {
+      <p class="rp-erreur"><i class="fa-solid fa-circle-exclamation"></i> {{ messagePeriode() }}</p>
+    }
+  </section>
+}
+
+<!-- ═══ BILAN DE PRODUCTION ═══ -->
+@if (onglet() === 'hebdomadaire') {
+  <div class="rp-actions-ligne">
+    <button class="rp-bouton rp-bouton-primaire" (click)="genererRapport()" [disabled]="!periodeValide() || chargementRapport()">
+      @if (chargementRapport()) { <i class="fa-solid fa-spinner rp-tourne"></i> Calcul en cours… }
+      @else { <i class="fa-solid fa-rotate"></i> Actualiser le bilan }
+    </button>
+  </div>
+
+  @if (erreurRapport()) {
+    <div class="rp-alerte" role="alert"><i class="fa-solid fa-triangle-exclamation"></i><span>{{ erreurRapport() }}</span>
+      <button class="rp-bouton rp-bouton-petit rp-bouton-rouge" (click)="genererRapport()">Réessayer</button>
+    </div>
+  }
+
+  @if (chargementRapport() && !rapport()) {
+    <div class="rp-squelette"></div>
+  } @else if (rapport(); as r) {
+    <section class="rp-kpis">
+      <div class="rp-kpi">
+        <span class="rp-kpi-lbl">Fûts nets</span>
+        <span class="rp-kpi-val">{{ r.totalFutsNets }}</span>
+        <span class="rp-kpi-meta">{{ r.totalFutsProduits }} fût(s) sortis</span>
+      </div>
+      <div class="rp-kpi">
+        <span class="rp-kpi-lbl">Lots validés</span>
+        <span class="rp-kpi-val">{{ r.totalLotsValides }}</span>
+        <span class="rp-kpi-meta">{{ formaterKg(r.totalQuantiteLots) }} kg</span>
+      </div>
+      <div class="rp-kpi" [class.rp-kpi-alerte]="r.tauxPertesGlobal > 5">
+        <span class="rp-kpi-lbl">Taux de pertes</span>
+        <span class="rp-kpi-val">{{ formaterPct(r.tauxPertesGlobal) }}</span>
+        <span class="rp-kpi-meta">{{ r.nbSessionsBroyage }} session(s) de broyage</span>
+      </div>
+      <div class="rp-kpi">
+        <span class="rp-kpi-lbl">Fiches saisies</span>
+        <span class="rp-kpi-val">{{ r.nbFiches }}</span>
+        <span class="rp-kpi-meta">{{ r.nbSessionsDosage }} session(s) de dosage</span>
+      </div>
+    </section>
+
+    <div class="rp-deux">
+      <section class="rp-carte">
+        <header class="rp-carte-tete"><h2><i class="fa-solid fa-box-open"></i> Production par référence</h2></header>
+        @if (references().length) {
+          <ul class="rp-liste">
+            @for (x of references(); track x.code) {
+              <li>
+                <div class="rp-liste-tete"><span class="rp-code mono">{{ x.code }}</span><strong class="mono">{{ formaterKg(x.quantite) }}</strong></div>
+                <div class="rp-barre"><div class="rp-barre-fill" [style.width.%]="x.part"></div></div>
+              </li>
+            }
+          </ul>
+        } @else { <p class="rp-vide-court">Aucune production sur la période.</p> }
+      </section>
+
+      <section class="rp-carte">
+        <header class="rp-carte-tete"><h2><i class="fa-solid fa-file-contract"></i> Avancement par bon de commande</h2></header>
+        @if (bcs().length) {
+          <ul class="rp-liste">
+            @for (x of bcs(); track x.numero) {
+              <li>
+                <div class="rp-liste-tete"><span class="rp-code mono">{{ x.numero }}</span><strong class="mono">{{ formaterPct(x.taux) }}</strong></div>
+                <div class="rp-barre"><div class="rp-barre-fill" [class.rp-ok]="x.taux >= 100" [style.width.%]="x.taux > 100 ? 100 : x.taux"></div></div>
+              </li>
+            }
+          </ul>
+        } @else { <p class="rp-vide-court">Aucun bon de commande actif sur la période.</p> }
+      </section>
+    </div>
+
+    <section class="rp-carte">
+      <header class="rp-carte-tete"><h2><i class="fa-solid fa-droplet"></i> Broyage et pertes par type de poudre</h2></header>
+      @if (poudres().length) {
+        <div class="tbl-wrap">
+          <table class="rp-table">
+            <thead><tr><th>Type de poudre</th><th class="num">Broyé</th><th class="num">Pertes</th><th class="num">% pertes</th></tr></thead>
+            <tbody>
+              @for (p of poudres(); track p.code) {
+                <tr>
+                  <td class="rp-nom">{{ p.code }}</td>
+                  <td class="num mono">{{ formaterKg(p.broye) }} kg</td>
+                  <td class="num mono">{{ formaterKg(p.pertes) }} kg</td>
+                  <td class="num mono" [class.rp-ecart]="p.pct > 5">{{ formaterPct(p.pct) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else { <p class="rp-vide-court">Aucun broyage sur la période.</p> }
+    </section>
+  } @else if (!erreurRapport()) {
+    <div class="rp-vide">
+      <i class="fa-solid fa-chart-column"></i>
+      <h3>Aucun bilan calculé</h3>
+      <p>Le bilan se calcule automatiquement pour la période choisie.</p>
+    </div>
+  }
+}
+
+<!-- ═══ COMPARATIF PAR BC ═══ -->
+@if (onglet() === 'comparatif') {
+  <section class="rp-carte">
+    <header class="rp-carte-tete">
+      <h2><i class="fa-solid fa-scale-balanced"></i> Bon de commande à comparer</h2>
+    </header>
+    <div class="rp-bc-choix">
+      <label class="rp-champ rp-champ-large">
+        <span class="rp-etiquette">Bon de commande</span>
+        <select class="rp-input" (change)="choisirBC($any($event.target).value)">
+          <option value="">— Choisir un bon de commande —</option>
+          @for (b of bonsCommande(); track b.numero) {
+            <option [value]="b.numero" [selected]="b.numero === referenceBC()">{{ b.numero }} — {{ b.statut }}</option>
+          }
+        </select>
+      </label>
+      <p class="rp-note">Planifié = quantité commandée. Produit = quantité réellement livrée en lots validés.</p>
+    </div>
+
+    @if (erreurComparatif()) {
+      <div class="rp-alerte" role="alert"><i class="fa-solid fa-triangle-exclamation"></i><span>{{ erreurComparatif() }}</span></div>
+    }
+
+    @if (chargementComparatif()) {
+      <div class="rp-squelette rp-squelette-court"></div>
+    } @else if (comparatif(); as c) {
+      <section class="rp-kpis">
+        <div class="rp-kpi"><span class="rp-kpi-lbl">Planifié</span><span class="rp-kpi-val">{{ c.totalQuantitePlanifiee }}</span></div>
+        <div class="rp-kpi"><span class="rp-kpi-lbl">Produit</span><span class="rp-kpi-val">{{ c.totalQuantiteProduite }}</span></div>
+        <div class="rp-kpi" [class.rp-kpi-alerte]="tauxComparatif() < 100"><span class="rp-kpi-lbl">Avancement</span><span class="rp-kpi-val">{{ tauxComparatif() }} %</span></div>
+        <div class="rp-kpi"><span class="rp-kpi-lbl">Validé</span><span class="rp-kpi-val">{{ c.totalCartonsValides }}</span><span class="rp-kpi-meta">cartons · {{ formaterKg(c.totalKgValides) }} kg</span></div>
+      </section>
+
+      @if (c.lignes.length) {
+        <div class="tbl-wrap">
+          <table class="rp-table">
+            <thead><tr><th>Produit</th><th class="num">Planifié</th><th class="num">Produit</th><th class="num">Écart</th><th class="num">Cartons validés</th><th class="num">Kg validés</th></tr></thead>
+            <tbody>
+              @for (l of c.lignes; track l.codeProduit) {
+                <tr>
+                  <td>
+                    <div class="rp-produit"><span class="rp-nom">{{ l.designation }}</span><span class="rp-muet mono">{{ l.codeProduit }}</span></div>
+                  </td>
+                  <td class="num mono">{{ l.quantitePlanifiee }}</td>
+                  <td class="num mono">{{ l.quantiteProduite }}</td>
+                  <td class="num mono" [class.rp-ecart]="l.quantiteProduite < l.quantitePlanifiee" [class.rp-ok-texte]="l.quantiteProduite >= l.quantitePlanifiee">
+                    {{ l.quantiteProduite - l.quantitePlanifiee > 0 ? '+' : '' }}{{ l.quantiteProduite - l.quantitePlanifiee }}
+                  </td>
+                  <td class="num mono">{{ l.nbCartonsValides }}</td>
+                  <td class="num mono">{{ formaterKg(l.quantiteLotsValidesKg) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="rp-vide">
+          <i class="fa-solid fa-inbox"></i>
+          <h3>Aucune ligne pour ce bon de commande</h3>
+          <p>Aucun PPH n'est lié à ce BC, ou aucune production n'a encore été déclarée.</p>
+        </div>
+      }
+    } @else {
+      <div class="rp-vide">
+        <i class="fa-solid fa-hand-pointer"></i>
+        <h3>Choisissez un bon de commande</h3>
+        <p>Le comparatif montre pour chaque produit ce qui était prévu et ce qui a été produit.</p>
+      </div>
+    }
+  </section>
+}
+
+<!-- ═══ EXPORT DES LOTS ═══ -->
+@if (onglet() === 'export') {
+  <section class="rp-carte">
+    <header class="rp-carte-tete"><h2><i class="fa-solid fa-file-arrow-down"></i> Export des lots de la période</h2></header>
+    <p class="rp-note">Le fichier contient les lots déclarés entre le <strong>{{ debut() | date:'dd/MM/yyyy' }}</strong> et le <strong>{{ fin() | date:'dd/MM/yyyy' }}</strong>.</p>
+
+    <div class="rp-formats" role="radiogroup" aria-label="Format du fichier">
+      @for (f of formats; track f.code) {
+        <button class="rp-format" role="radio" [attr.aria-checked]="format() === f.code" [class.rp-format-actif]="format() === f.code" (click)="format.set(f.code)">
+          <span class="rp-format-ext">.{{ f.extension }}</span>
+          <span class="rp-format-lbl">{{ f.libelle }}</span>
+        </button>
+      }
+    </div>
+
+    <div class="rp-actions-ligne">
+      <button class="rp-bouton rp-bouton-primaire" (click)="telechargerLots()" [disabled]="!periodeValide() || telechargement()">
+        @if (telechargement()) { <i class="fa-solid fa-spinner rp-tourne"></i> Préparation… }
+        @else { <i class="fa-solid fa-download"></i> Télécharger le fichier }
+      </button>
+    </div>
+  </section>
+}

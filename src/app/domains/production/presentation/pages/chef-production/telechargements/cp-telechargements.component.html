@@ -1,0 +1,116 @@
+<!-- ═══ BANDEAU ═══ -->
+<header class="tl-hero">
+  <div class="tl-hero-gauche">
+    <div class="tl-hero-ico"><i class="fa-solid fa-file-arrow-down"></i></div>
+    <div>
+      <div class="tl-hero-kicker">Chef de Production</div>
+      <h1 class="tl-hero-titre">Téléchargements</h1>
+      <p class="tl-hero-sous">Documents de production, prêts pour Excel, sur la période choisie</p>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ PÉRIODE ═══ -->
+<section class="tl-periode">
+  <div class="tl-presets" role="group" aria-label="Période rapide">
+    <button class="tl-preset" [class.tl-preset-actif]="presetActif() === '7'" [disabled]="!!enCours()" (click)="choisirPreset('7')">7 jours</button>
+    <button class="tl-preset" [class.tl-preset-actif]="presetActif() === '30'" [disabled]="!!enCours()" (click)="choisirPreset('30')">30 jours</button>
+    <button class="tl-preset" [class.tl-preset-actif]="presetActif() === '90'" [disabled]="!!enCours()" (click)="choisirPreset('90')">90 jours</button>
+  </div>
+  <div class="tl-dates">
+    <label class="tl-champ">
+      <span class="tl-etiquette">Du</span>
+      <input type="date" class="tl-input" [value]="debut()" [max]="fin()" (change)="majPeriode('debut', $any($event.target).value)" [disabled]="!!enCours()">
+    </label>
+    <label class="tl-champ">
+      <span class="tl-etiquette">Au</span>
+      <input type="date" class="tl-input" [value]="fin()" [min]="debut()" [max]="aujourdhui" (change)="majPeriode('fin', $any($event.target).value)" [disabled]="!!enCours()">
+    </label>
+  </div>
+  @if (messagePeriode()) {
+    <p class="tl-erreur"><i class="fa-solid fa-circle-exclamation"></i> {{ messagePeriode() }}</p>
+  }
+</section>
+
+@if (erreur()) {
+  <div class="tl-alerte" role="alert">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span>{{ erreur() }}</span>
+    <button class="tl-bouton tl-bouton-petit tl-bouton-rouge" (click)="erreur.set('')">Fermer</button>
+  </div>
+}
+
+@if (notice()) {
+  <div class="tl-notice" role="status">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>{{ notice() }}</span>
+    <button class="tl-icone" aria-label="Fermer" (click)="notice.set('')"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+}
+
+<!-- ═══ FILTRE PAR CATÉGORIE ═══ -->
+<div class="tl-pilles" role="tablist" aria-label="Catégorie">
+  <button class="tl-pille" [class.tl-pille-active]="categorieFiltre() === ''" (click)="categorieFiltre.set('')">Tous</button>
+  @for (c of categories; track c) {
+    <button class="tl-pille" [class.tl-pille-active]="categorieFiltre() === c" (click)="categorieFiltre.set(c)">{{ c }}</button>
+  }
+</div>
+
+<!-- ═══ DOCUMENTS ═══ -->
+<section class="tl-grille">
+  @for (d of documentsAffiches(); track d.code) {
+    <article class="tl-doc" [class.tl-doc-actif]="enCours() === d.code">
+      <div class="tl-doc-tete">
+        <span class="tl-doc-ico"><i class="fa-solid" [class]="'fa-solid ' + d.icone"></i></span>
+        <div class="tl-doc-titres">
+          <h2 class="tl-doc-titre">{{ d.titre }}</h2>
+          <span class="tl-tag">{{ d.categorie }}</span>
+        </div>
+      </div>
+      <p class="tl-doc-desc">{{ d.description }}</p>
+
+      <div class="tl-doc-pied">
+        @if (d.code === 'lots') {
+          <div class="tl-format" role="radiogroup" aria-label="Format du rapport des lots">
+            @for (f of formatsLots; track f.code) {
+              <button class="tl-format-bouton" role="radio" [attr.aria-checked]="formatLots() === f.code"
+                      [class.tl-format-actif]="formatLots() === f.code" [disabled]="!!enCours()" (click)="formatLots.set(f.code)">{{ f.libelle }}</button>
+            }
+          </div>
+        } @else {
+          <span class="tl-format-info"><i class="fa-solid fa-file-csv"></i> CSV</span>
+        }
+        <button class="tl-bouton tl-bouton-primaire" (click)="telecharger(d)" [disabled]="!periodeValide() || !!enCours()">
+          @if (enCours() === d.code) { <i class="fa-solid fa-spinner tl-tourne"></i> Préparation… }
+          @else { <i class="fa-solid fa-download"></i> Télécharger }
+        </button>
+      </div>
+    </article>
+  } @empty {
+    <p class="tl-vide">Aucun document dans cette catégorie.</p>
+  }
+</section>
+
+<!-- ═══ HISTORIQUE DE LA SESSION ═══ -->
+@if (historique().length) {
+  <section class="tl-carte">
+    <header class="tl-carte-tete"><h2><i class="fa-solid fa-clock-rotate-left"></i> Téléchargés pendant cette session</h2></header>
+    <ul class="tl-historique">
+      @for (h of historique(); track $index) {
+        <li>
+          <i class="fa-solid fa-check"></i>
+          <span class="tl-nom">{{ h.titre }}</span>
+          <span class="tl-muet">{{ h.heure | date:'dd/MM/yyyy HH:mm' }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+}
+
+<p class="tl-pied">
+  <i class="fa-solid fa-circle-info"></i>
+  <span>
+    Les documents sont produits à la demande, à partir des données actuelles. Un document sans donnée sur la période n'est pas téléchargé.
+    Les bons de commande sont inclus, à partir du module stock.
+  </span>
+</p>

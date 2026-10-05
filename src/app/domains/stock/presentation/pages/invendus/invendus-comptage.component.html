@@ -1,0 +1,143 @@
+<div class="page">
+
+  <header class="ph">
+    <div>
+      <h1 class="ph-title">Comptage des invendus</h1>
+      <p class="ph-sub">
+        Ce que le commercial annonce rapporter, confronté à ce que vous constatez.
+        Aucun stock n'est déplacé : les invendus restent sur le véhicule pour la
+        tournée suivante. Seul l'écart est enregistré.
+      </p>
+    </div>
+    <div class="ph-date">{{ today | date:'EEEE d MMMM y':'':'fr' }}</div>
+  </header>
+
+  @if (message(); as m) {
+    <div class="alerte" [class.alerte-ok]="m.type === 'succes'" [class.alerte-ko]="m.type === 'erreur'">
+      {{ m.texte }}
+    </div>
+  }
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-lbl">Constats à compter</div>
+      <div class="kpi-val">{{ aCompter().length }}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Lignes concernées</div>
+      <div class="kpi-val">{{ nbLignesACompter() }}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Constats comptés</div>
+      <div class="kpi-val">{{ comptes().length }}</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Dont avec écart</div>
+      <div class="kpi-val" [class.ecart-neg]="nbEcarts() > 0">{{ nbEcarts() }}</div>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <p class="chargement">Chargement…</p>
+  }
+
+  <section class="card">
+    <div class="card-hd"><h2>En attente de comptage</h2></div>
+
+    @for (constat of aCompter(); track constat.numero) {
+      <div class="constat">
+        <button type="button" class="constat-hd" (click)="basculer(constat.numero)"
+                [attr.aria-expanded]="ouvert() === constat.numero">
+          <span class="mono">{{ constat.numero }}</span>
+          <span>{{ constat.matriculeCommercial }}</span>
+          <span>{{ constat.dateRetour | date:'dd/MM/yyyy' }}</span>
+          <span class="badge">{{ constat.lignes.length }} ligne(s)</span>
+          <span class="chevron">{{ ouvert() === constat.numero ? '−' : '+' }}</span>
+        </button>
+
+        @if (ouvert() === constat.numero) {
+          <div class="tbl-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Produit</th><th>Motif déclaré</th>
+                  <th>Déclaré</th><th>Compté</th><th>Écart</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ligne of constat.lignes; track ligne.id) {
+                  @let ecart = ecartPrevisionnel(constat, ligne.codeProduit, ligne.quantiteDeclaree);
+                  <tr>
+                    <td class="mono">{{ ligne.codeProduit }}</td>
+                    <td>{{ ligne.motif || '—' }}</td>
+                    <td>{{ ligne.quantiteDeclaree }}</td>
+                    <td>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        class="saisie"
+                        placeholder="—"
+                        [attr.aria-label]="'Quantité comptée pour ' + ligne.codeProduit"
+                        [value]="valeurSaisie(constat.numero, ligne.codeProduit) ?? ''"
+                        (input)="majSaisie(constat.numero, ligne.codeProduit, $any($event.target).value)" />
+                    </td>
+                    <td [class]="ecartClass(ecart)">
+                      {{ ecart === null ? '—' : (ecart > 0 ? '+' : '') + ecart }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="constat-actions">
+            <p class="note">
+              Chaque ligne doit être renseignée, y compris à zéro : constater qu'un
+              produit annoncé n'a pas été rapporté est une information.
+            </p>
+            <button
+              class="btn btn-valider"
+              [disabled]="!comptageComplet(constat) || traitementEnCours() === constat.numero"
+              (click)="enregistrer(constat)">
+              {{ traitementEnCours() === constat.numero ? 'Enregistrement…' : 'Arrêter le comptage' }}
+            </button>
+          </div>
+        }
+      </div>
+    } @empty {
+      <p class="vide">Aucun constat en attente de comptage.</p>
+    }
+  </section>
+
+  <section class="card">
+    <div class="card-hd"><h2>Constats arrêtés</h2></div>
+    <div class="tbl-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Constat</th><th>Commercial</th><th>Date</th>
+            <th>Compté par</th><th>Le</th><th>Écart total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (constat of comptes(); track constat.numero) {
+            <tr>
+              <td class="mono">{{ constat.numero }}</td>
+              <td>{{ constat.matriculeCommercial }}</td>
+              <td>{{ constat.dateRetour | date:'dd/MM/yyyy' }}</td>
+              <td>{{ constat.matriculeGestionnaire || '—' }}</td>
+              <td>{{ constat.dateComptage ? (constat.dateComptage | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+              <td [class]="ecartClass(constat.ecartTotal)">
+                {{ constat.ecartTotal === null ? '—' : (constat.ecartTotal > 0 ? '+' : '') + constat.ecartTotal }}
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="vide">Aucun constat arrêté.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>

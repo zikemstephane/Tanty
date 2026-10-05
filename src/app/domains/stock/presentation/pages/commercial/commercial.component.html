@@ -1,0 +1,244 @@
+<div class="page animate-fadeInUp">
+  @if (toastMsg()) { <div class="toast animate-fadeInUp" [class.toast-success]="toastType()==='success'" [class.toast-error]="toastType()==='error'"><i class="fa-solid fa-circle-check"></i>{{ toastMsg() }}</div> }
+  <div class="ph">
+    <div class="ph-left"><div class="ph-icon"><i class="fa-solid fa-users"></i></div><div><h1 class="ph-title">Module Commercial</h1><p class="ph-sub">Dotations · Ventes terrain · Retours · Session du jour</p></div></div>
+    <button class="btn btn-secondary" (click)="openDotation(commercials()[0])" [disabled]="loading()"><i class="fa-solid fa-box-open"></i> Nouvelle Dotation</button>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab()==='dashboard'" (click)="setTab('dashboard')"><i class="fa-solid fa-chart-pie"></i> Tableau de bord</button>
+    <button class="tab-btn" [class.active]="activeTab()==='info'" (click)="setTab('info')"><i class="fa-solid fa-file-invoice"></i> InfoProduits <span class="tab-count">{{ infos().length }}</span></button>
+    <button class="tab-btn" [class.active]="activeTab()==='dotations'" (click)="setTab('dotations')"><i class="fa-solid fa-box-open"></i> Dotations</button>
+    <div style="flex:1"></div>
+    <div class="rpt-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" class="form-control" placeholder="Rechercher un commercial..." [ngModel]="search()" (ngModelChange)="search.set($event)"></div>
+  </div>
+
+  @if (loading()) { <div style="padding:60px;text-align:center;color:var(--n400)"><div class="spinner spinner-lg" style="margin:0 auto 12px"></div>Chargement…</div> }
+  @else {
+  @if (activeTab()==='dashboard') {
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-ico ki-g"><i class="fa-solid fa-coins"></i></div><div><span class="kpi-lbl">Ventes du jour</span><span class="kpi-val">{{ fCFA(getTotalVentes()) }}</span><span class="kpi-sub">{{ getTotalVendus() | number }} unités vendues</span></div></div>
+    <div class="kpi-card"><div class="kpi-ico ki-b"><i class="fa-solid fa-chart-line"></i></div><div><span class="kpi-lbl">Taux de vente global</span><span class="kpi-val" [style.color]="getTauxGlobal()>=80?'var(--s)':getTauxGlobal()>=50?'var(--o)':'var(--r)'">{{ getTauxGlobal() }}%</span><span class="kpi-sub">{{ infos().length }} fiche(s) InfoProduits</span></div></div>
+    <div class="kpi-card"><div class="kpi-ico ki-y"><i class="fa-solid fa-users"></i></div><div><span class="kpi-lbl">Commerciaux actifs</span><span class="kpi-val">{{ commercials().length }}</span><span class="kpi-sub">Terrain aujourd'hui</span></div></div>
+    <div class="kpi-card"><div class="kpi-ico ki-t"><i class="fa-solid fa-boxes-stacked"></i></div><div><span class="kpi-lbl">Stock PF disponible</span><span class="kpi-val">{{ pfLevels().length }}</span><span class="kpi-sub">références en magasin PF</span></div></div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="charts-grid">
+    <div class="card">
+      <div class="card-header"><div class="sec-head"><span class="sh-ico sh-g"><i class="fa-solid fa-chart-bar"></i></span><div><h3>Performance Ventes — Pris / Vendus / Restants</h3><p class="sec-sub">Par commercial · Session du {{ today.toLocaleDateString('fr-CM') }}</p></div></div></div>
+      <div class="card-body" style="padding:12px"><div class="chart-container"><canvas #salesCanvas></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="sec-head"><span class="sh-ico sh-b"><i class="fa-solid fa-chart-pie"></i></span><div><h3>Taux de Vente par Commercial</h3><p class="sec-sub">% unités vendues / prises</p></div></div></div>
+      <div class="card-body" style="padding:12px"><div class="chart-container-sm"><canvas #perfCanvas></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- COMMERCIAL CARDS -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:16px">
+    @for (c of filteredCommercials(); track c.matricule) {
+      <div class="comm-card" (click)="openDetail(c)">
+        <div class="cc-header">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="cc-av">{{ c.name.substring(0,2).toUpperCase() }}</div>
+            <div>
+              <h3 class="cc-name">{{ c.name }}</h3>
+              <div class="cc-meta"><i class="fa-solid fa-phone"></i>{{ c.phone }}&nbsp;·&nbsp;<i class="fa-solid fa-truck"></i>{{ c.vehicle }}</div>
+            </div>
+          </div>
+          @if (getInfoForComm(c.matricule); as ip) { <span class="badge {{ getStatusClass(ip.status) }}">{{ getStatusLabel(ip.status) }}</span> }
+          @else { <span class="badge badge-neutral">Pas de fiche</span> }
+        </div>
+        @if (getInfoForComm(c.matricule); as ip) {
+          <div class="cc-gauge-wrap">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span style="font-size:11px;color:var(--n500);font-weight:600">Taux de vente</span>
+              <span style="font-family:var(--font-d);font-size:18px;font-weight:800;" [style.color]="getTaux(ip)>=80?'var(--s)':getTaux(ip)>=50?'var(--o)':'var(--r)'">{{ getTaux(ip) }}%</span>
+            </div>
+            <div style="height:10px;background:var(--n150);border-radius:5px;overflow:hidden">
+              <div [style.width.%]="getTaux(ip)" [style.background]="getTaux(ip)>=80?'var(--s)':getTaux(ip)>=50?'var(--o)':'var(--r)'" style="height:100%;border-radius:5px;transition:width 1.2s cubic-bezier(.4,0,.2,1)"></div>
+            </div>
+          </div>
+          <div class="cc-totals">
+            <div class="cct-item"><span class="cct-v">{{ getPrise(ip) | number }}</span><span class="cct-l">Pris</span></div>
+            <div style="width:1px;height:40px;background:var(--n200)"></div>
+            <div class="cct-item"><span class="cct-v" style="color:var(--s)">{{ getVendu(ip) | number }}</span><span class="cct-l">Vendus</span></div>
+            <div style="width:1px;height:40px;background:var(--n200)"></div>
+            <div class="cct-item"><span class="cct-v" style="color:var(--o)">{{ getRestant(ip) | number }}</span><span class="cct-l">Restants</span></div>
+            <div style="width:1px;height:40px;background:var(--n200)"></div>
+            <div class="cct-item"><span class="cct-v" style="color:var(--g)">{{ fCFA(getMontant(ip)) }}</span><span class="cct-l">Montant</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            @for (l of ip.lines; track l.id) {
+              <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;padding:6px 10px;background:var(--n50);border-radius:var(--r-sm)">
+                <span style="font-weight:600;color:var(--n700);flex:1">{{ l.product?.designation || l.product?.sku }}</span>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-weight:700;color:var(--n600)">{{ l.takenQty }}</span>
+                  <i class="fa-solid fa-arrow-right" style="color:var(--n300);font-size:10px"></i>
+                  <span style="font-weight:800;color:var(--s)">{{ l.soldQty }}</span>
+                  @if (l.returnedQty>0) { <span style="font-size:10px;color:var(--o);background:var(--o-gh);padding:1px 7px;border-radius:var(--r-full)"><i class="fa-solid fa-rotate-left"></i> {{ l.returnedQty }}</span> }
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div style="background:var(--n50);border-radius:var(--r-md);padding:16px;text-align:center;color:var(--n400);font-size:12px"><i class="fa-solid fa-file-invoice" style="display:block;font-size:24px;margin-bottom:6px"></i>Pas de fiche InfoProduits aujourd'hui</div>
+        }
+        <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:4px;border-top:1px solid var(--n150)">
+          <button class="btn btn-ghost btn-sm" (click)="$event.stopPropagation(); openDotation(c)"><i class="fa-solid fa-box-open"></i> Dotation</button>
+        </div>
+      </div>
+    }
+  </div>
+  }
+
+  @if (activeTab()==='info') {
+    <div class="card"><div class="card-header"><div class="sec-head"><span class="sh-ico sh-g"><i class="fa-solid fa-file-invoice"></i></span><div><h3>Fiches InfoProduits</h3><p class="sec-sub">Prises, ventes et retours par commercial</p></div></div></div>
+      <div class="card-body">
+        <table class="rpt-table">
+          <thead><tr><th>Commercial</th><th>Date</th><th>Pris</th><th>Vendus</th><th>Restants</th><th>Taux</th><th>Montant</th><th>Statut</th></tr></thead>
+          <tbody>
+            @for (ip of infos(); track ip.id) {
+              <tr>
+                <td>{{ ip.commercial?.name || ip.commercialMatricule }}</td>
+                <td>{{ ip.date | date:'dd/MM/yyyy' }}</td>
+                <td>{{ getPrise(ip) | number }}</td>
+                <td>{{ getVendu(ip) | number }}</td>
+                <td>{{ getRestant(ip) | number }}</td>
+                <td><span class="badge" [class.badge-success]="getTaux(ip)>=80" [class.badge-warning]="getTaux(ip)>=50&&getTaux(ip)<80" [class.badge-danger]="getTaux(ip)<50">{{ getTaux(ip) }}%</span></td>
+                <td>{{ fCFA(getMontant(ip)) }}</td>
+                <td><span class="badge {{ getStatusClass(ip.status) }}">{{ getStatusLabel(ip.status) }}</span></td>
+              </tr>
+            } @empty { <tr><td colspan="8" class="rpt-empty"><i class="fa-solid fa-inbox"></i> Aucune fiche InfoProduits</td></tr> }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  @if (activeTab()==='dotations') {
+    <div class="card"><div class="card-header"><div class="sec-head"><span class="sh-ico sh-b"><i class="fa-solid fa-box-open"></i></span><div><h3>Historique des dotations</h3><p class="sec-sub">Demandes de dotation commerciales</p></div></div></div>
+      <div class="card-body">
+        <table class="rpt-table">
+          <thead><tr><th>Référence</th><th>Commercial</th><th>Date</th><th>Articles</th><th>Statut</th></tr></thead>
+          <tbody>
+            @for (d of allDotations(); track d.id) {
+              <tr>
+                <td>{{ d.referenceNumber || d.id }}</td>
+                <td>{{ d.commercialName || d.commercialMatricule }}</td>
+                <td>{{ d.requestedAt | date:'dd/MM/yy HH:mm' }}</td>
+                <td>{{ d.items.length }}</td>
+                <td><span class="badge {{ getStatusClass(d.status) }}">{{ getStatusLabel(d.status) }}</span></td>
+              </tr>
+            } @empty { <tr><td colspan="5" class="rpt-empty"><i class="fa-solid fa-inbox"></i> Aucune dotation enregistrée</td></tr> }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+  }
+
+  <!-- DOTATION MODAL -->
+  @if (showDotation()) {
+    <div class="modal-overlay animate-fadeIn" (click)="closeDotation()">
+      <div class="modal-box animate-fadeInUp" (click)="$event.stopPropagation()" style="max-width:560px">
+        <div class="modal-header" style="background:var(--y-gh)">
+          <div class="modal-title" style="color:var(--y-d)"><i class="fa-solid fa-box-open"></i> Nouvelle Dotation Commerciale</div>
+          <button class="modal-close" (click)="closeDotation()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="banner banner-primary"><i class="fa-solid fa-circle-info"></i><span>La dotation nécessite la signature numérique de la Secrétaire (paiement veille OK) et du Comptable (fiche InfoProduits validée).</span></div>
+          <div class="form-group">
+            <label class="form-label">Commercial <span class="req">*</span></label>
+            <input type="text" class="form-control" [value]="selectedComm()?.name || ''" disabled>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            @for (line of dotationLines; track $index; let i = $index) {
+              @if (pfLevels()[i]; as sl) {
+                <div style="display:flex;flex-direction:column;gap:8px;padding:10px 14px;background:var(--n50);border-radius:var(--r-md)">
+                  <div style="display:flex;justify-content:space-between;align-items:center">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600;color:var(--n800)">{{ sl.productName }}</span><span style="font-size:10px;color:var(--n400)">Stock PF: {{ sl.quantity | number }} {{ sl.productUnit }}</span></div>
+                    <input type="number" min="0" [max]="sl.quantity" style="width:80px;padding:8px 10px;border:1.5px solid var(--n200);border-radius:var(--r-md);font-family:var(--font-d);font-size:15px;font-weight:800;text-align:center;outline:none" [(ngModel)]="line.qty" placeholder="0">
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <select class="form-control" style="flex:1;padding:6px 10px;font-size:11px" [(ngModel)]="line.unitType">
+                      <option value="SACHET_42G">Sachet 42g</option>
+                      <option value="SEAU_1L">Seau 1L</option>
+                      <option value="SEAU_5L">Seau 5L</option>
+                      <option value="SEAU_10L">Seau 10L</option>
+                      <option value="CARTON">Carton</option>
+                      <option value="SAC">Sac</option>
+                      <option value="KG">KG</option>
+                      <option value="LITER">Litre</option>
+                    </select>
+                    <input type="number" min="1" style="width:70px;padding:6px 10px;border:1.5px solid var(--n200);border-radius:var(--r-md);font-size:12px;text-align:center;outline:none" [(ngModel)]="line.unitsPerPack" placeholder="Unités/pack">
+                    <span style="font-size:10px;color:var(--n400)">= {{ line.qty * line.unitsPerPack }} unités</span>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;background:var(--g-gh);border-radius:var(--r-md);padding:12px 16px">
+            <span style="font-size:12px;font-weight:700;color:var(--g)">Total unités dotation</span>
+            <span style="font-family:var(--font-d);font-size:18px;font-weight:800;color:var(--g)">{{ getDotTotal() | number }} unités</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" (click)="closeDotation()">Annuler</button>
+          <button class="btn btn-secondary" [disabled]="dotationSaving()||getDotTotal()===0" (click)="submitDotation()">
+            @if (dotationSaving()) { <div class="spinner spinner-sm" style="border-color:rgba(0,0,0,.2);border-top-color:var(--n900)"></div> Création… }
+            @else { <i class="fa-solid fa-paper-plane"></i> Créer la fiche dotation }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (detailComm(); as c) {
+    <div class="ms-detail-overlay animate-fadeIn" (click)="closeDetail()">
+      <div class="ms-detail-panel animate-slideRight" (click)="$event.stopPropagation()">
+        <div class="ms-detail-head">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div class="cc-av" style="width:48px;height:48px;font-size:18px">{{ c.name.substring(0,2).toUpperCase() }}</div>
+            <div><h3 style="margin:0;font-size:18px">{{ c.name }}</h3><p style="margin:0;font-size:12px;color:var(--n500)">{{ c.matricule }}</p></div>
+          </div>
+          <button class="btn btn-ghost btn-sm" (click)="closeDetail()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="tabs" style="margin:0 16px">
+          <button class="tab-btn" [class.active]="activeTab()==='info'" (click)="activeTab.set('info')"><i class="fa-solid fa-file-invoice"></i> InfoProduits</button>
+          <button class="tab-btn" [class.active]="activeTab()==='dotations'" (click)="activeTab.set('dotations')"><i class="fa-solid fa-box-open"></i> Dotations</button>
+        </div>
+        <div class="ms-detail-body">
+          @if (activeTab()==='info') {
+            @for (ip of infosForSelected(); track ip.id) {
+              <div class="ip-card" style="margin-bottom:12px">
+                <div class="ip-hdr"><div style="display:flex;align-items:center;gap:9px"><div class="ip-av">{{ (ip.commercial?.name||'??').substring(0,2).toUpperCase() }}</div><div><span class="ip-name">{{ ip.commercial?.name || ip.commercialMatricule }}</span><span class="ip-veh"><i class="fa-solid fa-truck"></i> {{ ip.commercial?.vehicle || '—' }}</span></div></div><span class="badge {{ getStatusClass(ip.status) }}">{{ getStatusLabel(ip.status) }}</span></div>
+                <div class="ip-totals"><div class="ipt-item"><span class="ipt-v">{{ getPrise(ip) | number }}</span><span class="ipt-l">Pris</span></div><div class="ipt-sep"></div><div class="ipt-item"><span class="ipt-v" style="color:var(--s)">{{ getVendu(ip) | number }}</span><span class="ipt-l">Vendus</span></div><div class="ipt-sep"></div><div class="ipt-item"><span class="ipt-v" style="color:var(--o)">{{ getRestant(ip) | number }}</span><span class="ipt-l">Restants</span></div></div>
+                <div style="display:flex;flex-direction:column;gap:4px">@for (l of ip.lines; track l.id) { <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;padding:5px 8px;background:var(--n50);border-radius:6px"><span style="font-weight:600;color:var(--n700)">{{ l.product?.designation || l.product?.sku }}</span><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:800;color:var(--n800)">{{ l.takenQty }}</span><i class="fa-solid fa-arrow-right" style="color:var(--n300);font-size:10px"></i><span style="font-weight:800;color:var(--s)">{{ l.soldQty }}</span>@if (l.returnedQty>0) { <span style="font-size:10px;color:var(--o);background:var(--o-gh);padding:1px 6px;border-radius:var(--r-full)"><i class="fa-solid fa-rotate-left"></i>{{ l.returnedQty }}</span> }</div></div> }</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--n150)"><span style="font-size:11px;color:var(--n400)">Par {{ ip.preparedByName || ip.preparedBy }}</span><span style="font-family:var(--font-d);font-size:14px;font-weight:800;color:var(--g)">{{ fCFA(getMontant(ip)) }}</span></div>
+              </div>
+            } @empty { <div class="rpt-empty"><i class="fa-solid fa-inbox"></i> Aucune fiche InfoProduits pour ce commercial</div> }
+          }
+          @if (activeTab()==='dotations') {
+            @if (detailLoading()) { <div style="padding:30px;text-align:center"><div class="spinner spinner-lg" style="margin:0 auto 12px"></div></div> }
+            @else {
+              <table class="rpt-table">
+                <thead><tr><th>Réf.</th><th>Date</th><th>Articles</th><th>Statut</th></tr></thead>
+                <tbody>
+                  @for (d of dotationHistory(); track d.id) {
+                    <tr><td>{{ d.referenceNumber || d.id }}</td><td>{{ d.requestedAt | date:'dd/MM/yy HH:mm' }}</td><td>{{ d.items.length }}</td><td><span class="badge {{ getStatusClass(d.status) }}">{{ getStatusLabel(d.status) }}</span></td></tr>
+                  } @empty { <tr><td colspan="4" class="rpt-empty">Aucune dotation</td></tr> }
+                </tbody>
+              </table>
+            }
+          }
+        </div>
+        <div class="ms-detail-foot">
+          <button class="btn btn-ghost" (click)="closeDetail()">Fermer</button>
+          <button class="btn btn-secondary" (click)="closeDetail(); openDotation(c)"><i class="fa-solid fa-box-open"></i> Nouvelle dotation</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

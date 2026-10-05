@@ -1,0 +1,150 @@
+<!-- ═══ BANDEAU ═══ -->
+<header class="dd-hero">
+  <div class="dd-hero-gauche">
+    <div class="dd-hero-ico"><i class="fa-solid fa-flask"></i></div>
+    <div>
+      <div class="dd-hero-kicker">Agent doseur · {{ aujourdhui | date:'EEEE dd MMMM yyyy' }}</div>
+      <h1 class="dd-hero-titre">Tableau de bord du dosage</h1>
+      <p class="dd-hero-sous">
+        @if (derniereMaj(); as d) { Mis à jour à {{ d | date:'HH:mm' }} }
+        @else { Dosage, mélange et conditionnement des fûts }
+      </p>
+    </div>
+  </div>
+  <div class="dd-actions">
+    <button class="dd-bouton dd-bouton-verre" (click)="charger()" [disabled]="loading()" aria-label="Actualiser">
+      <i class="fa-solid fa-arrows-rotate" [class.dd-tourne]="loading()"></i>
+    </button>
+    <a routerLink="/production/agent-doseur/sessions" class="dd-bouton dd-bouton-blanc"><i class="fa-solid fa-plus"></i> Ouvrir une session</a>
+  </div>
+</header>
+
+@if (sessionExpiree()) {
+  <div class="dd-alerte" role="alert">
+    <i class="fa-solid fa-lock"></i>
+    <span>Votre session a été fermée, probablement parce que ce compte a été ouvert ailleurs. Reconnectez-vous pour retrouver le tableau de bord.</span>
+    <a routerLink="/auth/login" class="dd-bouton dd-bouton-petit dd-bouton-rouge">Se reconnecter</a>
+  </div>
+} @else if (erreurs().length) {
+  <div class="dd-alerte" role="alert">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <span>Certaines données n'ont pas pu être chargées : {{ erreurs().join(', ') }}. Les indicateurs concernés peuvent être incomplets.</span>
+    <button class="dd-bouton dd-bouton-petit dd-bouton-rouge" (click)="charger()">Réessayer</button>
+  </div>
+}
+
+@if (loading() && !derniereMaj()) {
+  <div class="dd-squelette"></div>
+  <div class="dd-squelette dd-squelette-court"></div>
+} @else {
+
+<!-- ═══ AUJOURD'HUI ═══ -->
+<section class="dd-kpis">
+  <div class="dd-kpi dd-kpi-principal">
+    <span class="dd-kpi-lbl">Fûts nets du jour</span>
+    <span class="dd-kpi-val">{{ futsJour() }}</span>
+    <span class="dd-kpi-meta">{{ nbSessionsJour() }} session(s) aujourd'hui</span>
+  </div>
+  <div class="dd-kpi" [class.dd-kpi-alerte]="sessionsJourOuvertes() > 0">
+    <span class="dd-kpi-lbl">Sessions ouvertes</span>
+    <span class="dd-kpi-val">{{ sessionsJourOuvertes() }}</span>
+    <span class="dd-kpi-meta">à clôturer dans la journée</span>
+  </div>
+  <div class="dd-kpi">
+    <span class="dd-kpi-lbl">Matières consommées (jour)</span>
+    <span class="dd-kpi-val">{{ totalMatieresJour() | number:'1.0-1' }}<small> kg</small></span>
+    <span class="dd-kpi-meta">maïs {{ maisJour() | number:'1.0-1' }} · soja {{ sojaJour() | number:'1.0-1' }} · arachide {{ arachideJour() | number:'1.0-1' }} kg</span>
+  </div>
+  <div class="dd-kpi">
+    <span class="dd-kpi-lbl">Machines mobilisées (jour)</span>
+    <span class="dd-kpi-val">{{ nbMachinesJour() }}</span>
+    <span class="dd-kpi-meta">machines distinctes</span>
+  </div>
+</section>
+
+<!-- ═══ PÉRIODES ET PLAN ═══ -->
+<section class="dd-kpis dd-kpis-3">
+  <div class="dd-kpi">
+    <span class="dd-kpi-lbl">Fûts nets de la semaine</span>
+    <span class="dd-kpi-val">{{ futsSemaine() }}</span>
+    <span class="dd-kpi-meta">depuis le lundi</span>
+  </div>
+  <div class="dd-kpi">
+    <span class="dd-kpi-lbl">Fûts nets du mois</span>
+    <span class="dd-kpi-val">{{ futsMois() }}</span>
+    <span class="dd-kpi-meta">depuis le 1er du mois</span>
+  </div>
+  <div class="dd-kpi">
+    <span class="dd-kpi-lbl">Plan en cours</span>
+    <span class="dd-kpi-val">{{ tauxAvancementPph() | number:'1.0-1' }}<small> %</small></span>
+    <div class="dd-barre"><div class="dd-barre-fill" [class.dd-fill-ok]="tauxAvancementPph() >= 100" [style.width.%]="tauxAvancementPph()"></div></div>
+    <span class="dd-kpi-meta">
+      @if (pphEnCours(); as p) { {{ p.referencePPH }} · reste {{ quantiteRestante() }} unité(s) }
+      @else { aucun plan en cours }
+    </span>
+  </div>
+</section>
+
+<!-- ═══ GRAPHIQUES ═══ -->
+<div class="dd-deux">
+  <section class="dd-carte">
+    <header class="dd-carte-tete"><h2><i class="fa-solid fa-chart-line"></i> Fûts nets — 7 jours</h2></header>
+    <app-mini-chart type="line" [labels]="labels7j()" [series]="serieFuts7j()" [height]="220" />
+  </section>
+  <section class="dd-carte">
+    <header class="dd-carte-tete"><h2><i class="fa-solid fa-chart-pie"></i> Matières consommées — 30 jours</h2><span class="dd-note">kg</span></header>
+    @if (donutMatieres30j().length) {
+      <app-donut-chart title="" unit="kg" [data]="donutMatieres30j()" />
+    } @else { <p class="dd-vide-court">Aucune matière enregistrée sur 30 jours.</p> }
+  </section>
+</div>
+
+<section class="dd-carte">
+  <header class="dd-carte-tete">
+    <h2><i class="fa-solid fa-chart-column"></i> Mélanges bouillie et arachide — 7 jours</h2>
+    <span class="dd-note">classement estimé d'après les matières utilisées</span>
+  </header>
+  <app-mini-chart type="bar" [labels]="labels7j()" [series]="serieMelanges7j()" [height]="220" />
+</section>
+
+<!-- ═══ SESSIONS DU JOUR ═══ -->
+<section class="dd-carte">
+  <header class="dd-carte-tete">
+    <h2><i class="fa-solid fa-list-check"></i> Sessions du jour</h2>
+    <a routerLink="/production/agent-doseur/sessions" class="dd-lien">Toutes les sessions <i class="fa-solid fa-arrow-right"></i></a>
+  </header>
+  @if (sessionsJour().length) {
+    <div class="tbl-wrap">
+      <table class="dd-table">
+        <thead><tr><th>PPH</th><th class="num">Fûts nets</th><th>Matières</th><th>Machines</th><th>Statut</th></tr></thead>
+        <tbody>
+          @for (s of sessionsJour(); track s.id) {
+            <tr>
+              <td><span class="dd-code mono">{{ s.referencePPH }}</span></td>
+              <td class="num mono">{{ s.nbFutsNets }}</td>
+              <td>
+                @for (m of s.matieresUtilisees; track $index) {
+                  <span class="dd-tag">{{ m.typeMatiere }} · {{ m.quantiteKg | number:'1.0-1' }} kg</span>
+                } @empty { <span class="dd-muet">—</span> }
+              </td>
+              <td class="dd-muet">{{ s.machinesMobilisees.join(', ') || '—' }}</td>
+              <td>
+                <span class="dd-statut" [class.dd-statut-ok]="s.cloturee" [class.dd-statut-attente]="!s.cloturee">{{ s.cloturee ? 'Clôturée' : 'Ouverte' }}</span>
+                @if (s.enPause) { <span class="dd-statut dd-statut-alerte">En pause</span> }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="dd-vide">
+      <i class="fa-solid fa-flask"></i>
+      <h3>Aucune session aujourd'hui</h3>
+      <p>Ouvrez une session de dosage pour commencer la journée.</p>
+      <a routerLink="/production/agent-doseur/sessions" class="dd-bouton dd-bouton-primaire dd-bouton-petit"><i class="fa-solid fa-plus"></i> Ouvrir une session</a>
+    </div>
+  }
+</section>
+
+}
